@@ -104,6 +104,15 @@ function request_ajax_done(data)
     $('#zip').val(data.postalCode);
     $('#city').val(data.l);
     $('#state').val(data.st);
+    $('#mobile').val(data.mobile);
+    if(data.c == undefined || data.c.length <= 0)
+    {
+        $('#c').val('US');
+    }
+    else
+    {
+        $('#c').val(data.c);
+    }
 
     var tbody = $('#ticket_table tbody');
     addRowToTable(tbody, data.givenName, data.sn, 'A', table_row++);
@@ -302,11 +311,6 @@ function request_data_submitted(form)
 function init_request()
 {
     $.ajax({
-        url: '/tickets/ajax/constraints.php',
-        type: 'get',
-        dataType: 'json',
-        success: constraints_ajax_done});
-    $.ajax({
         url: 'https://profiles.burningflipside.com/ajax/user.php',
         type: 'get',
         dataType: 'json',
@@ -329,9 +333,71 @@ function init_request()
     });
 }
 
+function populate_countries(data)
+{
+    var countries = data.countries;
+    var dropdown = $('#c');
+    for(var propertyName in countries)
+    {
+        $('<option\>', {value: propertyName, text: countries[propertyName]}).appendTo(dropdown);
+    }
+    dropdown.on('change', country_value_changed);
+}
+
+function populate_states(data)
+{
+    if(data.states == undefined)
+    {
+        //We don't know how to handle this country. Just let the user input the state freeform
+        $('#state').replaceWith($('<input/>', {id: 'state', name: 'state', type: 'text'}));
+    }
+    else
+    {
+        var states = data.states;
+        $('[for=state]').html(states.states_label+':');
+        $('#state').replaceWith($('<select/>', {id: 'state', name: 'state'}));
+        var dropdown = $('#state');
+        for(var state in states.states)
+        {
+            $('<option/>', {value: state, text: states.states[state]}).appendTo(dropdown);
+        }
+    }
+}
+
+function start_populate_form()
+{
+    $.when(
+        $.ajax({
+            url: 'https://profiles.burningflipside.com/ajax/countries.php',
+            type: 'get',
+            dataType: 'json',
+            success: populate_countries}),
+        $.ajax({
+            url: 'https://profiles.burningflipside.com/ajax/states.php?c=US',
+            type: 'get',
+            dataType: 'json',
+            success: populate_states}),
+        $.ajax({
+            url: '/tickets/ajax/constraints.php',
+            type: 'get',
+            dataType: 'json',
+            success: constraints_ajax_done})
+    ).done(init_request);
+}
+
+function country_value_changed()
+{
+    var country = $(this).val();
+    $.ajax({
+            url: 'https://profiles.burningflipside.com/ajax/states.php?c='+country,
+            type: 'get',
+            dataType: 'json',
+            success: populate_states});
+}
+
 function init_in_thread()
 {
-    setTimeout(init_request, 0);
+    setTimeout(start_populate_form, 0);
 }
 
 $(init_in_thread);
