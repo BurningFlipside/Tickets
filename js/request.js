@@ -375,6 +375,14 @@ function populate_states(data)
     }
 }
 
+function request_id_done(data)
+{
+    if(data.id != undefined)
+    {
+        $('#request_id').val(data.id);
+    }
+}
+
 function start_populate_form()
 {
     $.when(
@@ -392,7 +400,12 @@ function start_populate_form()
             url: '/tickets/ajax/constraints.php',
             type: 'get',
             dataType: 'json',
-            success: constraints_ajax_done})
+            success: constraints_ajax_done}),
+        $.ajax({
+            url: '/tickets/ajax/request.php',
+            type: 'get',
+            dataType: 'json',
+            success: request_id_done})
     ).done(init_request);
 }
 

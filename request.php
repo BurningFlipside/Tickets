@@ -29,6 +29,13 @@ else
         <fieldset id="request_set">
             <legend>Ticket Request</legend>
             <div class="form-group">
+                <label for="mail" class="col-sm-2 control-label">Request ID:</label>
+                <div class="col-sm-10">
+                    <input type="text" name="request_id" id="request_id" readonly/>
+                    <img src="/images/info.svg" style="height: 1em; width: 1em;" title="This request ID uniquely identifies your request. Don\'t worry, it should be the same as in previous years."/>
+                </div>
+            </div>
+            <div class="form-group">
                 <label for="givenName" class="col-sm-2 control-label">First Name:</label>
                 <div class="col-sm-10">
                     <input id="givenName" name="givenName" type="text" required/>

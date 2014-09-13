@@ -5,6 +5,16 @@ require_once('class.FlipsideDonationType.php');
 require_once('class.FlipsideTicketRequest.php');
 class FlipsideTicketDB extends FlipsideDB
 {
+    function getRequestIdForUser($uesr)
+    {
+        return FALSE;
+    }
+
+    function getNewRequestId()
+    {
+        return FALSE;
+    }
+
     function getRequestForUser($user)
     {
         return FALSE;
@@ -16,11 +26,7 @@ class FlipsideTicketDB extends FlipsideDB
         //TODO - OPbtain from DB
         $ret->max_total_tickets = 4;
         $ret->ticket_types = array();
-        $type = new FlipsideTicketType();
-        $type->typeCode = 'A';
-        $type->description = 'Adult';
-        $type->cost = 95.00;
-        $type->max_per_request = 2;
+        $type = FlipsideDB::getTicketTypeByType('A');
         array_push($ret->ticket_types, $type);
         $type = new FlipsideTicketType();
         $type->typeCode = 'T';
@@ -52,6 +58,39 @@ class FlipsideTicketDB extends FlipsideDB
         $type->thirdParty = 1;
         $type->url = 'http://tinderbox.es';
         array_push($ret, $type);
+        return $ret;
+    }
+
+    static function getTicketTypeByType($type)
+    {
+        $ret = new FlipsideTicketType();
+        switch($type)
+        {
+            case 'A':
+                $ret->typeCode = 'A';
+                $ret->description = 'Adult';
+                $ret->cost = 95.00;
+                $ret->max_per_request = 2;
+                break;
+            case 'T':
+                $ret->typeCode = 'A';
+                $ret->description = 'Teen (14 - 17)';
+                $ret->cost = 95.00;
+                $ret->max_per_request = 2;
+                break;
+            case 'K':
+                $ret->typeCode = 'A';
+                $ret->description = 'Kid (7 - 13)';
+                $ret->cost = 35.00;
+                $ret->max_per_request = 2;
+                break;
+            case 'C':
+                $ret->typeCode = 'A';
+                $ret->description = 'Child (0 - 6)';
+                $ret->cost = 0.00;
+                $ret->max_per_request = 2;
+                break;
+        }
         return $ret;
     }
 }
