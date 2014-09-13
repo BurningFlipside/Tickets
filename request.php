@@ -29,21 +29,21 @@ else
         <fieldset id="request_set">
             <legend>Ticket Request</legend>
             <div class="form-group">
-                <label for="first" class="col-sm-2 control-label">First Name:</label>
+                <label for="givenName" class="col-sm-2 control-label">First Name:</label>
                 <div class="col-sm-10">
-                    <input type="text" name="first" id="first" required/>
+                    <input id="givenName" name="givenName" type="text" required/>
                 </div>
             </div>
             <div class="form-group">
-                <label for="last" class="col-sm-2 control-label">Last Name:</label>
+                <label for="sn" class="col-sm-2 control-label">Last Name:</label>
                 <div class="col-sm-10">
-                    <input type="text" name="last" id="last" required/>
+                    <input id="sn" name="sn" type="text" required/>
                 </div>
             </div>
             <div class="form-group">
                 <label for="mail" class="col-sm-2 control-label">Email:</label>
                 <div class="col-sm-10">
-                    <input type="text" name="email" id="email" readonly/>
+                    <input type="text" name="mail" id="mail" readonly/>
                     <img src="/images/info.svg" style="height: 1em; width: 1em;" title="This email address has been set and confirmed by your profile. If you need to use a different email address please edit your profile."/>
                 </div>
             </div>
@@ -61,22 +61,27 @@ else
             </div>
             <div class="clearfix visible-md visible-lg"></div>
             <div class="form-group">
-                <label for="address" class="col-sm-2 control-label">Street Address:</label>
+                <label for="street" class="col-sm-2 control-label">Street Address:</label>
                 <div class="col-sm-10">
-                    <input type="text" name="address" id="address" required/>
+                    <input id="street" name="street" type="text"/>
                 </div>
             </div>
             <div class="form-group">
-                <label for="last" class="col-sm-2 control-label">City:</label>
+                <label for="zip" class="col-sm-2 control-label">Postal/Zip Code:</label>
                 <div class="col-sm-10">
-                    <input type="text" name="city" id="city" required/>
+                    <input id="zip" name="zip" type="text"/>
                 </div>
             </div>
             <div class="form-group">
-                <label for="state" class="col-sm-2 control-label">State:</label>
+                <label for="l" class="col-sm-2 control-label">City:</label>
                 <div class="col-sm-10">
-                    <select id="state" name="state">
-                    </select>
+                    <input id="l" name="l" type="text"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="st" class="col-sm-2 control-label">State:</label>
+                <div class="col-sm-10">
+                    <select id="st" name="st" type="text"></select>
                 </div>
             </div>
             <div class="clearfix visible-md visible-lg"></div>

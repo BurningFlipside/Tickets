@@ -96,14 +96,14 @@ function addRowToTable(tbody, first, last, type, row_id)
 
 function request_ajax_done(data)
 {
-    $('#first').val(data.givenName);
-    $('#last').val(data.sn);
-    $('#email').val(data.mail);
-    $('#email').tooltip({content: 'This field is not editable. If you want to use a different email then please register a new account with that email.'});
-    $('#address').val(data.postalAddress);
+    $('#givenName').val(data.givenName);
+    $('#sn').val(data.sn);
+    $('#mail').val(data.mail);
+    $('#mail').tooltip({content: 'This field is not editable. If you want to use a different email then please register a new account with that email.'});
+    $('#street').val(data.postalAddress);
     $('#zip').val(data.postalCode);
-    $('#city').val(data.l);
-    $('#state').val(data.st);
+    $('#l').val(data.l);
+    $('#st').val(data.st);
     $('#mobile').val(data.mobile);
     if(data.c == undefined || data.c.length <= 0)
     {
@@ -112,6 +112,17 @@ function request_ajax_done(data)
     else
     {
         $('#c').val(data.c);
+    }
+    if(data.postalAddress.length == 0 || data.postalCode.length == 0 || data.l.length == 0 || data.st.length == 0 || data.mobile.length == 0)
+    {
+        var alert_div = $('<div/>', {class: 'alert alert-info alert-dismissible', role: 'alert'});
+        var button = $('<button/>', {type: 'button', class: 'close', 'data-dismiss': 'alert'});
+        $('<span/>', {'aria-hidden': 'true'}).html('&times;').appendTo(button);
+        $('<span/>', {class: 'sr-only'}).html('Close').appendTo(button);
+        button.appendTo(alert_div);
+        $('<strong/>').html('Notice:').appendTo(alert_div);
+        alert_div.append('If you had filled out your profile this data would all be populated.');
+        $('#request_set').prepend(alert_div);
     }
 
     var tbody = $('#ticket_table tbody');
@@ -349,14 +360,14 @@ function populate_states(data)
     if(data.states == undefined)
     {
         //We don't know how to handle this country. Just let the user input the state freeform
-        $('#state').replaceWith($('<input/>', {id: 'state', name: 'state', type: 'text'}));
+        $('#st').replaceWith($('<input/>', {id: 'st', name: 'st', type: 'text'}));
     }
     else
     {
         var states = data.states;
-        $('[for=state]').html(states.states_label+':');
-        $('#state').replaceWith($('<select/>', {id: 'state', name: 'state'}));
-        var dropdown = $('#state');
+        $('[for=st]').html(states.states_label+':');
+        $('#st').replaceWith($('<select/>', {id: 'st', name: 'st'}));
+        var dropdown = $('#st');
         for(var state in states.states)
         {
             $('<option/>', {value: state, text: states.states[state]}).appendTo(dropdown);
