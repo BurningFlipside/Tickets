@@ -12,7 +12,7 @@ class FlipsideTicketDB extends FlipsideDB
 
     function getNewRequestId()
     {
-        return FALSE;
+        return 'A0000001';
     }
 
     function getRequestForUser($user)
@@ -26,7 +26,7 @@ class FlipsideTicketDB extends FlipsideDB
         //TODO - OPbtain from DB
         $ret->max_total_tickets = 4;
         $ret->ticket_types = array();
-        $type = FlipsideDB::getTicketTypeByType('A');
+        $type = FlipsideTicketDB::getTicketTypeByType('A');
         array_push($ret->ticket_types, $type);
         $type = new FlipsideTicketType();
         $type->typeCode = 'T';
@@ -53,7 +53,7 @@ class FlipsideTicketDB extends FlipsideDB
     {
         //TODO - Get this from the SQL database
         $ret = array();
-        $type = new FlipsideDonationType();
+        $type = new FlipsideDonationType("Tinderbox");
         $type->entityName = "Tinderbox";
         $type->thirdParty = 1;
         $type->url = 'http://tinderbox.es';

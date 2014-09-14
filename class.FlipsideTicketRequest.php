@@ -37,7 +37,7 @@ class FlipsideTicketRequest
     static function getOldRequestId($email)
     {
         include('static.requests2014.php');
-        for($i = 0; $i < $request; $i++)
+        for($i = 0; $i < count($request); $i++)
         {
             if($request[$i]['email'] == $email)
             {

@@ -113,7 +113,11 @@ function request_ajax_done(data)
     {
         $('#c').val(data.c);
     }
-    if(data.postalAddress.length == 0 || data.postalCode.length == 0 || data.l.length == 0 || data.st.length == 0 || data.mobile.length == 0)
+    if(data.postalAddress == null || data.postalAddress.length == 0 || 
+       data.postalCode == null || data.postalCode.length == 0 || 
+       data.l == null || data.l.length == 0 || 
+       data.st == null || data.st.length == 0 || 
+       data.mobile == null || data.mobile.length == 0)
     {
         var alert_div = $('<div/>', {class: 'alert alert-info alert-dismissible', role: 'alert'});
         var button = $('<button/>', {type: 'button', class: 'close', 'data-dismiss': 'alert'});
