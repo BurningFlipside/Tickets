@@ -28,7 +28,7 @@ else
     <fieldset id="request_set">
         <legend>Ticket Request</legend>
     </fieldset>
-    <fieldset id="ticket_set">
+    <fieldset id="ticket_set" style="display: none;">
         <legend>Tickets</legend>
         <table id="ticketList">
             <thead>
