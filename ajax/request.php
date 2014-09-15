@@ -5,6 +5,7 @@ if($_SERVER["HTTPS"] != "on")
     exit();
 }
 require_once("class.FlipSession.php");
+require_once("class.FlipsideTicketDB.php");
 require_once("class.FlipsideTicketRequest.php");
 $user = FlipSession::get_user(TRUE);
 if($user == FALSE)
@@ -13,6 +14,7 @@ if($user == FALSE)
     die();
 }
 $is_admin = $user->isInGroupNamed("TicketAdmins");
+$is_data  = $user->isInGroupNamed("TicketTeam");
 
 function get_single_value_from_array($array)
 {
@@ -32,7 +34,27 @@ function get_single_value_from_array($array)
 
 if(strtoupper($_SERVER['REQUEST_METHOD']) == 'GET')
 {
-    if(!isset($_GET['id']))
+    if(isset($_GET['count']))
+    {
+        if(!$is_admin && !$is_data)
+        {
+            echo json_encode(array('error' => "Access Denied! User must be a member of TicketAdmins or TicketTeam!"));
+        }
+        else
+        {
+            $db = new FlipsideTicketDB();
+            $count = $db->getRequestCount();
+            if($count === FALSE)
+            {
+                echo json_encode(array('error' => "Internal Error! Failed to obtain request count!"));
+            }
+            else
+            {
+                echo json_encode(array('success' => 0, 'count' => $count));
+            }
+        }
+    }
+    else if(!isset($_GET['id']))
     {
         $id = FlipsideTicketRequest::getRequestId($user);
         if($id == FALSE)
