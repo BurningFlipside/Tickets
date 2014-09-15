@@ -1,6 +1,7 @@
 <?php
 require_once('class.SecurePage.php');
 require_once('class.FlipSession.php');
+require_once('class.FlipsideTicketDB.php');
 class TicketPage extends SecurePage
 {
     function __construct($title)
@@ -10,6 +11,11 @@ class TicketPage extends SecurePage
         $this->add_tickets_script();
         $this->add_sites();
         $this->add_links();
+        if(FlipsideTicketDB::getTestMode())
+        {
+             $this->add_notification('The ticket system is operating in test mode. Any entries made will be deleted before ticketing starts.', 
+                                   self::NOTIFICATION_WARNING);
+        }
     }
 
     function add_tickets_css()
@@ -34,6 +40,20 @@ class TicketPage extends SecurePage
         }
         else
         {
+            $user = FlipSession::get_user(TRUE);
+            $is_admin = $user->isInGroupNamed("TicketAdmins");
+            $is_data  = $user->isInGroupNamed("TicketTeam");
+            if($is_admin)
+            {
+                $admin_menu = array(
+                    'Variable Edit'=>'https://secure.burningflipside.com/tickets/_admin/vars.php'
+                );
+                $this->add_link('Admin', 'https://secure.burningflipside.com/tickets/_admin/', $admin_menu);
+            }
+            if($is_data)
+            {
+                $this->add_link('Data Entry', 'https://secure.burningflipside.com/tickets/_admin/data.php');
+            }
             $secure_menu = array(
                 'Ticket Registration'=>'/tickets/index.php',
                 'Ticket Transfer'=>'/tickets/transfer.php',
