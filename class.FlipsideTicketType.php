@@ -1,7 +1,10 @@
 <?php
 require_once('class.FlipsideTicketDB.php');
-class FlipsideTicketType
+require_once('class.FlipsideDBObject.php');
+class FlipsideTicketType extends FlipsideDBObject
 {
+    protected $_tbl_name = 'tblTicketTypes';
+
     public $typeCode;
     public $description;
     public $cost;
