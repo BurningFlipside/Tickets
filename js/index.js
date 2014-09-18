@@ -15,6 +15,121 @@ function init_table()
     $("#ticketList").on('draw.dt', tableDrawComplete);
 }
 
+function edit_request(control)
+{
+    var jq = $(control);
+    var tmp = jq.attr('for');
+    var ids = tmp.split('_');
+    window.location = 'request.php?request_id='+ids[0]+'&year='+ids[1];
+}
+
+function download_request_done(data)
+{
+    if(data.pdf != undefined)
+    {
+        var win = window.open(data.pdf, '_blank');
+        if(win == undefined)
+        {
+            alert('Popups are blocked! Please enable popups.');
+        }
+    }
+    console.log(data);
+}
+
+function download_request(control)
+{
+    var jq = $(control);
+    var tmp = jq.attr('for');
+    var ids = tmp.split('_');
+    $.ajax({
+        url: '/tickets/ajax/request.php',
+        type: 'post',
+        data: 'request_id='+ids[0]+'&year='+ids[1]+'&pdf=1',
+        dataType: 'json',
+        success: download_request_done});
+}
+
+function add_buttons_to_row(row, id, year)
+{
+    var cell = $('<td/>', {style: 'white-space: nowrap;'});
+    var edit_options = {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Edit Request', for: id+'_'+year, onclick: 'edit_request(this)'};
+    var mail_options = {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Resend Request Email', for: id+'_'+year, onclick: 'email_request(this)'};
+    var pdf_options =  {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Download PDF', for: id+'_'+year, onclick: 'download_request(this)'};
+    if(browser_supports_font_face())
+    {
+        edit_options.type = 'button';
+        var button = $('<button/>', edit_options);
+        var glyph = $('<span/>', {class: 'glyphicon glyphicon-pencil'});
+        glyph.appendTo(button);
+        button.appendTo(cell);
+
+        mail_options.type = 'button';
+        button = $('<button/>', mail_options);
+        glyph = $('<span/>', {class: 'glyphicon glyphicon-envelope'});
+        glyph.appendTo(button);
+        button.appendTo(cell);
+
+        pdf_options.type = 'button';
+        button = $('<button/>', pdf_options);
+        glyph = $('<span/>', {class: 'glyphicon glyphicon-cloud-download'});
+        glyph.appendTo(button);
+        button.appendTo(cell);
+    }
+    else
+    {
+        var link = $('<a/>', edit_options);
+        link.append("Edit");
+        link.appendTo(cell);
+        cell.append("|");
+        link = $('<a/>', mail_options);
+        link.append("Resend");
+        link.appendTo(cell);
+        cell.append("|");
+        link = $('<a/>', pdf_options);
+        link.append("Download");
+        link.appendTo(cell);
+    }
+    cell.appendTo(row);
+}
+
+function add_request_to_table(tbody, request)
+{
+    var row = $('<tr/>');
+    var cell = $('<td/>');
+    cell.html(request.request_id);
+    cell.appendTo(row);
+    cell = $('<td/>');
+    cell.html(request.year);
+    cell.appendTo(row);
+    cell = $('<td/>');
+    if(request.tickets != null)
+    {
+        cell.html(request.tickets.length);
+    }
+    else
+    {
+        cell.html(0);
+    }
+    cell.appendTo(row);
+    cell = $('<td/>');
+    var total = 0;
+    if(request.tickets != null)
+    {
+        for(i = 0; i < request.tickets.length; i++)
+        {
+            total += (request.tickets[i].type.cost)*1;
+        }
+    }
+    if(request.donation != null)
+    {
+        alert('TODO: donation!');
+    }
+    cell.html('$'+total);
+    cell.appendTo(row);
+    add_buttons_to_row(row, request.request_id, request.year);
+    row.appendTo(tbody);
+}
+
 function get_requests_done(data)
 {
     if(data.error)
@@ -24,15 +139,32 @@ function get_requests_done(data)
     }
     else
     {
-        if(data.request == undefined || data.request == null)
+        if(data.requests == undefined || data.requests == null)
         {
-            //TODO - Disable this link if reg window is closed
+            $('#request_set').empty();
             $('#request_set').append("You do not currently have a ticket request.<br/>");
             $('#request_set').append('<a href="/tickets/request.php">Create a Ticket Request</a>');
         }
         else
         {
-            console.log(data);
+            var tbody = $('#requestList tbody');
+            for(i = 0; i < data.requests.length; i++)
+            {
+                add_request_to_table(tbody, data.requests[i]);
+            }
+            if($('[title]').length > 0)
+            {
+                $('[title]').tooltip();
+            }
+            if($(window).width() < 768)
+            {
+                $('#requestList th:nth-child(1)').hide();
+                $('#requestList td:nth-child(1)').hide();
+            } 
+        }
+        if($('#request_set').length > 0)
+        {
+            $('#request_set').show();
         }
     }
 }
@@ -40,7 +172,7 @@ function get_requests_done(data)
 function init_request()
 {
     $.ajax({
-        url: '/tickets/ajax/request.php',
+        url: '/tickets/ajax/request.php?full',
         type: 'get',
         dataType: 'json',
         success: get_requests_done});

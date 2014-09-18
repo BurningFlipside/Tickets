@@ -27,6 +27,18 @@ else
 <div id="content">
     <fieldset id="request_set">
         <legend>Ticket Request</legend>
+        <table id="requestList" class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Request ID</th>
+                    <th>Request Year</th>
+                    <th>Number of Tickets</th>
+                    <th>Amount Due</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
     </fieldset>
     <fieldset id="ticket_set" style="display: none;">
         <legend>Tickets</legend>
