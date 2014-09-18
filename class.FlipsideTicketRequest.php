@@ -3,9 +3,12 @@ require_once('class.FlipsideTicketDB.php');
 require_once('class.FlipsideTicketRequestTicket.php');
 require_once('class.FlipsideDonation.php');
 require_once('mpdf/mpdf.php');
-class FlipsideTicketRequest
+class FlipsideTicketRequest extends FlipsideDBObject
 {
+    protected $_tbl_name = 'tblTicketRequest';
+
     public $request_id;
+    public $year;
     public $givenName;
     public $sn;
     public $mail;
@@ -15,6 +18,8 @@ class FlipsideTicketRequest
     public $zip;
     public $l;
     public $st;
+    public $modifiedBy;
+    public $modifiedByIP;
     public $tickets;
     public $donations;
 
@@ -47,20 +52,77 @@ class FlipsideTicketRequest
         return FALSE;
     }
 
-    function __construct($request_id, $new = FALSE)
+    static function populate_children($db, &$type)
+    {
+        $type->tickets = FlipsideTicketRequestTicket::select_from_db_multi_conditions($db, array('request_id'=>'='.$type->request_id, 'year'=>'='.$type->year));
+        if(!is_array($type->tickets))
+        {
+            $type->tickets = array($type->tickets);
+        }
+    }
+
+    static function select_from_db($db, $col, $value)
+    {
+        $type = parent::select_from_db($db, $col, $value);
+        if(is_array($type))
+        {
+            for($i = 0; $i < count($type); $i++)
+            {
+                self::populate_children($db, $type[$i]);
+            }
+        }
+        else
+        {
+            self::populate_children($db, $type);
+        }
+        return $type;
+    }
+
+    static function select_from_db_multi_conditions($db, $conds)
+    {
+        $type = parent::select_from_db_multi_conditions($db, $conds);
+        if(is_array($type))
+        {
+            for($i = 0; $i < count($type); $i++)
+            {
+                self::populate_children($db, $type[$i]);
+            }
+        }
+        else
+        {
+            self::populate_children($db, $type);
+        }
+        return $type;
+    }
+
+    function __construct($request_id='', $new = TRUE, $year = '')
     {
         $this->request_id = $request_id;
+        $db = new FlipsideTicketDB();
+        if($year == '')
+        {
+            $this->year = $db->getVariable('year');
+        }
+        else
+        {
+            $this->year = $year;
+        }
         if($new)
         {
         }
         else
         {
-            $this->populateFromDB();
+            $this->populateFromDB($db);
         }
     }
 
-    function populateFromDB()
+    function populateFromDB($db)
     {
+        $type = self::select_from_db_multi_conditions($db, array('request_id'=>'='.$this->request_id, 'year'=>'='.$this->year));
+        foreach(get_object_vars($type) as $key => $value)
+        {
+            $this->$key = $value;
+        }
     }
 
     function populateFromPOSTData($data)
@@ -100,7 +162,7 @@ class FlipsideTicketRequest
             $exp_key = explode('_', $key);
             if($exp_key[0] == 'donation')
             {
-                $donation_data[$exp_key[1]] = $value;
+                $donation_data[$exp_key[2]][$exp_key[1]] = $value;
             }
         }
         $this->populateDonationData($donation_data);
@@ -111,6 +173,8 @@ class FlipsideTicketRequest
         $this->tickets = array();
         for($i = 0; $i < count($data); $i++)
         {
+            $data[$i]['request_id'] = $this->request_id;
+            $data[$i]['year'] = $this->year;
             array_push($this->tickets, new FlipsideTicketRequestTicket($data[$i]));
         }
     }
@@ -120,8 +184,22 @@ class FlipsideTicketRequest
         $this->donations = array();
         foreach($data as $key => $value)
         {
-            array_push($this->donations, new FlipsideDonation($key, $value));
+            $data[$key]['request_id'] = $this->request_id;
+            $data[$key]['year'] = $this->year;
+            array_push($this->donations, new FlipsideDonation($key, $data[$key]));
         }
+    }
+
+    function hasMinors()
+    {
+        foreach($this->tickets as $ticket)
+        {
+            if($ticket->isMinor())
+            {
+                return TRUE;
+            }
+        }
+        return FALSE;
     }
 
     function getTotalAmount()
@@ -188,7 +266,7 @@ class FlipsideTicketRequest
         return $table;
     }
 
-    function generateBarcode()
+    function generatePDF()
     {
         $totalAmount = $this->getTotalAmount();
 
@@ -268,7 +346,9 @@ class FlipsideTicketRequest
             </table>
         ';
         $mpdf->SetHTMLFooter($footer);
-        $mpdf->Output('/tmp/'.$this->request_id.'.pdf');
+        $filename = '../tmp/'.hash('sha512', json_encode($this)).'.pdf';
+        $mpdf->Output($filename);
+        return $filename;
     }
 }
 ?>

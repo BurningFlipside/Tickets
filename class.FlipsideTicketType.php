@@ -9,6 +9,7 @@ class FlipsideTicketType extends FlipsideDBObject
     public $description;
     public $cost;
     public $max_per_request;
+    public $is_minor;
 
     function __construct($type = null)
     {
@@ -19,6 +20,7 @@ class FlipsideTicketType extends FlipsideDBObject
             $this->description     = $data->description;
             $this->cost            = $data->cost;
             $this->max_per_request = $data->max_per_request;
+            $this->is_minor        = $data->is_minor == '1';
         }
     }
 }
