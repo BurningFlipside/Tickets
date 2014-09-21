@@ -120,9 +120,12 @@ function add_request_to_table(tbody, request)
             total += (request.tickets[i].type.cost)*1;
         }
     }
-    if(request.donation != null)
+    if(request.donations != null)
     {
-        alert('TODO: donation!');
+        for(i = 0; i < request.donations.length; i++)
+        {
+            total += (request.donations[i].amount)*1;
+        }
     }
     cell.html('$'+total);
     cell.appendTo(row);
@@ -134,8 +137,14 @@ function get_requests_done(data)
 {
     if(data.error)
     {
-        alert('Login failed: '+data.error);
-        console.log(data.error);
+        if(data.error.startsWith("Access Denied"))
+        {
+        }
+        else
+        {
+            alert('Error obtaining request data: '+data.error);
+            console.log(data);
+        }
     }
     else
     {
