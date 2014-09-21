@@ -59,6 +59,11 @@ class FlipsideTicketRequest extends FlipsideDBObject
         {
             $type->tickets = array($type->tickets);
         }
+        $type->donations = FlipsideDonation::select_from_db_multi_conditions($db, array('request_id'=>'='.$type->request_id, 'year'=>'='.$type->year));
+        if(!is_array($type->donations))
+        {
+            $type->donations = array($type->donations);
+        }
     }
 
     static function select_from_db($db, $col, $value)
