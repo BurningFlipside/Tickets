@@ -52,6 +52,20 @@ class FlipsideTicketRequestTicket extends FlipsideDBObject
         return $type;
     }
 
+    protected function set_in_db($db, $op)
+    {
+        if($this->requested_ticket_id == null)
+        {
+            //Make sure I don't already have a ticket with the same request_id, year, and name
+            $res = $db->select($this->_tbl_name, 'requested_ticket_id', array('request_id'=>'=\''.$this->request_id.'\'', 'year'=>'=\''.$this->year.'\'', 'first'=>'=\''.$this->first.'\'', 'last'=>'=\''.$this->last.'\''));
+            if(count($res) > 0)
+            {
+                $this->requested_ticket_id = $res[0]['requested_ticket_id'];
+            }
+        }
+        return parent::set_in_db($db, $op);
+    }
+
     function __construct($data)
     {
         $this->request_id = $data['request_id'];
