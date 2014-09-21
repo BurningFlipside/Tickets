@@ -30,7 +30,17 @@ class FlipsideTicketDB extends FlipsideDB
 
     function getRequestCount()
     {
-        return 0;
+        $stmt = $this->db->query('SELECT COUNT(*) FROM tblTicketRequest WHERE YEAR = \''.self::getTicketYear().'\';');
+        if($stmt == FALSE)
+        {
+            return FALSE;
+        }
+        $data = $stmt->fetchAll();
+        if($data == FALSE || !isset($data[0]) || !isset($data[0][0]))
+        {
+            return FALSE;
+        }
+        return $data[0][0];
     }
 
     function getTicketSoldCount()
