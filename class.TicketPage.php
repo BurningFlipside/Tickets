@@ -46,6 +46,7 @@ class TicketPage extends SecurePage
             if($is_admin)
             {
                 $admin_menu = array(
+                    'Ticket Types'=>'https://secure.burningflipside.com/tickets/_admin/ticket_type.php',
                     'Variable Edit'=>'https://secure.burningflipside.com/tickets/_admin/vars.php'
                 );
                 $this->add_link('Admin', 'https://secure.burningflipside.com/tickets/_admin/', $admin_menu);
