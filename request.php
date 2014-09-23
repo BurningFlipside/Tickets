@@ -35,18 +35,21 @@ else
                     <input class="form-control" type="text" name="request_id" id="request_id" readonly data-toggle="tooltip" data-placement="top" title="This request ID uniquely identifies your request. Don\'t worry, it should be the same as in previous years."/>
                 </div>
             </div>
+            <div class="clearfix visible-sm visible-md visible-lg"></div>
             <div class="form-group">
                 <label for="givenName" class="col-sm-2 control-label">First Name:</label>
                 <div class="col-sm-10">
                     <input class="form-control" id="givenName" name="givenName" type="text" required data-toggle="tooltip" data-placement="top" title="This is the first name for the mailing address."/>
                 </div>
             </div>
+            <div class="clearfix visible-sm visible-md visible-lg"></div>
             <div class="form-group">
                 <label for="sn" class="col-sm-2 control-label">Last Name:</label>
                 <div class="col-sm-10">
                     <input class="form-control" id="sn" name="sn" type="text" required data-toggle="tooltip" data-placement="top" title="This is the last name for the mailing address."/>
                 </div>
             </div>
+            <div class="clearfix visible-sm visible-md visible-lg"></div>
             <div class="form-group">
                 <label for="mail" class="col-sm-2 control-label">Email:</label>
                 <div class="col-sm-10">
@@ -65,7 +68,7 @@ else
                     <input id="mobile" name="mobile" type="text" class="form-control bfh-phone" required data-country="c" data-toggle="tooltip" data-placement="top" title="This phone number may be used by the ticket team in case of a problem with your request."/>
                 </div>
             </div>
-            <div class="clearfix visible-md visible-lg"></div>
+            <div class="clearfix visible-sm visible-md visible-lg"></div>
             <div class="form-group">
                 <label for="street" class="col-sm-2 control-label">Street Address:</label>
                 <div class="col-sm-10">
@@ -78,6 +81,7 @@ else
                     <input class="form-control" required id="zip" name="zip" type="text" data-toggle="tooltip" data-placement="top" title="The zip or postal code for the mailing address."/>
                 </div>
             </div>
+            <div class="clearfix visible-sm visible-md visible-lg"></div>
             <div class="form-group">
                 <label for="l" class="col-sm-2 control-label">City:</label>
                 <div class="col-sm-10">
