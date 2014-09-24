@@ -131,7 +131,9 @@ function commit_ticket_type(e)
     for(i = 0; i < controls.length; i++)
     {
         var control = $(controls[i]);
-        data+=control.attr('id');
+        var control_name = control.attr('id');
+        control_name = control_name.substring(0, control_name.lastIndexOf('_'));
+        data+=control_name;
         data+='='+control.val();
         if(i < controls.length - 1)
         {
