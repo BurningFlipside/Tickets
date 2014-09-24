@@ -3,6 +3,7 @@ require_once('class.FlipsideTicketDB.php');
 require_once('class.FlipsideTicketRequestTicket.php');
 require_once('class.FlipsideDonation.php');
 require_once('mpdf/mpdf.php');
+require_once('class.FlipsideTicketRequestEmail.php');
 class FlipsideTicketRequest extends FlipsideDBObject
 {
     protected $_tbl_name = 'tblTicketRequest';
@@ -354,6 +355,17 @@ class FlipsideTicketRequest extends FlipsideDBObject
         $filename = '../tmp/'.hash('sha512', json_encode($this)).'.pdf';
         $mpdf->Output($filename);
         return $filename;
+    }
+
+    function sendEmail()
+    {
+        $mail = new FlipsideTicketRequestEmail($this);
+        if($mail->send_HTML() == FALSE)
+        {
+            echo $mail->ErrorInfo;
+            return FALSE;
+        }
+        return TRUE;
     }
 }
 ?>

@@ -153,6 +153,33 @@ class RequestAjax extends FlipJaxSecure
         }
     }
 
+    function post_email($id, $year)
+    {
+        $res = $this->validate_user_can_read_id($id);
+        if($res != self::SUCCESS)
+        {
+            return $res;
+        }
+        $request = new FlipsideTicketRequest($id, FALSE, $year);
+        if($request == FALSE)
+        {
+            return array('err_code' => self::INTERNAL_ERROR, 'reason' => "Failed to obtain request!");
+        }
+        else
+        {
+            $file_name = $request->sendEmail();
+            if($file_name == FALSE)
+            {
+                return array('err_code' => self::INTERNAL_ERROR, 'reason' => "Failed to send Email!");
+            }
+            else
+            {
+                $file_name = substr($file_name, 1);
+                return array('mail' => $file_name);
+            }
+        }
+    }
+
     function post($params)
     {
         if(!$this->is_logged_in())
@@ -165,6 +192,15 @@ class RequestAjax extends FlipJaxSecure
             if($res == self::SUCCESS)
             {
                 $res = $this->post_pdf($params['request_id'], $params['year']);
+            }
+            return $res;
+        }
+        if(isset($params['email']))
+        {
+            $res = $this->validate_params($params, array('request_id'=>'string', 'year'=>'int'));
+            if($res == self::SUCCESS)
+            {
+                $res = $this->post_email($params['request_id'], $params['year']);
             }
             return $res;
         }

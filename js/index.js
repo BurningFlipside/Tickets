@@ -23,6 +23,24 @@ function edit_request(control)
     window.location = 'request.php?request_id='+ids[0]+'&year='+ids[1];
 }
 
+function email_request_done(data)
+{
+    console.log(data);
+}
+
+function email_request(control)
+{
+    var jq = $(control);
+    var tmp = jq.attr('for');
+    var ids = tmp.split('_');
+    $.ajax({
+        url: '/tickets/ajax/request.php',
+        type: 'post',
+        data: 'request_id='+ids[0]+'&year='+ids[1]+'&email=1',
+        dataType: 'json',
+        success: email_request_done});
+}
+
 function download_request_done(data)
 {
     if(data.pdf != undefined)
