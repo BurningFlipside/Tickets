@@ -4,8 +4,15 @@ require_once('class.FlipSession.php');
 require_once('class.FlipsideTicketDB.php');
 class TicketPage extends SecurePage
 {
+    private $user;
+    private $is_admin;
+    private $is_data;
+
     function __construct($title)
     {
+        $this->user = FlipSession::get_user(TRUE);
+        $this->is_admin = $this->user->isInGroupNamed("TicketAdmins");
+        $this->is_data  = $this->user->isInGroupNamed("TicketTeam");
         parent::__construct($title);
         $this->add_tickets_css();
         $this->add_tickets_script();
@@ -13,8 +20,16 @@ class TicketPage extends SecurePage
         $this->add_links();
         if(FlipsideTicketDB::getTestMode())
         {
-             $this->add_notification('The ticket system is operating in test mode. Any entries made will be deleted before ticketing starts.', 
-                                   self::NOTIFICATION_WARNING);
+             if($this->is_admin)
+             {
+                 $this->add_notification('The ticket system is operating in test mode. Any entries made will be deleted before ticketing starts. To change modes turn off Test Mode on <a href="/tickets/_admin/vars.php" class="alert-link">this page</a>.',
+                                         self::NOTIFICATION_WARNING);
+             }
+             else
+             {
+                 $this->add_notification('The ticket system is operating in test mode. Any entries made will be deleted before ticketing starts.', 
+                                         self::NOTIFICATION_WARNING);
+             }
         }
     }
 
@@ -40,18 +55,16 @@ class TicketPage extends SecurePage
         }
         else
         {
-            $user = FlipSession::get_user(TRUE);
-            $is_admin = $user->isInGroupNamed("TicketAdmins");
-            $is_data  = $user->isInGroupNamed("TicketTeam");
-            if($is_admin)
+            if($this->is_admin)
             {
                 $admin_menu = array(
+                    'Donation Types'=>'https://secure.burningflipside.com/tickets/_admin/donation_type.php',
                     'Ticket Types'=>'https://secure.burningflipside.com/tickets/_admin/ticket_type.php',
                     'Variable Edit'=>'https://secure.burningflipside.com/tickets/_admin/vars.php'
                 );
                 $this->add_link('Admin', 'https://secure.burningflipside.com/tickets/_admin/', $admin_menu);
             }
-            if($is_data)
+            if($this->is_data)
             {
                 $this->add_link('Data Entry', 'https://secure.burningflipside.com/tickets/_admin/data.php');
             }
