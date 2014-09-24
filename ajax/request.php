@@ -167,15 +167,14 @@ class RequestAjax extends FlipJaxSecure
         }
         else
         {
-            $file_name = $request->sendEmail();
-            if($file_name == FALSE)
+            $mail = $request->sendEmail();
+            if($mail == FALSE)
             {
                 return array('err_code' => self::INTERNAL_ERROR, 'reason' => "Failed to send Email!");
             }
             else
             {
-                $file_name = substr($file_name, 1);
-                return array('mail' => $file_name);
+                return array('mail' => $mail);
             }
         }
     }

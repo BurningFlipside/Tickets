@@ -360,12 +360,8 @@ class FlipsideTicketRequest extends FlipsideDBObject
     function sendEmail()
     {
         $mail = new FlipsideTicketRequestEmail($this);
-        if($mail->send_HTML() == FALSE)
-        {
-            echo $mail->ErrorInfo;
-            return FALSE;
-        }
-        return TRUE;
+        $ret = $mail->send_HTML();
+        return $ret;
     }
 }
 ?>
