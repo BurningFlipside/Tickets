@@ -82,26 +82,32 @@ class FlipsideDonation extends FlipsideDBObject
         return parent::set_in_db($db, $op);
     }
 
-    function __construct($type, $data)
+    function __construct($type = null, $data = null)
     {
-        $this->type       = new FlipsideDonationType($type);
-        $this->request_id = $data['request_id'];
-        $this->year       = $data['year'];
-        $this->amount     = $data['amount'];
-        if(isset($data['disclose']))
+        if($type != null)
         {
-            if($data['disclose'] == 'on')
+            $this->type       = new FlipsideDonationType($type);
+        }
+        if($data != null)
+        {
+            $this->request_id = $data['request_id'];
+            $this->year       = $data['year'];
+            $this->amount     = $data['amount'];
+            if(isset($data['disclose']))
             {
-                $this->disclose = TRUE;
+                if($data['disclose'] == 'on')
+                {
+                    $this->disclose = TRUE;
+                }
+                else
+                {
+                    $this->disclose = $data['disclose'];
+                }
             }
             else
             {
-                $this->disclose = $data['disclose'];
+                $this->disclose = FALSE;
             }
-        }
-        else
-        {
-            $this->disclose = FALSE;
         }
     }
 
