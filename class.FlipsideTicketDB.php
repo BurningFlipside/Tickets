@@ -7,6 +7,7 @@ class FlipsideTicketDB extends FlipsideDB
 {
     protected static $test_mode = null;
     protected static $year = null;
+    protected static $max_buckets = null;
 
     function __construct()
     {
@@ -41,6 +42,36 @@ class FlipsideTicketDB extends FlipsideDB
             return FALSE;
         }
         return $data[0][0];
+    }
+
+    function getProblemRequestCount()
+    {
+        return 0;
+    }
+
+    function getRequestedTickets()
+    {
+        $ret = array();
+        $types = FlipsideTicketType::get_all_of_type($this);
+        for($i = 0; $i < count($types); $i++)
+        {
+            $ret[$i]['typeCode']    = $types[$i]->typeCode;
+            $ret[$i]['description'] = $types[$i]->description;
+            $stmt = $this->db->query('SELECT COUNT(*) FROM tblRequestedTickets WHERE YEAR = \''.self::getTicketYear().'\' AND type = \''.$types[$i]->typeCode.'\';');
+            if($stmt == FALSE)
+            {
+                $ret[$i]['count'] = 0;
+                continue;
+            }
+            $data = $stmt->fetchAll();
+            if($data == FALSE || !isset($data[0]) || !isset($data[0][0]))
+            {
+                $ret[$i]['count'] = 0;
+                continue;
+            }
+            $ret[$i]['count'] = $data[0][0];
+        }
+        return $ret;
     }
 
     function getTicketSoldCount()
@@ -101,6 +132,46 @@ class FlipsideTicketDB extends FlipsideDB
         return $this->delete('tblVariables', array('name'=>'=\''.$name.'\''));
     }
 
+    function getLongText($name)
+    {
+        $array = $this->select('tblLongText', 'value', array('name'=>'=\''.$name.'\''));
+        if($array == FALSE || !isset($array[0]))
+        {
+            return FALSE;
+        }
+        return $array[0]['value'];
+    }
+
+    function setLongText($name, $value)
+    {
+        $array = array('name'=>$name, 'value'=>$value);
+        return $this->replace_array('tblLongText', $array);
+    }
+
+    function getAllYears()
+    {
+        $stmt = $this->db->query('SELECT DISTINCT(year) FROM tblTicketRequest;');
+        if($stmt == FALSE)
+        {
+            return array(self::getTicketYear());
+        }
+        $data = $stmt->fetchAll();
+        if($data == FALSE)
+        {
+            return array(self::getTicketYear());
+        }
+        $ret = array();
+        for($i = 0; $i < count($data); $i++)
+        {
+            $ret[$i] = $data[$i]['year'];
+        }
+        if(!in_array(self::getTicketYear(), $ret))
+        {
+            array_push($ret, self::getTicketYear());
+        }
+        return $ret;
+    }
+
     static function getTicketTypeByType($type)
     {
         $db = new static();
@@ -125,6 +196,34 @@ class FlipsideTicketDB extends FlipsideDB
         }
         $db = new static();
         return $db->getVariable('test_mode');
+    }
+
+    static function getMaxBuckets()
+    {
+        if(self::$max_buckets != null)
+        {
+            return self::$max_buckets;
+        }
+        $db = new static();
+        return $db->getVariable('max_buckets');
+    }
+
+    static function get_var($name)
+    {
+        $db = new static();
+        return $db->getVariable($name);
+    }
+
+    static function get_long_text($long_test_name)
+    {
+        $db = new static();
+        return $db->getLongText($long_test_name);
+    }
+
+    static function set_long_text($long_test_name, $value)
+    {
+        $db = new static();
+        return $db->setLongText($long_test_name, $value);
     }
 }
 ?>
