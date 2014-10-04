@@ -142,7 +142,10 @@ function add_request_to_table(tbody, request)
     {
         for(i = 0; i < request.donations.length; i++)
         {
-            total += (request.donations[i].amount)*1;
+            if(request.donations[i].amount !== undefined)
+            {
+                total += (request.donations[i].amount)*1;
+            }
         }
     }
     cell.html('$'+total);
