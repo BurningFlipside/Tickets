@@ -1,12 +1,10 @@
 <?php
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
-require_once('class.TicketPage.php');
-$page = new TicketPage('Burning Flipside - Tickets');
+require_once('class.TicketAdminPage.php');
+$page = new TicketAdminPage('Burning Flipside - Tickets');
 
-$script_start_tag = $page->create_open_tag('script', array('src'=>'js/donation_type.js'));
-$script_close_tag = $page->create_close_tag('script');
-$page->add_head_tag($script_start_tag.$script_close_tag);
+$page->add_js_from_src('js/donation_type.js');
 
 $css_tag = $page->create_open_tag('link', array('rel'=>'stylesheet', 'href'=>'css/admin.css', 'type'=>'text/css'), true);
 $page->add_head_tag($css_tag);

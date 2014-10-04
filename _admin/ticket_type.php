@@ -1,8 +1,8 @@
 <?php
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
-require_once('class.TicketPage.php');
-$page = new TicketPage('Burning Flipside - Tickets');
+require_once('class.TicketAdminPage.php');
+$page = new TicketAdminPage('Burning Flipside - Tickets');
 
 $script_start_tag = $page->create_open_tag('script', array('src'=>'js/ticket_type.js'));
 $script_close_tag = $page->create_close_tag('script');

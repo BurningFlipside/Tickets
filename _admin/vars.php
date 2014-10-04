@@ -1,8 +1,8 @@
 <?php
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
-require_once('class.TicketPage.php');
-$page = new TicketPage('Burning Flipside - Tickets');
+require_once('class.TicketAdminPage.php');
+$page = new TicketAdminPage('Burning Flipside - Tickets');
 
 $script_start_tag = $page->create_open_tag('script', array('src'=>'/js/jquery.dataTables.js'));
 $script_close_tag = $page->create_close_tag('script');
@@ -17,20 +17,6 @@ $page->add_head_tag($script_start_tag.$script_close_tag);
 $css_tag = $page->create_open_tag('link', array('rel'=>'stylesheet', 'href'=>'/css/jquery.dataTables.css', 'type'=>'text/css'), true);
 $page->add_head_tag($css_tag);
 
-$css_tag = $page->create_open_tag('link', array('rel'=>'stylesheet', 'href'=>'css/admin.css', 'type'=>'text/css'), true);
-$page->add_head_tag($css_tag);
-
-$user = FlipSession::get_user(TRUE);
-$is_admin = $user->isInGroupNamed("TicketAdmins");
-if(!$is_admin)
-{
-    $page->body .= '
-<div id="content">
-    <h1>You must log in to access the Burning Flipside Ticket system!</h1>
-</div>';
-}
-else
-{
     $page->body .= '
 <div id="content">
     <ul class="nav nav-tabs" role="tablist" id="tabs">
@@ -45,10 +31,12 @@ else
                     <div class="form-group">
                         <label class="col-sm-2 control-label" for="year">Ticket Year</label>
                         <div class="col-sm-8">
-                            <input type="text" class="form-control" id="year" name="year"/>
-                        </div>
-                        <div class="col-sm-2">
-                            <button type="button" class="btn btn-link btn-sm" id="known_change_year" for="year" onclick="known_change(this)"><span class="glyphicon glyphicon-ok"></span></button>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="year" name="year"/>
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-default" id="known_change_year" for="year" onclick="known_change(this)"><span class="glyphicon glyphicon-ok"></span></button>
+                                </span>
+                            </div>
                         </div>
                     </div>
                     <div class="form-group">
@@ -92,10 +80,12 @@ else
                     <div class="form-group">
                         <label class="col-sm-2 control-label" for="max_tickets_per_request">Max Tickets Allowed Per Request</label>
                         <div class="col-sm-8">
-                            <input type="text" class="form-control" id="max_tickets_per_request" name="max_tickets_per_request"/>
-                        </div>
-                        <div class="col-sm-2">
-                            <button type="button" class="btn btn-link btn-sm" id="known_change_max_tickets_per_request" for="max_tickets_per_request" onclick="known_change(this)"><span class="glyphicon glyphicon-ok"></span></button>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="max_tickets_per_request" name="max_tickets_per_request"/>
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-default" id="known_change_year" for="year" onclick="known_change(this)"><span class="glyphicon glyphicon-ok"></span></button>
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </fieldset>
@@ -117,7 +107,6 @@ else
 </div>
 ';
 
-}
 $page->print_page();
 // vim: set tabstop=4 shiftwidth=4 expandtab:
 ?>

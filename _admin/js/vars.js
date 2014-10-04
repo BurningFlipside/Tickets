@@ -21,7 +21,7 @@ function add_row_to_table(tbody, name, value)
     }
     cell.appendTo(row);
     cell = $('<td/>');
-    cell.html('<input type="text" id="text_'+name+'" value="'+value+'"/><button type="button" class="btn btn-link btn-sm" id="change_'+name+'"><span class="glyphicon glyphicon-ok"></span></button>');
+    cell.html('<div class="input-group"><input class="form-control" type="text" id="text_'+name+'" value="'+value+'"/><span class="input-group-btn"><button type="button" class="btn btn-default" id="change_'+name+'"><span class="glyphicon glyphicon-ok"></span></button></span></div>');
     cell.appendTo(row);
     row.appendTo(tbody);
 }
