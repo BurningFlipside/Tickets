@@ -11,8 +11,16 @@ class TicketPage extends SecurePage
     function __construct($title)
     {
         $this->user = FlipSession::get_user(TRUE);
-        $this->is_admin = $this->user->isInGroupNamed("TicketAdmins");
-        $this->is_data  = $this->user->isInGroupNamed("TicketTeam");
+        if($this->user != FALSE)
+        {
+            $this->is_admin = $this->user->isInGroupNamed("TicketAdmins");
+            $this->is_data  = $this->user->isInGroupNamed("TicketTeam");
+        }
+        else
+        {
+            $this->is_admin = FALSE;
+            $this->is_data  = FALSE;
+        }
         parent::__construct($title);
         $this->add_tickets_css();
         $this->add_tickets_script();
@@ -57,12 +65,7 @@ class TicketPage extends SecurePage
         {
             if($this->is_admin)
             {
-                $admin_menu = array(
-                    'Donation Types'=>'https://secure.burningflipside.com/tickets/_admin/donation_type.php',
-                    'Ticket Types'=>'https://secure.burningflipside.com/tickets/_admin/ticket_type.php',
-                    'Variable Edit'=>'https://secure.burningflipside.com/tickets/_admin/vars.php'
-                );
-                $this->add_link('Admin', 'https://secure.burningflipside.com/tickets/_admin/', $admin_menu);
+                $this->add_link('Admin', 'https://secure.burningflipside.com/tickets/_admin/');
             }
             if($this->is_data)
             {
