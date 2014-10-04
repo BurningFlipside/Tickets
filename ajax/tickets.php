@@ -1,73 +1,78 @@
 <?php
-if($_SERVER["HTTPS"] != "on")
-{
-    header("Location: https://" . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"]);
-    exit();
-}
 require_once("class.FlipSession.php");
 require_once("class.FlipsideTicketDB.php");
-$user = FlipSession::get_user(TRUE);
-if($user == FALSE)
+require_once("class.FlipJax.php");
+class TicketsAjax extends FlipJaxSecure
 {
-    echo json_encode(array('error' => "Not Logged In!"));
-    die();
-}
-$is_admin = $user->isInGroupNamed("TicketAdmins");
-$is_data  = $user->isInGroupNamed("TicketTeam");
-
-function get_single_value_from_array($array)
-{
-    if(!is_array($array))
+    function get_sold_ticket_count()
     {
-        return $array;
-    }
-    if(isset($array[0]))
-    {
-        return $array[0];
-    }
-    else
-    {
-        return '';
-    }
-}
-
-if(strtoupper($_SERVER['REQUEST_METHOD']) == 'GET')
-{
-    if(isset($_GET['sold']))
-    {
-        if(!$is_admin && !$is_data)
+        $db = new FlipsideTicketDB();
+        $sold = $db->getTicketSoldCount();
+        $unsold = $db->getTicketUnsoldCount();
+        if($sold === FALSE)
         {
-            echo json_encode(array('error' => "Access Denied! User must be a member of TicketAdmins or TicketTeam!"));
+            return array('err_code' => self::INTERNAL_ERROR, 'reason' => "Failed to obtain sold ticket count!");
+        }
+        else if($unsold === FALSE)
+        {
+            return array('err_code' => self::INTERNAL_ERROR, 'reason' => "Failed to obtain unsold ticket count!");
         }
         else
         {
-            $db = new FlipsideTicketDB();
-            $sold = $db->getTicketSoldCount();
-            $unsold = $db->getTicketUnsoldCount();
-            if($sold === FALSE)
-            {
-                echo json_encode(array('error' => "Internal Error! Failed to obtain sold ticket count!"));
-            }
-            else if($unsold === FALSE)
-            {
-                echo json_encode(array('error' => "Internal Error! Failed to obtain unsold ticket count!"));
-            }
-            else
-            {
-                echo json_encode(array('success' => 0, 'sold' => $sold, 'unsold' => $unsold));
-            }
+            return array('sold' => $sold, 'unsold' => $unsold);
         }
     }
-    else
+
+    function get_type_counts($type = 'all')
     {
-        $data = array();
-        echo json_encode(array('data'=>$data));
+        $db = new FlipsideTicketDB();
+        $counts = $db->getRequestedTickets();
+        if($type != 'all')
+        {
+            $res = array();
+            for($i = 0; count($counts); $i++)
+            {
+                if($counts[$i]['typeCode'] == $type)
+                {
+                    array_push($res, $counts[$i]);
+                }
+            }
+            $counts = $res;
+        }
+        return $counts;
+    }
+
+    function get($params)
+    {
+        if(!$this->is_logged_in())
+        {
+            return array('err_code' => self::ACCESS_DENIED, 'reason' => "Not Logged In!");
+        }
+        if(isset($params['sold']))
+        {
+            if(!$this->user_in_group("TicketAdmins") && !$this->user_in_group("TicketTeam"))
+            {
+                return array('err_code' => self::ACCESS_DENIED, 'reason' => "User must be a member of TicketAdmins or TicketTeam!");
+            }
+            return $this->get_sold_ticket_count();
+        }
+        else if(isset($params['requested_type']))
+        {
+            if(!$this->user_in_group("TicketAdmins") && !$this->user_in_group("TicketTeam"))
+            {
+                return array('err_code' => self::ACCESS_DENIED, 'reason' => "User must be a member of TicketAdmins or TicketTeam!");
+            }
+            return $this->get_type_counts($params['requested_type']);
+        }
+        else
+        {
+            return array('data'=>array());
+        }
     }
 }
-else
-{
-    echo json_encode(array('error' => "Unrecognized Operation ".$_SERVER['REQUEST_METHOD']));
-    die();
-}
+
+$ajax = new TicketsAjax();
+$ajax->run();
+
 /* vim: set tabstop=4 shiftwidth=4 expandtab: */
 ?>
