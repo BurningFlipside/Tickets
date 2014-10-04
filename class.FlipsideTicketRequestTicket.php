@@ -52,6 +52,17 @@ class FlipsideTicketRequestTicket extends FlipsideDBObject
         return $type;
     }
 
+    static function test_ticket($request_id, $year, $num)
+    {
+        $type = new static();
+        $type->request_id = $request_id;
+        $type->year       = $year;
+        $type->first      = 'Test '.$num;
+        $type->last       = 'User';
+        $type->type       = new FlipsideTicketType('A');
+        return $type;
+    }
+
     protected function set_in_db($db, $op)
     {
         if($this->requested_ticket_id == null)
@@ -66,13 +77,16 @@ class FlipsideTicketRequestTicket extends FlipsideDBObject
         return parent::set_in_db($db, $op);
     }
 
-    function __construct($data)
+    function __construct($data = FALSE)
     {
-        $this->request_id = $data['request_id'];
-        $this->year       = $data['year'];
-        $this->first      = $data['first'];
-        $this->last       = $data['last'];
-        $this->type       = new FlipsideTicketType($data['type']);
+        if($data != FALSE)
+        {
+            $this->request_id = $data['request_id'];
+            $this->year       = $data['year'];
+            $this->first      = $data['first'];
+            $this->last       = $data['last'];
+            $this->type       = new FlipsideTicketType($data['type']);
+        }
     }
 
     function getCost()
