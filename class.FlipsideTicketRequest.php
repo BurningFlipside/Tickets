@@ -7,6 +7,7 @@ require_once('class.FlipsideTicketRequestEmail.php');
 class FlipsideTicketRequest extends FlipsideDBObject
 {
     protected $_tbl_name = 'tblTicketRequest';
+    protected $_sql_ignore = array('modifiedOn');
 
     public $request_id;
     public $year;
@@ -21,8 +22,16 @@ class FlipsideTicketRequest extends FlipsideDBObject
     public $st;
     public $modifiedBy;
     public $modifiedByIP;
+    public $modifiedOn;
     public $tickets;
     public $donations;
+    public $total_due;
+    public $total_received;
+    public $crit_vol;
+    public $protected;
+    public $comments;
+    public $bucket;
+    public $revisions;
 
     static function getRequestId($user)
     {
@@ -56,20 +65,28 @@ class FlipsideTicketRequest extends FlipsideDBObject
     static function populate_children($db, &$type)
     {
         $type->tickets = FlipsideTicketRequestTicket::select_from_db_multi_conditions($db, array('request_id'=>'='.$type->request_id, 'year'=>'='.$type->year));
-        if(!is_array($type->tickets))
+        if($type->tickets != FALSE && !is_array($type->tickets))
         {
             $type->tickets = array($type->tickets);
         }
         $type->donations = FlipsideDonation::select_from_db_multi_conditions($db, array('request_id'=>'='.$type->request_id, 'year'=>'='.$type->year));
-        if(!is_array($type->donations))
+        if($type->donations != FALSE && !is_array($type->donations))
         {
             $type->donations = array($type->donations);
+        }
+        if($type->revisions != FALSE)
+        {
+            $type->parse_revisions($type->revisions);
         }
     }
 
     static function select_from_db($db, $col, $value)
     {
         $type = parent::select_from_db($db, $col, $value);
+        if($type == FALSE)
+        {
+            return FALSE;
+        }
         if(is_array($type))
         {
             for($i = 0; $i < count($type); $i++)
@@ -84,9 +101,9 @@ class FlipsideTicketRequest extends FlipsideDBObject
         return $type;
     }
 
-    static function select_from_db_multi_conditions($db, $conds)
+    static function select_from_db_multi_conditions($db, $conds, $conj='AND')
     {
-        $type = parent::select_from_db_multi_conditions($db, $conds);
+        $type = parent::select_from_db_multi_conditions($db, $conds, $conj);
         if(is_array($type))
         {
             for($i = 0; $i < count($type); $i++)
@@ -99,6 +116,83 @@ class FlipsideTicketRequest extends FlipsideDBObject
             self::populate_children($db, $type);
         }
         return $type;
+    }
+
+    static function getAll($year)
+    {
+        $db = new FlipsideTicketDB();
+        $type = self::select_from_db($db, 'year', $year);
+        if($type == FALSE)
+        {
+            return FALSE;
+        }
+        if(!is_array($type))
+        {
+            $type = array($type);
+        }
+        return $type;
+    }
+
+    static function searchForRequests($type, $value)
+    {
+        $cond = array();
+        switch($type)
+        {
+            default:
+            case '*':
+                $cond['request_id'] = '=\''.$value.'\'';
+                $cond['givenName'] = ' LIKE \''.$value.'\'';
+                $cond['mail'] = ' LIKE \''.$value.'\'';
+                $cond['sn'] = ' LIKE \''.$value.'\'';
+                break;
+            case 'request_id':
+                $cond['request_id'] = '=\''.$value.'\'';
+                break;
+            case 'email':
+                $cond['mail'] = ' LIKE \''.$value.'\'';
+                break;
+            case 'first':
+                $cond['givenName'] = ' LIKE \''.$value.'\'';
+                break;
+            case 'last':
+                $cond['sn'] = ' LIKE \''.$value.'\'';
+                break;
+        }
+        $db = new FlipsideTicketDB();
+        $type = self::select_from_db_multi_conditions($db, $cond, 'OR');
+        return $type;
+    }
+
+    static function test_request()
+    {
+         $type = new static();
+         $type->request_id   = '000000';
+         $type->year         = FlipsideTicketDB::get_var('year');
+         $type->givenName    = 'Test';
+         $type->sn           = 'User';
+         $type->mail         = 'test@test.org';
+         $type->mobile       = '+1 (234) 567-8901';
+         $type->c            = 'US';
+         $type->street       = '123 Fake Street';
+         $type->zip          = '12345';
+         $type->l            = 'Fake Town';
+         $type->st           = 'TX';
+         $type->modifiedBy   = 'noone';
+         $type->modifiedByIP = '127.0.0.1';
+         $type->modifiedOn   = 'today';
+         $type->tickets      = array();
+         $type->donations    = array();
+
+         array_push($type->tickets, FlipsideTicketRequestTicket::test_ticket($type->request_id, $type->year, 1));
+         array_push($type->tickets, FlipsideTicketRequestTicket::test_ticket($type->request_id, $type->year, 2));
+         array_push($type->tickets, FlipsideTicketRequestTicket::test_ticket($type->request_id, $type->year, 3));
+         array_push($type->tickets, FlipsideTicketRequestTicket::test_ticket($type->request_id, $type->year, 4));
+
+         array_push($type->donations, FlipsideDonation::test_donation($type->request_id, $type->year, 1));
+
+         $type->total_due    = $type->getTotalAmount();
+
+         return $type;
     }
 
     function __construct($request_id='', $new = TRUE, $year = '')
@@ -144,6 +238,20 @@ class FlipsideTicketRequest extends FlipsideDBObject
         $this->st        = $data['st'];
         $this->populateTicketDataFromPOSTData($data);
         $this->populateDonationDataFromPOSTData($data);
+        $this->total_due = $this->getTotalAmount();
+        $old = new FlipsideTicketRequest($this->request_id, FALSE, $this->year);
+        if($old == FALSE)
+        {
+            $this->total_received = 0;
+            $this->crit_vol       = false;
+            $this->protected      = false;
+        }
+        else
+        {
+            $this->total_received = $old->total_received;
+            $this->crit_vol       = $old->crit_vol;
+            $this->protected      = $old->protected;
+        }
     }
 
     function populateTicketDataFromPOSTData($data)
@@ -362,6 +470,85 @@ class FlipsideTicketRequest extends FlipsideDBObject
         $mail = new FlipsideTicketRequestEmail($this);
         $ret = $mail->send_HTML();
         return $ret;
+    }
+
+    function get_random_id($min, $max)
+    {
+        return (int)(((double)mt_rand()/(mt_getrandmax()+1))*($max-$min+1)+$min);
+    }
+
+    function genBucket()
+    {
+        if($this->crit_vol)
+        {
+            $this->bucket = 0;
+        }
+        else if($this->protected)
+        {
+            $this->bucket = FlipsideTicketDB::getMaxBuckets() - 1;
+        }
+        else if($this->bucket === FALSE || $this->bucket == -1)
+        {
+            $this->bucket = $this->get_random_id(1, FlipsideTicketDB::getMaxBuckets() - 2);
+        }
+    }
+
+    function parse_revisions($revs)
+    {
+        $this->revisions = array();
+        if($revs == NULL)
+        {
+            return;
+        }
+        $this->revisions = json_decode($revs);
+    }
+
+    function flatten_array($array)
+    {
+        $children = array();
+        $ret = array();
+        for($i = 0; $i < count($array); $i++)
+        {
+            if(is_subclass_of($array[$i], 'FlipsideDBObject'))
+            {
+                $ret[$i] = $array[$i]->to_value_array(FALSE, $children);
+            }
+            else
+            {
+                $ret[$i] = $array[$i];
+            }
+        }
+        if(count($children) > 0)
+        {
+        }
+        return $ret;
+    }
+
+    function create_revisions()
+    {
+        $old = new FlipsideTicketRequest($this->request_id, FALSE, $this->year);
+        if($old == FALSE)
+        {
+            $this->revisions = NULL;
+            return;
+        }
+        $children = array();
+        $vals = $old->to_value_array(FALSE, $children);
+        foreach($children as $key => $data)
+        {
+            $flattened = $this->flatten_array($data);
+            $vals[$key] = $flattened;
+        }
+        $this->revisions = $vals['revisions'];
+        unset($vals['revisions']);
+        array_push($this->revisions, $vals);
+    }
+
+    function replace_in_db($db)
+    {
+        $this->create_revisions();
+        $this->revisions = json_encode($this->revisions);
+        parent::replace_in_db($db);
     }
 }
 ?>

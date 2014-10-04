@@ -21,6 +21,10 @@ class FlipsideDonation extends FlipsideDBObject
     static function select_from_db($db, $col, $value)
     {
         $type = parent::select_from_db($db, $col, $value);
+        if($type == FALSE)
+        {
+            return FALSE;
+        }
         if(is_array($type))
         {
             for($i = 0; $i < count($type); $i++)
@@ -38,6 +42,10 @@ class FlipsideDonation extends FlipsideDBObject
     static function select_from_db_multi_conditions($db, $conds)
     {
         $type = parent::select_from_db_multi_conditions($db, $conds);
+        if($type == FALSE)
+        {
+            return FALSE;
+        }
         if(is_array($type))
         {
             for($i = 0; $i < count($type); $i++)
@@ -49,6 +57,15 @@ class FlipsideDonation extends FlipsideDBObject
         {
             self::populate_children($db, $type);
         }
+        return $type;
+    }
+
+    static function test_donation($request_id, $year, $num)
+    {
+        $type = new static();
+        $type->request_id = $request_id;
+        $type->year       = $year;
+        $type->amount     = 10;
         return $type;
     }
 
