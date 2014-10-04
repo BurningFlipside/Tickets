@@ -40,7 +40,7 @@ class RequestAjax extends FlipJaxSecure
         return self::SUCCESS;
     }
 
-    function get_specific_request($id, $year)
+    function get_specific_request($id, $year, $gen_bucket = FALSE)
     {
         $res = $this->validate_user_can_read_id($id);
         if($res != self::SUCCESS)
@@ -59,6 +59,10 @@ class RequestAjax extends FlipJaxSecure
             if(!is_array($requests))
             {
                 $requests = array($requests);
+            }
+            if($gen_bucket)
+            {
+                $requests[0]->genBucket();
             }
             if($year != null)
             {
@@ -81,12 +85,31 @@ class RequestAjax extends FlipJaxSecure
 
     function get_request_id()
     {
-        $id = FlipsideTicketRequest::getRequestId($user);
+        $id = FlipsideTicketRequest::getRequestId(FlipSession::get_user());
         if($id == FALSE)
         {
             return array('err_code' => self::INTERNAL_ERROR, 'reason' => "Failed to obtain request ID for user!");
         }
         return array('id' => $id);
+    }
+
+    function get_search_requests($type, $value)
+    {
+        if($value == '')
+        {
+            return self::SUCCESS;
+        }
+        $requests = FlipsideTicketRequest::searchForRequests($type, $value);
+        if($requests == FALSE)
+        {
+            //No results is ok...
+            return self::SUCCESS;
+        }
+        if(!is_array($requests))
+        {
+            $requests = array($requests);
+        }
+        return array('requests'=>$requests);
     }
 
     function get($params)
@@ -105,7 +128,7 @@ class RequestAjax extends FlipJaxSecure
             {
                 $params['year'] = null;
             }
-            return $this->get_specific_request($params['request_id'], $params['year']);
+            return $this->get_specific_request($params['request_id'], $params['year'], isset($params['genbucket']));
         }
         else if(isset($params['full']))
         {
@@ -119,6 +142,23 @@ class RequestAjax extends FlipJaxSecure
                 return array('err_code' => self::INTERNAL_ERROR, 'reason' => "Failed to obtain request ID for user!");
             }
             return $this->get_specific_request($id, null);
+        }
+        else if(isset($params['all']))
+        {
+            if(!$this->user_in_group("TicketAdmins") && !$this->user_in_group("TicketTeam"))
+            {
+                return array('err_code' => self::ACCESS_DENIED, 'reason' => "User must be a member of TicketAdmins or TicketTeam!");
+            }
+            $data = FlipsideTicketRequest::getAll($params['all']);
+            if($data == FALSE)
+            {
+                return array('err_code' => self::INTERNAL_ERROR, 'reason' => "Failed to obtain requests!");
+            }
+            return array('data'=>$data);
+        }
+        else if(isset($params['type']) && isset($params['value']))
+        {
+            return $this->get_search_requests($params['type'], $params['value']);
         }
         else
         {
@@ -179,6 +219,46 @@ class RequestAjax extends FlipJaxSecure
         }
     }
 
+    function post_set_crit($id)
+    {
+        $res = $this->validate_user_can_read_id($id);
+        if($res != self::SUCCESS)
+        {
+            return $res;
+        }
+        $request = new FlipsideTicketRequest($id, FALSE);
+        if($request == FALSE)
+        {
+            return array('err_code' => self::INTERNAL_ERROR, 'reason' => "Failed to obtain request!");
+        }
+        else
+        {
+             $db = new FlipsideTicketDB();
+             $request->crit_vol = true;
+             $request->replace_in_db($db);
+        }
+    }
+
+    function post_unset_crit($id)
+    {
+        $res = $this->validate_user_can_read_id($id);
+        if($res != self::SUCCESS)
+        {
+            return $res;
+        }
+        $request = new FlipsideTicketRequest($id, FALSE);
+        if($request == FALSE)
+        {
+            return array('err_code' => self::INTERNAL_ERROR, 'reason' => "Failed to obtain request!");
+        }
+        else
+        {
+             $db = new FlipsideTicketDB();
+             $request->crit_vol = false;
+             $request->replace_in_db($db);
+        }
+    }
+
     function post($params)
     {
         if(!$this->is_logged_in())
@@ -203,6 +283,14 @@ class RequestAjax extends FlipJaxSecure
             }
             return $res;
         }
+        else if(isset($params['set_crit']))
+        {
+            return $this->post_set_crit($params['set_crit']);
+        }
+        else if(isset($params['unset_crit']))
+        {
+            return $this->post_unset_crit($params['unset_crit']);
+        }
         else
         {
             $res = $this->validate_params($params, array('request_id'=>'string', 'givenName'=>'string', 'sn'=>'string', 'mail'=>'string', 'mobile'=>'string',
@@ -218,7 +306,7 @@ class RequestAjax extends FlipJaxSecure
                 }
                 else
                 {
-                    $request->modifiedBy = $user->uid[0];
+                    $request->modifiedBy = FlipSession::get_user()->uid[0];
                     $request->modifiedByIP = $_SERVER['REMOTE_ADDR'];
                     $request->replace_in_db($db);
                     $res = self::SUCCESS;
