@@ -12,6 +12,7 @@ class FlipsideTicketRequestTicket extends FlipsideDBObject
     public $first;
     public $last;
     public $type;
+    public $test;
 
     static function populate_children($db, &$type)
     {
@@ -77,6 +78,21 @@ class FlipsideTicketRequestTicket extends FlipsideDBObject
         return parent::set_in_db($db, $op);
     }
 
+    static function getAll($year)
+    {
+        $db = new FlipsideTicketDB();
+        $type = self::select_from_db($db, 'year', $year);
+        if($type == FALSE)
+        {
+            return FALSE;
+        }
+        if(!is_array($type))
+        {
+            $type = array($type);
+        }
+        return $type;
+    }
+
     function __construct($data = FALSE)
     {
         if($data != FALSE)
@@ -107,6 +123,25 @@ class FlipsideTicketRequestTicket extends FlipsideDBObject
     static function type_to_type_code($type)
     {
         return $type->typeCode;
+    }
+
+    function __toString()
+    {
+        return $this->requested_ticket_id;
+    }
+
+    function delete($db)
+    {
+        return $db->delete($this->_tbl_name, array('requested_ticket_id'=>'=\''.$this->requested_ticket_id.'\''));
+    }
+
+    function replace_in_db($db)
+    {
+        if($db->getVariable('test_mode'))
+        {
+            $this->test = 1;
+        }
+        parent::replace_in_db($db);
     }
 }
 ?>

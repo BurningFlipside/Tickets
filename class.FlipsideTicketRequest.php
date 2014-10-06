@@ -2,7 +2,7 @@
 require_once('class.FlipsideTicketDB.php');
 require_once('class.FlipsideTicketRequestTicket.php');
 require_once('class.FlipsideDonation.php');
-require_once('mpdf/mpdf.php');
+require_once('class.FlipsideTicketRequestPDF.php');
 require_once('class.FlipsideTicketRequestEmail.php');
 class FlipsideTicketRequest extends FlipsideDBObject
 {
@@ -32,6 +32,7 @@ class FlipsideTicketRequest extends FlipsideDBObject
     public $comments;
     public $bucket;
     public $revisions;
+    public $test;
 
     static function getRequestId($user)
     {
@@ -193,6 +194,36 @@ class FlipsideTicketRequest extends FlipsideDBObject
          $type->total_due    = $type->getTotalAmount();
 
          return $type;
+    }
+
+    static function find_request($id)
+    {
+        $cond['request_id'] = '=\''.$id.'\'';
+        $cond['mail'] = ' LIKE \''.$id.'\'';
+        $db = new FlipsideTicketDB();
+        $type = self::select_from_db_multi_conditions($db, $cond, 'OR');
+        if($type === FALSE)
+        {
+            return FALSE;
+        }
+        $year = $db->getVariable('year');
+        if(!is_array($type))
+        {
+            $type = array($type);
+        }
+        $ret = array();
+        for($i = 0; $i < count($type); $i++)
+        {
+            if($type[$i]->year == $year)
+            {
+                array_push($ret, $type[$i]);
+            }
+        }
+        if(count($ret) == 0)
+        {
+            return FALSE;
+        }
+        return $ret;
     }
 
     function __construct($request_id='', $new = TRUE, $year = '')
@@ -382,87 +413,8 @@ class FlipsideTicketRequest extends FlipsideDBObject
 
     function generatePDF()
     {
-        $totalAmount = $this->getTotalAmount();
-
-        $mpdf = new mPDF();
-        $pdf = '
-            <table width="100%">
-                <tr>
-                    <td style="text-align: center"><h1>'.count($this->tickets).'</h1></td>
-                    <td style="text-align: center"><h2>Burning Flipside 2015 Ticket Request</h2></td>
-                    <td style="text-align: right"><barcode code="'.$this->request_id.'" type="C39"/></td>
-                </tr>
-                <tr>
-                    <td>Tickets</td>
-                    <td></td>
-                    <td style="text-align: center">'.$this->request_id.'</td>
-                </tr>
-            </table>
-            <hr/>
-            <strong>This page is your mail-in ticket request form.</strong><br/>
-            Instructions:<br/>
-            <ol>
-                <li>
-                    Get a money order, cashier\'s check or teller\'s check for $'.$totalAmount.' made out to Austin Artistic Reconstruction.<br/>
-                    <ol type="a">
-                        <li>Write '.$this->request_id.' in the memo field.</li>
-                        <li><strong>Make sure you save your payment receipt, you will need it for lost mail or returns.</strong></li>
-                        <li>Sign your money order if a signature is required.</li>
-                    </ol>
-                </li>
-                <li>Print this form on a sheet of white, 8.5x11 paper (standard letter-size paper).</li>
-                <li>
-                    Put this form (the whole page) and your money order / cashier\'s check / teller\'s check in a decorated, stamped envelope with your
-                    return address on it and address it to:<br/>
-                    &nbsp;&nbsp;&nbsp;&nbsp;Austin Artistic Reconstruction, Ticket Request<br/>
-                    &nbsp;&nbsp;&nbsp;&nbsp;P. O. Box 9987<br/>
-                    &nbsp;&nbsp;&nbsp;&nbsp;Austin, TX 78766<br/>
-                </li>
-                <li>Mail your envelope so that the postmark is no earlier than 01-15-2015 and not later than 01-23-2015.</li>
-            </ol>
-            Note: Tickets are limited. If we receive valid requests for more than 2,499 tickets, orders will be filled randomly from total requests. Any unfilled request will be returned.
-            <br/><br/>
-            <hr/>
-            <br/><br/>
-            <table style="margin-left:auto; margin-right:auto;">
-                <tr>
-                    <td>Total Due:</td><td>$'.$totalAmount.'</td>
-                    <td>Mail To:</td><td>'.$this->getMailingAddress('<br/>').'</td>
-                </tr>
-            </table>
-            <hr/>
-            <h3>Tickets</h3>
-            '.$this->getTicketsAsTable().'
-            <hr/>
-            <h3>Donations</h3>
-            '.$this->getDonationsAsTable().'
-            <hr/>
-        ';
-        $mpdf->WriteHTML($pdf);
-        $footer = '
-            <table style="width: 100%; border-collapse: collapse;">
-                <tr>
-                    <td style="text-align: center; border-right: 1 solid black"><h1>$'.$totalAmount.'</h1></td>
-                    <td style="text-align: center; border-right: 1 solid black">'.$this->givenName.' '.$this->sn.'</td>
-                    <td style="text-align: center; border-right: 1 solid black">'.$this->mail.'</td>
-                    <td style="text-align: center; border-right: 1 solid black">'.$this->mobile.'</td>
-                    <td style="text-align: right" rowspan="2">
-                        Request Rev ID:<br/>
-                        Request Date:<br/>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="text-align: center; border-right: 1 solid black">Total Due</td>
-                    <td style="text-align: center; border-right: 1 solid black">Requestor</td>
-                    <td style="text-align: center; border-right: 1 solid black">Email</td>
-                    <td style="text-align: center; border-right: 1 solid black">Phone</td>
-                </tr>
-            </table>
-        ';
-        $mpdf->SetHTMLFooter($footer);
-        $filename = '../tmp/'.hash('sha512', json_encode($this)).'.pdf';
-        $mpdf->Output($filename);
-        return $filename;
+        $pdf = new FlipsideTicketRequestPDF($this);
+        return $pdf->generatePDF();
     }
 
     function sendEmail()
@@ -544,11 +496,36 @@ class FlipsideTicketRequest extends FlipsideDBObject
         array_push($this->revisions, $vals);
     }
 
+    function remove_old_tickets()
+    {
+        $db = new FlipsideTicketDB();
+        $current = $this->tickets;
+        $all = FlipsideTicketRequestTicket::select_from_db_multi_conditions($db, array('request_id'=>'='.$this->request_id, 'year'=>'='.$this->year));
+        if($all == FALSE)
+        {
+            return;
+        }
+        if(!is_array($all))
+        {
+            $all = array($all);
+        }
+        $diff = array_diff($all, $current);
+        foreach($diff as $ticket)
+        {
+            $ticket->delete($db);
+        }
+    }
+
     function replace_in_db($db)
     {
         $this->create_revisions();
         $this->revisions = json_encode($this->revisions);
+        if($db->getVariable('test_mode'))
+        {
+            $this->test = 1;
+        }
         parent::replace_in_db($db);
+        $this->remove_old_tickets();
     }
 }
 ?>

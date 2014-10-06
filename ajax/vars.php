@@ -52,7 +52,30 @@ class VariableAjax extends FlipJaxSecure
             $res = $this->validate_params($params, array('name'=>'string', 'value'=>'string'));
             if($res == self::SUCCESS)
             {
-                if($db->setVariable($_POST['name'], $_POST['value']) === FALSE)
+                $db = new FlipsideTicketDB();
+                if($params['name'] == 'test_mode' && $params['value'] == '0')
+                {
+                    if((!isset($params['confirm']) || $params['confirm'] != '1'))
+                    {
+                        $res = array('err_code' => self::INTERNAL_ERROR, 'reason' => "Confirm not set! Use known variables tab to change this!");
+                    }
+                    else if($db->setVariable($params['name'], $params['value']) === FALSE)
+                    {
+                        $res = array('err_code' => self::INTERNAL_ERROR, 'reason' => "Failed to set variable!");
+                    }
+                    else
+                    {
+                        if($db->clearTestMode() === FALSE)
+                        {
+                            $res = array('err_code' => self::INTERNAL_ERROR, 'reason' => "Failed to clear all test mode data!");
+                        }
+                        else
+                        {
+                            $res = self::SUCCESS;
+                        }
+                    }
+                }
+                else if($db->setVariable($params['name'], $params['value']) === FALSE)
                 {
                     $res = array('err_code' => self::INTERNAL_ERROR, 'reason' => "Failed to set variable!");
                 }

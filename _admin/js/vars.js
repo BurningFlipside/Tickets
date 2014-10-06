@@ -73,6 +73,16 @@ function change_var()
             success: variable_set_done});
 }
 
+function unset_test_mode()
+{
+    $.ajax({
+            url: '/tickets/ajax/vars.php',
+            data: 'name=test_mode&value=0&confirm=1',
+            type: 'post',
+            dataType: 'json',
+            success: variable_set_done});
+}
+
 function known_change(control)
 {
     var jq = $(control);
@@ -87,6 +97,13 @@ function known_change(control)
     {
         var_name = jq.attr("name");
         var_value = jq.val();
+    }
+    if(var_name == 'test_mode' && var_value == '0')
+    {
+        var html = '<strong>Warning!</strong> Unsetting Test mode will delete all test entries are you sure you want to continue?';
+        var modal = create_modal('Test Mode', html, [{text:'Yes', method: unset_test_mode, close: true}, {text:'No', close: true}]);
+        modal.modal();
+        return;
     }
     $.ajax({
             url: '/tickets/ajax/vars.php',

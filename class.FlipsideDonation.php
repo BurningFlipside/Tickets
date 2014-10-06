@@ -12,6 +12,7 @@ class FlipsideDonation extends FlipsideDBObject
     public $type;
     public $amount;
     public $disclose;
+    public $test;
 
     static function populate_children($db, &$type)
     {
@@ -131,6 +132,15 @@ class FlipsideDonation extends FlipsideDBObject
     static function type_to_entity_name($type)
     {
         return $type->entityName;
+    }
+
+    function replace_in_db($db)
+    {
+        if($db->getVariable('test_mode'))
+        {
+            $this->test = 1;
+        }
+        parent::replace_in_db($db);
     }
 }
 ?>

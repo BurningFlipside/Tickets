@@ -172,6 +172,18 @@ class FlipsideTicketDB extends FlipsideDB
         return $ret;
     }
 
+    function clearTestMode()
+    {
+        $res = TRUE;
+        $rc = $this->delete('tblTicketRequest', array('test'=>'=\'1\''));
+        if($rc === FALSE) $res = FALSE;
+        $rc = $this->delete('tblRequestDonation', array('test'=>'=\'1\''));
+        if($rc === FALSE) $res = FALSE;
+        $rc = $this->delete('tblTicketRequest', array('test'=>'=\'1\''));
+        if($rc === FALSE) $res = FALSE;
+        return $res;
+    }
+
     static function getTicketTypeByType($type)
     {
         $db = new static();
