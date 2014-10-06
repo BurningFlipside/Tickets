@@ -2,14 +2,13 @@
 require_once('class.FlipsideTicketRequest.php');
 require_once('mpdf/mpdf.php');
 
-class FlipsideTicketRequestPDF extends FlipsideMail
+class FlipsideTicketRequestPDF
 {
     private $request;
     public  $source;
 
     function __construct($request, $source = FALSE)
     {
-        parent::__construct();
         if($request == FALSE)
         {
             $this->request = FlipsideTicketRequest::test_request();
