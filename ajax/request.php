@@ -156,6 +156,19 @@ class RequestAjax extends FlipJaxSecure
             }
             return array('data'=>$data);
         }
+        else if(isset($params['tickets']))
+        {
+            if(!$this->user_in_group("TicketAdmins") && !$this->user_in_group("TicketTeam"))
+            {
+                return array('err_code' => self::ACCESS_DENIED, 'reason' => "User must be a member of TicketAdmins or TicketTeam!");
+            }
+            $data = FlipsideTicketRequestTicket::getAll($params['tickets']);
+            if($data == FALSE)
+            {
+                return array('err_code' => self::INTERNAL_ERROR, 'reason' => "Failed to obtain requested tickets!");
+            }
+            return array('data'=>$data);
+        }
         else if(isset($params['type']) && isset($params['value']))
         {
             return $this->get_search_requests($params['type'], $params['value']);
@@ -187,7 +200,7 @@ class RequestAjax extends FlipJaxSecure
             }
             else
             {
-                $file_name = substr($file_name, 1);
+                $file_name = substr($file_name, strpos($file_name, 'tmp/'));
                 return array('pdf' => $file_name);
             }
         }
