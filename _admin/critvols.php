@@ -50,9 +50,32 @@ $page->body .= '
                     <div id="bulk" class="panel-collapse collapse">
                         <div class="panel-body">
                             <p>You can upload a file with a different request ID or email address seperated by new lines or commas. Each request will then be set to crit vol status. A summary of the actions taken both requests that were changed and requests that were not will be printed to the screen when it is done.</p>
-                            <form class="form-inline" role="form">
-                                Critvol File: <input class="form-control" type="file" name="file" id="file"/>
-                            </form>
+                            <div id="filehandler" style="border: 2px dotted #0B85A1; width: 400px; color: #92AAB0; text-align:left; vertical-align:middle; font-size: 2em;">
+                                Drag and Drop files here
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="result_dialog">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                                <h4 class="modal-title">Critical Volunteers Result</h4>
+                            </div>
+                            <div class="modal-body">
+                                <p class="bg-success">
+                                    <font style="font-size: 1.5em;">Successful Results: <span id="success_count"></span></font><br/>
+                                    <span id="successes"></span>
+                                </p>
+                                <p class="bg-danger">
+                                    <font style="font-size: 1.5em;">Failure Results: <span id="fail_count"></span></font><br/>
+                                    <span id="failures"></span>
+                                </p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            </div>
                         </div>
                     </div>
                 </div>
