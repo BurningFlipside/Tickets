@@ -402,6 +402,10 @@ function request_submit_done(data)
             'keyboard': false
         });
     }
+    else if(data.success !== undefined)
+    {
+        location = 'index.php';
+    }
     else
     {
         console.log(data);
