@@ -111,6 +111,10 @@ function upload_done(data)
     for(i = 0; i < json.success.length; i++)
     {
         $('#successes').append(json.success[i].token+' => '+json.success[i].name+'<br/>');
+        for(j = 0; j < json.success[i].tickets.length; j++)
+        {
+            $('#successes').append('&hellip;'+json.success[i].tickets[j].first+' '+json.success[i].tickets[j].last+'<br/>');
+        }
     }
     for(i = 0; i < json.fails.length; i++)
     {
@@ -129,6 +133,16 @@ function sendFileToServer(formData)
             cache: false,
             data: formData,
             success: upload_done}); 
+}
+
+function auto_critvol()
+{
+    $.ajax({
+        url:  "critvol_upload.php?auto=1",
+        type: "POST",
+        contentType: false,
+        processData: false,
+        success: upload_done});
 }
 
 function handleFileUpload(files, obj)

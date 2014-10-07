@@ -45,6 +45,17 @@ $page->body .= '
                 </div>
                 <div class="panel panel-default">
                     <div class="panel-heading">
+                        <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#auto">Automatic Critical Volunteers</a></h4>
+                    </div>
+                    <div id="auto" class="panel-collapse collapse">
+                        <div class="panel-body">
+                            <p>This option will automatically set all members of the AAR, AF, and Lead Groups to Critvol status.</p>
+                            <button class="btn btn-default" onclick="auto_critvol()">Automatically Set Critvols</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading">
                         <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#bulk">Bulk Critical Volunteers</a></h4>
                     </div>
                     <div id="bulk" class="panel-collapse collapse">
