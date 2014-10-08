@@ -56,7 +56,7 @@ while($token !== false)
     }
     else
     {
-        $request[0]->crit_vol = 1; 
+        $request[0]->crit_vol = 1;
         $request[0]->replace_in_db($db);
         array_push($success, array('token' => $token, 'name'=>$request[0]->givenName.' '.$request[0]->sn, 'tickets'=>$request[0]->tickets));
     }

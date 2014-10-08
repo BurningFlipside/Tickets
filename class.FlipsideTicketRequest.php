@@ -283,7 +283,7 @@ class FlipsideTicketRequest extends FlipsideDBObject
 
     function populateFromDB($db)
     {
-        $type = self::select_from_db_multi_conditions($db, array('request_id'=>'='.$this->request_id, 'year'=>'='.$this->year));
+        $type = self::select_from_db_multi_conditions($db, array('request_id'=>'=\''.$this->request_id.'\'', 'year'=>'='.$this->year));
         foreach(get_object_vars($type) as $key => $value)
         {
             $this->$key = $value;
@@ -526,6 +526,10 @@ class FlipsideTicketRequest extends FlipsideDBObject
             $vals[$key] = $flattened;
         }
         $this->revisions = $vals['revisions'];
+        if(!is_array($this->revisions))
+        {
+            $this->revisions = array();
+        }
         unset($vals['revisions']);
         array_push($this->revisions, $vals);
     }
@@ -557,6 +561,10 @@ class FlipsideTicketRequest extends FlipsideDBObject
         if($db->getVariable('test_mode'))
         {
             $this->test = 1;
+        }
+        if($this->donations == null)
+        {
+            $this->donations = array();
         }
         parent::replace_in_db($db);
         $this->remove_old_tickets();
