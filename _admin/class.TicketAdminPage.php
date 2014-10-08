@@ -11,8 +11,16 @@ class TicketAdminPage extends FlipPage
     function __construct($title)
     {
         $this->user = FlipSession::get_user(TRUE);
-        $this->is_admin = $this->user->isInGroupNamed("TicketAdmins");
-        $this->is_data  = $this->user->isInGroupNamed("TicketTeam");
+        if($this->user == FALSE)
+        {
+            $this->is_admin = FALSE;
+            $this->is_data  = FALSE;
+        }
+        else
+        {
+            $this->is_admin = $this->user->isInGroupNamed("TicketAdmins");
+            $this->is_data  = $this->user->isInGroupNamed("TicketTeam");
+        }
         parent::__construct($title);
         $this->add_tickets_css();
         $this->add_sites();
@@ -106,7 +114,7 @@ class TicketAdminPage extends FlipPage
             $sites .= '<li><a href="'.$site_name.'">'.$link.'</a></li>';
         }
         $aar = '';
-        if($this->user->isInGroupNamed("AAR"))
+        if($this->user != FALSE && $this->user->isInGroupNamed("AAR"))
         {
             $aar = '<li>
                         <a href="#"><span class="glyphicon glyphicon-fire"></span> AAR<span class="glyphicon arrow"></span></a>
@@ -208,9 +216,9 @@ class TicketAdminPage extends FlipPage
 
     function print_page()
     {
-        if(!$this->admin && !$this->is_data)
+        if($this->is_admin == FALSE && $this->is_data == FALSE)
         {
-            $page->body = '
+            $this->body = '
         <div class="row">
             <div class="col-lg-12">
                 <h1 class="page-header">You must log in to access the Burning Flipside Ticket system!</h1>
