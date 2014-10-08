@@ -25,7 +25,7 @@ else
 {
     $page->body .= '
 <div id="content">
-    <fieldset id="request_set">
+    <fieldset id="request_set" style="display: none;">
         <legend>Ticket Request</legend>
         <table id="requestList" class="table table-striped">
             <thead>
