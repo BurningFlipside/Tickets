@@ -22,6 +22,10 @@ class FlipsideTicketRequestTicket extends FlipsideDBObject
     static function select_from_db($db, $col, $value)
     {
         $type = parent::select_from_db($db, $col, $value);
+        if($type == FALSE)
+        {
+            return FALSE;
+        }
         if(is_array($type))
         {
             for($i = 0; $i < count($type); $i++)
