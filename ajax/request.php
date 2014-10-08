@@ -327,6 +327,7 @@ class RequestAjax extends FlipJaxSecure
                     $request->modifiedBy = FlipSession::get_user()->uid[0];
                     $request->modifiedByIP = $_SERVER['REMOTE_ADDR'];
                     $request->replace_in_db($db);
+                    $request->sendEmail();
                     $res = self::SUCCESS;
                 }
             }
