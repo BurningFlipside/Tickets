@@ -1,3 +1,6 @@
+var out_of_window = false;
+var test_mode = false;
+
 function tableDrawComplete()
 {
     if($("#ticketList").DataTable().data().length != 0)
@@ -130,28 +133,48 @@ function add_request_to_table(tbody, request)
     }
     cell.appendTo(row);
     cell = $('<td/>');
-    var total = 0;
-    if(request.tickets != null)
+    if(!out_of_window || test_mode)
     {
-        for(i = 0; i < request.tickets.length; i++)
+        var total = 0;
+        if(request.tickets != null)
         {
-            total += (request.tickets[i].type.cost)*1;
-        }
-    }
-    if(request.donations != null)
-    {
-        for(i = 0; i < request.donations.length; i++)
-        {
-            if(request.donations[i].amount !== undefined)
+            for(i = 0; i < request.tickets.length; i++)
             {
-                total += (request.donations[i].amount)*1;
+                total += (request.tickets[i].type.cost)*1;
             }
         }
+        if(request.donations != null)
+        {
+            for(i = 0; i < request.donations.length; i++)
+            {
+                if(request.donations[i].amount !== undefined)
+                {
+                    total += (request.donations[i].amount)*1;
+                }
+            }
+        }
+        cell.html('$'+total);
     }
-    cell.html('$'+total);
+    else
+    {
+        cell.attr('data-original-title', request.status.description);
+        cell.attr('data-container', 'body');
+        cell.attr('data-toggle', 'tooltip');
+        cell.attr('data-placement', 'top');
+        cell.html(request.status.name);
+    }
     cell.appendTo(row);
-    add_buttons_to_row(row, request.request_id, request.year);
+    if(!out_of_window || test_mode)
+    {
+        add_buttons_to_row(row, request.request_id, request.year);
+    }
+    else
+    {
+        cell = $('<td/>');
+        cell.appendTo(row);
+    }
     row.appendTo(tbody);
+    $('[data-original-title]').tooltip();
 }
 
 function get_requests_done(data)
@@ -226,10 +249,16 @@ function get_window_done(data)
             {
                 alert_div.append(' But test mode is enabled. Any requests created will be deleted before ticketing starts!');
                 $('#request_set').prepend(alert_div);
+                test_mode = true;
             }
             else
             {
                 $('#request_set').replaceWith(alert_div);
+            }
+            out_of_window = true;
+            if(!test_mode)
+            {
+                $('#requestList th:nth-child(4)').html("Request Status");
             }
         }
         if(now > mail_start && now < end)

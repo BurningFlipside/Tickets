@@ -29,6 +29,8 @@ class FlipsideTicketRequest extends FlipsideDBObject
     public $total_received;
     public $crit_vol;
     public $protected;
+    public $status;
+    public $private_status;
     public $comments;
     public $bucket;
     public $revisions;
@@ -526,6 +528,16 @@ class FlipsideTicketRequest extends FlipsideDBObject
         }
         parent::replace_in_db($db);
         $this->remove_old_tickets();
+    }
+
+    function get_status_info($db)
+    {
+        if($db == FALSE)
+        {
+            $db = new FlipsideTicketDB();
+        }
+        $ret = $db->select('tblRequestStatus', '*', array('status_id'=>'=\''.$this->status.'\''));
+        return $ret[0];
     }
 }
 ?>

@@ -70,6 +70,7 @@ class RequestAjax extends FlipJaxSecure
                 {
                     if($requests[$i]->year == $year)
                     {
+                        $requests[$i]->status = $requests[$i]->get_status_info($db);
                         return array('requests' => array($requests[$i]));
                     }
                 }
@@ -78,6 +79,10 @@ class RequestAjax extends FlipJaxSecure
             }
             else
             {
+                for($i = 0; $i < count($requests); $i++)
+                {
+                    $requests[$i]->status = $requests[$i]->get_status_info($db);
+                }
                 return array('requests' => $requests);
             }
         }
