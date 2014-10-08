@@ -29,19 +29,19 @@ class FlipsideTicketDB extends FlipsideDB
         return FALSE;
     }
 
-    function getRequestCount()
+    function getRequestCount($conds = FALSE)
     {
-        $stmt = $this->db->query('SELECT COUNT(*) FROM tblTicketRequest WHERE YEAR = \''.self::getTicketYear().'\';');
-        if($stmt == FALSE)
+        if($conds == FALSE)
+        {
+            $conds = array();
+        }
+        $conds['year'] = '=\''.self::getTicketYear().'\'';
+        $data = $this->select('tblTicketRequest', 'COUNT(*)', $conds);
+        if($data == FALSE || !isset($data[0]) || !isset($data[0]['COUNT(*)']))
         {
             return FALSE;
         }
-        $data = $stmt->fetchAll();
-        if($data == FALSE || !isset($data[0]) || !isset($data[0][0]))
-        {
-            return FALSE;
-        }
-        return $data[0][0];
+        return $data[0]['COUNT(*)'];
     }
 
     function getProblemRequestCount()

@@ -55,6 +55,16 @@ $page->add_head_tag($css_tag);
                         </div>
                     </div>
                 </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#ticket_counts">Tickets per Request</a></h4>
+                    </div>
+                    <div id="ticket_counts" class="panel-collapse collapse">
+                        <div class="panel-body">
+                            <canvas id="ticket_count_chart"></canvas>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

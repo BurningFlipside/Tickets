@@ -178,6 +178,19 @@ class RequestAjax extends FlipJaxSecure
         {
             return $this->get_search_requests($params['type'], $params['value']);
         }
+        else if(isset($params['meta']))
+        {
+            if(!$this->user_in_group("TicketAdmins"))
+            {
+                return array('err_code' => self::ACCESS_DENIED, 'reason' => "User must be a member of TicketAdmins!");
+            }
+            $data = FlipsideTicketRequest::getMetaData();
+            if($data == FALSE)
+            {
+                return array('err_code' => self::INTERNAL_ERROR, 'reason' => "Failed to obtain requests!");
+            }
+            return array('data'=>$data);
+        }
         else
         {
             return $this->get_request_id();

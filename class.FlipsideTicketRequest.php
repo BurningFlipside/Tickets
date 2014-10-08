@@ -228,6 +228,38 @@ class FlipsideTicketRequest extends FlipsideDBObject
         return $ret;
     }
 
+    static function getMetaData()
+    {
+        $data = array();
+        $db = new FlipsideTicketDB();
+        $data['total_request_count'] = $db->getRequestCount();
+        $data['protected_request_count'] = $db->getRequestCount(array('protected'=>'=\'1\''));
+        $data['crit_request_count'] = $db->getRequestCount(array('crit_vol'=>'=\'1\''));
+        $data['ticket_counts'] = array();
+        $all = self::select_from_db($db, 'year', $db->getVariable('year'));
+        if($all == FALSE)
+        {
+            return $data;
+        }
+        else if(!is_array($all))
+        {
+            $all = array($all);
+        }
+        for($i = 0; $i < count($all); $i++)
+        {
+            $ticket_count = count($all[$i]->tickets);
+            if(!isset($data['ticket_counts'][$ticket_count]))
+            {
+                $data['ticket_counts'][$ticket_count] = 1;
+            }
+            else
+            {
+                $data['ticket_counts'][$ticket_count]++;
+            }
+        }
+        return $data;
+    }
+
     function __construct($request_id='', $new = TRUE, $year = '')
     {
         $this->request_id = $request_id;
