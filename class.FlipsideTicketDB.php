@@ -179,7 +179,7 @@ class FlipsideTicketDB extends FlipsideDB
         if($rc === FALSE) $res = FALSE;
         $rc = $this->delete('tblRequestDonation', array('test'=>'=\'1\''));
         if($rc === FALSE) $res = FALSE;
-        $rc = $this->delete('tblTicketRequest', array('test'=>'=\'1\''));
+        $rc = $this->delete('tblRequestedTickets', array('test'=>'=\'1\''));
         if($rc === FALSE) $res = FALSE;
         return $res;
     }
