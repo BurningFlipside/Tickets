@@ -14,19 +14,36 @@ class FlipsideTicketDB extends FlipsideDB
         parent::__construct('tickets');
     }
 
-    function getRequestIdForUser($uesr)
+    function getRequestIdForUser($user)
     {
-        return FALSE;
+        $conds['mail'] = '=\''.$user->mail[0].'\'';
+        $data = $this->select('tblTicketRequest', 'request_id', $conds);
+        if($data == FALSE || !isset($data[0]) || !isset($data[0]['request_id']))
+        {
+            return FALSE;
+        }
+        return $data[0]['request_id'];
     }
 
     function getNewRequestId()
     {
-        return 'A0000001';
+        $data = $this->select('tblTicketRequest', 'MAX(request_id)');
+        if($data == FALSE || !isset($data[0]) || !isset($data[0]['MAX(request_id)']))
+        {
+            return FALSE;
+        }
+        $id = $data[0]['MAX(request_id)'];
+        if(strpos($id, 'A') === FALSE)
+        {
+            return 'A00000001';
+        }
+        $id++;
+        return $id;
     }
 
     function getRequestForUser($user)
     {
-        return FALSE;
+        return new FlipsideTicketRequest($this->getRequestIdForUser($user), FALSE, $this->getVariable('year'));
     }
 
     function getRequestCount($conds = FALSE)
