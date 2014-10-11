@@ -200,6 +200,7 @@ class TicketAdminPage extends FlipPage
                                           <li><a href="ticket_type.php">Ticket Types</a></li>
                                           <li><a href="vars.php">Edit Variables</a></li>
                                           <li><a href="pdf.php">Edit Request PDF</a></li>
+                                          <li><a href="users.php">Data Entry Users</a></li>
                                       </ul>
                                   </li>
                               </ul>
