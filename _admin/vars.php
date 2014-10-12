@@ -83,7 +83,18 @@ $page->add_head_tag($css_tag);
                             <div class="input-group">
                                 <input type="text" class="form-control" id="max_tickets_per_request" name="max_tickets_per_request"/>
                                 <span class="input-group-btn">
-                                    <button type="button" class="btn btn-default" id="known_change_year" for="year" onclick="known_change(this)"><span class="glyphicon glyphicon-ok"></span></button>
+                                    <button type="button" class="btn btn-default" id="known_change_max_tickets_per_request" for="max_tickets_per_request" onclick="known_change(this)"><span class="glyphicon glyphicon-ok"></span></button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" for="max_buckets">Number of Ticket Processing Buckets (min is 3)</label>
+                        <div class="col-sm-8">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="max_buckets" name="max_buckets"/>
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-default" id="known_change_max_buckets" for="max_buckets" onclick="known_change(this)"><span class="glyphicon glyphicon-ok"></span></button>
                                 </span>
                             </div>
                         </div>
