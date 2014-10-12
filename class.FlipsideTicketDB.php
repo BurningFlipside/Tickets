@@ -61,9 +61,19 @@ class FlipsideTicketDB extends FlipsideDB
         return $data[0]['COUNT(*)'];
     }
 
-    function getProblemRequestCount()
+    function getProblemRequestCount($conds = FALSE)
     {
-        return 0;
+        if($conds == FALSE)
+        {
+            $conds = array();
+        }
+        $conds['year'] = '=\''.self::getTicketYear().'\'';
+        $data = $this->select('vProblems', 'COUNT(*)', $conds);
+        if($data == FALSE || !isset($data[0]) || !isset($data[0]['COUNT(*)']))
+        {
+            return FALSE;
+        }
+        return $data[0]['COUNT(*)'];
     }
 
     function getRequestedTickets()
@@ -89,6 +99,20 @@ class FlipsideTicketDB extends FlipsideDB
             $ret[$i]['count'] = $data[0][0];
         }
         return $ret;
+    }
+
+    function getView($viewName, $year = FALSE)
+    {
+        if($year == FALSE)
+        {
+            $year = self::getTicketYear();
+        }
+        $stmt = $this->db->query("SELECT * FROM $viewName WHERE YEAR = '$year';");
+        if($stmt == FALSE)
+        {
+            return FALSE;
+        }
+        return $stmt->fetchAll();
     }
 
     function getTicketSoldCount()
