@@ -67,12 +67,12 @@ class FlipsideTicketRequest extends FlipsideDBObject
 
     static function populate_children($db, &$type)
     {
-        $type->tickets = FlipsideTicketRequestTicket::select_from_db_multi_conditions($db, array('request_id'=>'='.$type->request_id, 'year'=>'='.$type->year));
+        $type->tickets = FlipsideTicketRequestTicket::select_from_db_multi_conditions($db, array('request_id'=>'=\''.$type->request_id.'\'', 'year'=>'='.$type->year));
         if($type->tickets != FALSE && !is_array($type->tickets))
         {
             $type->tickets = array($type->tickets);
         }
-        $type->donations = FlipsideDonation::select_from_db_multi_conditions($db, array('request_id'=>'='.$type->request_id, 'year'=>'='.$type->year));
+        $type->donations = FlipsideDonation::select_from_db_multi_conditions($db, array('request_id'=>'=\''.$type->request_id.'\'', 'year'=>'='.$type->year));
         if($type->donations != FALSE && !is_array($type->donations))
         {
             $type->donations = array($type->donations);
@@ -538,7 +538,7 @@ class FlipsideTicketRequest extends FlipsideDBObject
     {
         $db = new FlipsideTicketDB();
         $current = $this->tickets;
-        $all = FlipsideTicketRequestTicket::select_from_db_multi_conditions($db, array('request_id'=>'='.$this->request_id, 'year'=>'='.$this->year));
+        $all = FlipsideTicketRequestTicket::select_from_db_multi_conditions($db, array('request_id'=>'=\''.$this->request_id.'\'', 'year'=>'='.$this->year));
         if($all == FALSE)
         {
             return;
