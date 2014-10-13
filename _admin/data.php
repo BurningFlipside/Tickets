@@ -64,6 +64,13 @@ $page->add_head_tag($css_tag);
                         </div>
                         <div class="clearfix visible-sm visible-md visible-lg"></div>
                         <div class="form-group">
+                            <label for="status" class="col-sm-2 control-label">Status:</label>
+                            <div class="col-sm-10">
+                                <select class="form-control" name="status" id="status"></select>
+                            </div>
+                        </div>
+                        <div class="clearfix visible-sm visible-md visible-lg"></div>
+                        <div class="form-group">
                             <label for="comments" class="col-sm-2 control-label">Comments:</label>
                             <div class="col-sm-10">
                                 <textarea class="form-control" name="comments" id="comments"></textarea>
