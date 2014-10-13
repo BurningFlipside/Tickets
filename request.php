@@ -124,7 +124,7 @@ else
             AAR, LLC to communicate important details about Burning Flipside before and after the event.<br/>
             <br/>
             Sign me up for the following lists:<br/>
-            <table id="email_lists">
+            <table id="email_lists" class="table">
             </table>
         </fieldset>
         <button type="submit" name="submit" class="btn btn-primary">Submit Request</button>

@@ -146,6 +146,20 @@ function float_value(i)
     }
 }
 
+function reeval_list()
+{
+    var list = $(this).data('list');
+    if(shouldBeChecked(list.request_condition))
+    {
+        $(this).prop('checked', true);
+    }
+}
+
+function reeval_lists()
+{
+    $('#email_lists :checkbox').each(reeval_list);
+}
+
 function ticket_type_changed(row)
 {
     var dropdown_value = $('#ticket_type_'+row).val();
@@ -176,6 +190,7 @@ function ticket_type_changed(row)
         }
     }
     calculate_ticket_subtotal();
+    reeval_lists();
 }
 
 function add_new_ticket()
@@ -343,14 +358,24 @@ function donations_ajax_done(data)
     }
 }
 
+function get_ticket_count(type)
+{
+    var values = $('[value="'+type+'"]').filter(':selected');
+    return values.length;
+}
+
 function shouldBeChecked(condition)
 {
     if(condition == '1')
     {
         return true;
     }
-    //TODO - Add more condition checking
-    return false;
+    var A = get_ticket_count('A');
+    var T = get_ticket_count('T');
+    var C = get_ticket_count('C');
+    var K = get_ticket_count('K');
+    var res = eval(condition);
+    return res;
 }
 
 function addListToRow(list, row)
@@ -363,6 +388,7 @@ function addListToRow(list, row)
     }
     checkbox.appendTo(cell);
     cell.appendTo(row);
+    checkbox.data('list', list);
 
     cell = $('<td/>');
     cell.append(list.name+' ');
@@ -401,6 +427,7 @@ function request_submit_done(data)
             'backdrop': 'static',
             'keyboard': false
         });
+        $('[title]').tooltip('hide');
     }
     else if(data.success !== undefined)
     {
