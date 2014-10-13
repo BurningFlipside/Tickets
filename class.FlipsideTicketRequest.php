@@ -39,7 +39,7 @@ class FlipsideTicketRequest extends FlipsideDBObject
     static function getRequestId($user)
     {
     	$db = new FlipsideTicketDB();
-        $id = $db->getRequestIdForUser($uesr);
+        $id = $db->getRequestIdForUser($user);
         if($id != FALSE)
         {
             return $id;
@@ -547,11 +547,15 @@ class FlipsideTicketRequest extends FlipsideDBObject
         {
             $all = array($all);
         }
-        $diff = array_diff($all, $current);
-        foreach($diff as $ticket)
+        try
         {
-            $ticket->delete($db);
+            $diff = array_diff($all, $current);
+            foreach($diff as $ticket)
+            {
+                $ticket->delete($db);
+            }
         }
+        catch(Exception $e) {}
     }
 
     function replace_in_db($db)
