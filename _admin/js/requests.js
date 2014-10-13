@@ -131,6 +131,18 @@ function row_clicked()
             new_row.appendTo($('#donation_table tbody'));
         }
     }
+    $('#total_due').val('$'+data.total_due);
+    $('#status').val(data.private_status);
+    $('#total_received').val(data.total_received)
+    $('#bucket').val(data.bucket);
+}
+
+function status_ajax_done(data)
+{
+    for(i = 0; i < data.data.length; i++)
+    {
+        $('#status').append('<option value="'+data.data[i].status_id+'">'+data.data[i].name+'</option>');
+    }
 }
 
 function init_page()
@@ -150,6 +162,10 @@ function init_page()
     $('#requests tbody').on('click', 'td.details-control', details_clicked);
     $('#requests tbody').on('click', 'td:not(.details-control)', row_clicked);
     change_year($('#year'));
+    $.ajax({
+        url: 'ajax/status.php',
+        dataType: 'json',
+        success: status_ajax_done});
 }
 
 $(init_page);

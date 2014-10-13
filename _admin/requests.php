@@ -167,6 +167,40 @@ for($i = 0; $i < count($years); $i++)
                                 </div>
                             </div>
                             <div class="clearfix visible-sm visible-md visible-lg"></div>
+                            <div class="form-group">
+                            <label for="total_due" class="col-sm-2 control-label">Total Due:</label>
+                            <div class="col-sm-10">
+                                <input class="form-control" type="text" name="total_due" id="total_due" readonly/>
+                            </div>
+                        </div>
+                        <div class="clearfix visible-sm visible-md visible-lg"></div>
+                        <div class="form-group">
+                            <label for="total_received" class="col-sm-2 control-label">Total Received:</label>
+                            <div class="col-sm-10">
+                                <input class="form-control" type="text" name="total_received" id="total_received" required/>
+                            </div>
+                        </div>
+                        <div class="clearfix visible-sm visible-md visible-lg"></div>
+                        <div class="form-group">
+                            <label for="status" class="col-sm-2 control-label">Status:</label>
+                            <div class="col-sm-10">
+                                <select class="form-control" name="status" id="status"></select>
+                            </div>
+                        </div>
+                        <div class="clearfix visible-sm visible-md visible-lg"></div>
+                        <div class="form-group">
+                            <label for="comments" class="col-sm-2 control-label">Comments:</label>
+                            <div class="col-sm-10">
+                                <textarea class="form-control" name="comments" id="comments"></textarea>
+                            </div>
+                        </div>
+                        <div class="clearfix visible-sm visible-md visible-lg"></div>
+                        <div class="form-group">
+                            <label for="bucket" class="col-sm-2 control-label">Bucket:</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" name="bucket" id="bucket" readonly/>
+                            </div>
+                        </div>
                        </form>
                   </div>
                   <div class="modal-footer"><button type="button" class="btn btn-default" onclick="save_request(this)">Ok</button><button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button></div></div></div></div>
