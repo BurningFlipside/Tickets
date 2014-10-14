@@ -72,8 +72,7 @@ class TicketPage extends SecurePage
                 $this->add_link('Data Entry', 'https://secure.burningflipside.com/tickets/_admin/data.php');
             }
             $secure_menu = array(
-                'Ticket Registration'=>'/tickets/index.php',
-                'Ticket Transfer'=>'/tickets/transfer.php',
+                'Ticket Registration or Transfer'=>'/tickets/index.php',
                 'Theme Camp Registration'=>'/theme_camp/registration.php',
                 'Art Project Registration'=>'/art/registration.php',
                 'Event Registration'=>'/event/index.php'
