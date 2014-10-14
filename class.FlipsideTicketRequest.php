@@ -310,12 +310,14 @@ class FlipsideTicketRequest extends FlipsideDBObject
             $this->total_received = 0;
             $this->crit_vol       = false;
             $this->protected      = false;
+            $this->bucket         = -1;
         }
         else
         {
             $this->total_received = $old->total_received;
             $this->crit_vol       = $old->crit_vol;
             $this->protected      = $old->protected;
+            $this->bucket         = $old->bucket;
         }
     }
 
