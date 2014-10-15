@@ -123,11 +123,20 @@ class TicketAdminPage extends FlipPage
                         </ul>
                     </li>';
         }
+        $log = '';
         $probs = '';
         $db = new FlipsideTicketDB();
         if($db->getProblemRequestCount() > 0)
         {
             $probs = '<span class="badge">'.$db->getProblemRequestCount().'</span>';
+        }
+        if(!FlipSession::is_logged_in())
+        {
+            $log = '<a href="https://profiles.burningflipside.com/login.php?return='.$this->current_url().'"><span class="glyphicon glyphicon-log-in"></span></a>';
+        }
+        else
+        {
+            $log = '<a href="https://profiles.burningflipside.com/logout.php"><span class="glyphicon glyphicon-log-out"></span></a>';
         }
         $this->body = '<div id="wrapper">
                   <nav class="navbar navbar-default navbar-static-top" role=navigation" style="margin-bottom: 0">
@@ -144,6 +153,8 @@ class TicketAdminPage extends FlipPage
                            <a href="/tickets/">
                               <span class="glyphicon glyphicon-home"></span>
                            </a>
+                          &nbsp;&nbsp;
+                          '.$log.'
                           <li class="dropdown">
                               <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                                   <span class="glyphicon glyphicon-link"></span>
@@ -217,7 +228,16 @@ class TicketAdminPage extends FlipPage
 
     function print_page()
     {
-        if($this->is_admin == FALSE && $this->is_data == FALSE)
+        if($this->user == FALSE)
+        {
+            $this->body = '
+        <div class="row">
+            <div class="col-lg-12">
+                <h1 class="page-header">You must <a href="https://profiles.burningflipside.com/login.php?return='.$this->current_url().'">log in <span class="glyphicon glyphicon-log-in"></span></a> to access the Burning Flipside Ticket system!</h1>
+            </div>
+        </div>';
+        }
+        else if($this->is_admin == FALSE && $this->is_data == FALSE)
         {
             $this->body = '
         <div class="row">
