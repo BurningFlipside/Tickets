@@ -381,7 +381,7 @@ function shouldBeChecked(condition)
 function addListToRow(list, row)
 {
     var cell = $('<td/>');
-    var checkbox = $('<input/>', {id: list.short_name, name: list.short_name, type: 'checkbox'});
+    var checkbox = $('<input/>', {id: 'list_'+list.short_name, name: 'list_'+list.short_name, type: 'checkbox'});
     if(shouldBeChecked(list.request_condition))
     {
         checkbox.attr('checked', 'true');
@@ -523,6 +523,7 @@ function init_request()
                 $('#donation_disclose_'+request.donations[i].type.entityName).prop('checked', true);
             }
         }
+        reeval_lists();
     }
     else
     {

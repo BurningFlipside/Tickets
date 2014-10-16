@@ -1,6 +1,7 @@
 <?php
 require_once("class.FlipsideTicketDB.php");
 require_once("class.FlipsideTicketRequest.php");
+require_once("class.FlipsideMailingListInfo.php");
 require_once("class.FlipJax.php");
 class RequestAjax extends FlipJaxSecure
 {
@@ -342,6 +343,14 @@ class RequestAjax extends FlipJaxSecure
                     $request->replace_in_db($db);
                     $request->sendEmail();
                     $res = self::SUCCESS;
+                    foreach($params as $key => $value)
+                    {
+                        $exp_key = explode('_', $key);
+                        if($exp_key[0] == 'list')
+                        {
+                            FlipsideMailingListInfo::SaveToFile($exp_key[1], $params['mail']);
+                        }
+                    }
                 }
             }
             return $res;

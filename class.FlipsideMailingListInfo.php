@@ -1,4 +1,5 @@
 <?php
+require_once("/var/www/secure_settings/class.FlipsideSettings.php");
 class FlipsideMailingListInfo
 {
     public $short_name;
@@ -23,6 +24,12 @@ class FlipsideMailingListInfo
         $list->request_condition = 'C > 0 || K > 0 || T > 0';
         array_push($ret, $list);
         return $ret;
+    }
+
+    static function SaveToFile($list, $email)
+    {
+        $data_dir = FlipsideSettings::$filesystem['data'];
+        file_put_contents($data_dir.'/'.$list, $email."\n", FILE_APPEND | LOCK_EX);
     }
 }
 ?>
