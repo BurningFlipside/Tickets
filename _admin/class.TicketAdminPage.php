@@ -192,6 +192,7 @@ class TicketAdminPage extends FlipPage
                                       <ul class="nav nav-second-level collapse">
                                           <li><a href="tickets.php">All Tickets</a></li>
                                           <li><a href="sold_tickets.php">Sold Tickets</a></li>
+                                          <li><a href="ticket_gen.php">Generate Tickets</a></li>
                                       </ul>
                                   </li>
                                   <li>

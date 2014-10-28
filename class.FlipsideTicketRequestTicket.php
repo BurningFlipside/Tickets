@@ -12,6 +12,7 @@ class FlipsideTicketRequestTicket extends FlipsideDBObject
     public $first;
     public $last;
     public $type;
+    public $assigned_id;
     public $test;
 
     static function populate_children($db, &$type)

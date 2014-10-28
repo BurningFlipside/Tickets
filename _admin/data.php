@@ -49,6 +49,7 @@ $page->add_head_tag($css_tag);
                         <h4 class="modal-title" id="modal_title"></h4>
                     </div>
                     <div class="modal-body">
+                        <form id="req_form">
                         <div class="form-group">
                             <label for="total_due" class="col-sm-2 control-label">Total Due:</label>
                             <div class="col-sm-10">
@@ -84,6 +85,9 @@ $page->add_head_tag($css_tag);
                             </div>
                         </div>
                         <div class="clearfix visible-sm visible-md visible-lg"></div>
+                        <input type="hidden" name="dataentry" value="true"/>
+                        <input type="hidden" name="id" id="request_id_hidden"/>
+                        </form>
                     </div>
                     <div class="modal-footer"><button type="button" class="btn btn-default" id="save_btn" onclick="save_request(this)">Ok</button><button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button></div>
                 </div>

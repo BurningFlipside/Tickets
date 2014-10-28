@@ -115,14 +115,40 @@ class FlipsideTicketDB extends FlipsideDB
         return $stmt->fetchAll();
     }
 
+    function getTicketCount($conds = FALSE)
+    {
+        if($conds == FALSE)
+        {
+            $conds = array();
+        }
+        if(!isset($conds['year']))
+        {
+            $conds['year'] = '=\''.self::getTicketYear().'\'';
+        }
+        $data = $this->select('tblTickets', 'COUNT(*)', $conds);
+        if($data == FALSE || !isset($data[0]) || !isset($data[0]['COUNT(*)']))
+        {
+            return FALSE;
+        }
+        return $data[0]['COUNT(*)'];
+    }
+
     function getTicketSoldCount()
     {
-        return 2000;
+        $conds = array('sold'=>'=\'1\'');
+        return $this->getTicketCount($conds);
     }
 
     function getTicketUnsoldCount()
     {
-        return 1000;
+        $conds = array('sold'=>'=\'0\'');
+        return $this->getTicketCount($conds);
+    }
+
+    function getTicketCountByType($type)
+    {
+        $conds = array('type'=>'=\''.$type.'\'');
+        return $this->getTicketCount($conds);
     }
 
     function getFlipsideTicketConstraints()

@@ -253,11 +253,10 @@ class RequestAjax extends FlipJaxSecure
 
     function post_set_crit($id)
     {
-        $res = $this->validate_user_can_read_id($id);
-        if($res != self::SUCCESS)
+        if(!$this->user_in_group("TicketAdmins"))
         {
-            return $res;
-        }
+            return array('err_code' => self::ACCESS_DENIED, 'reason' => "User must be a member of TicketAdmins!");
+        } 
         $request = new FlipsideTicketRequest($id, FALSE);
         if($request == FALSE)
         {
@@ -273,10 +272,9 @@ class RequestAjax extends FlipJaxSecure
 
     function post_unset_crit($id)
     {
-        $res = $this->validate_user_can_read_id($id);
-        if($res != self::SUCCESS)
+        if(!$this->user_in_group("TicketAdmins"))
         {
-            return $res;
+            return array('err_code' => self::ACCESS_DENIED, 'reason' => "User must be a member of TicketAdmins!");
         }
         $request = new FlipsideTicketRequest($id, FALSE);
         if($request == FALSE)
@@ -289,6 +287,28 @@ class RequestAjax extends FlipJaxSecure
              $request->crit_vol = false;
              $request->replace_in_db($db);
         }
+    }
+
+    function post_data_entry($params)
+    {
+        if(!$this->user_in_group("TicketAdmins") && !$this->user_in_group("TicketTeam"))
+        {
+            return array('err_code' => self::ACCESS_DENIED, 'reason' => "User must be a member of TicketAdmins or TicketTeam!");
+        }
+        $request = new FlipsideTicketRequest($params['id'], FALSE);
+        if($request == FALSE)
+        {
+            return array('err_code' => self::INTERNAL_ERROR, 'reason' => "Failed to obtain request!");
+        }
+        $request->total_received = $params['total_received'];
+        $request->private_status = $params['status'];
+        $request->comments = $params['comments'];
+        $db = new FlipsideTicketDB();
+        if($request->replace_in_db($db) === FALSE)
+        {
+            return array('err_code' => self::INTERNAL_ERROR, 'reason' => "Failed to save request!");
+        }
+        return self::SUCCESS;
     }
 
     function post($params)
@@ -322,6 +342,10 @@ class RequestAjax extends FlipJaxSecure
         else if(isset($params['unset_crit']))
         {
             return $this->post_unset_crit($params['unset_crit']);
+        }
+        else if(isset($params['dataentry']))
+        {
+            return $this->post_data_entry($params);
         }
         else
         {
