@@ -1,6 +1,7 @@
 <?php
 require_once("class.FlipSession.php");
 require_once("class.FlipsideTicketDB.php");
+require_once("class.Ticket.php");
 require_once("class.FlipJax.php");
 class TicketsAjax extends FlipJaxSecure
 {
@@ -42,6 +43,11 @@ class TicketsAjax extends FlipJaxSecure
         return $counts;
     }
 
+    function get_all_tickets()
+    {
+        return array('data'=>Ticket::getAll());
+    }
+
     function get($params)
     {
         if(!$this->is_logged_in())
@@ -64,9 +70,23 @@ class TicketsAjax extends FlipJaxSecure
             }
             return $this->get_type_counts($params['requested_type']);
         }
+        else if(isset($params['hash_to_words']))
+        {
+            return array('data'=>Ticket::hash_to_words($params['hash_to_words']));
+        }
+        else if(isset($params['all']))
+        {
+            if(!$this->user_in_group("TicketAdmins") && !$this->user_in_group("TicketTeam"))
+            {
+                return array('err_code' => self::ACCESS_DENIED, 'reason' => "User must be a member of TicketAdmins or TicketTeam!");
+            }
+            return $this->get_all_tickets();
+        }
         else
         {
-            return array('data'=>array());
+            $data = Ticket::get_tickets_for_user($this->get_user());
+            //Even if data is FALSE, return success because no tickets is fine
+            return array('data'=>$data);
         }
     }
 }

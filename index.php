@@ -152,7 +152,9 @@ else
                 <tr>
                     <th>First Name</th>
                     <th>Last Name</th>
+                    <th>Type</th>
                     <th>Short Ticket Code</th>
+                    <th></th>
                 </tr>
              </thead>
         </table>
@@ -163,6 +165,41 @@ else
             '.$faq_string.'
         </div>
     </fieldset>
+    <div class="modal fade in" aria-hidden="false" id="ticket_id_modal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                        <h4 class="modal-title" id="modal_title">Full Ticket ID</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-info" role="alert"><strong>Notice: </strong>Providing this ID to another person is as good as handing them your ticket. The Flipside Ticket Team will never ask for this information. Only provide this code to someone whom you are selling or giving the ticket to!</div>
+                        Long Ticket ID: <div class="well" id="long_id"></div><br/>
+                        Long Ticket ID (Word Method): <div class="well" id="long_id_words"></div><br/>
+                    </div>
+                    <div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Close</button></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade in" aria-hidden="false" id="ticket_view_modal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                        <h4 class="modal-title" id="modal_title">Ticket Information</h4>
+                    </div>
+                    <div class="modal-body">
+                        First Name: <span id="view_first_name"></span><br/>
+                        Last Name: <span id="view_last_name"></span><br/>
+                        Type: <span id="view_type"></span><br/>
+                        Short Code: <a href="#" id="view_short_code"></a><br/>
+                    </div>
+                    <div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Close</button></div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 ';
 

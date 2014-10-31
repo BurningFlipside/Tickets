@@ -7,12 +7,139 @@ function tableDrawComplete()
     {
         $("#ticket_set").show();
     }
+    if($(window).width() < 768)
+    {
+        $('#ticketList th:nth-child(3)').hide();
+        $('#ticketList td:nth-child(3)').hide();
+        $('#ticketList th:nth-child(4)').hide();
+        $('#ticketList td:nth-child(4)').hide();
+    }
+}
+
+function get_words_done(data)
+{
+    $('#long_id_words').html(data.data);
+}
+
+function show_long_id(hash)
+{
+    $('#long_id').html(hash);
+    $('#long_id_words').html('');
+    $.ajax({
+        url: '/tickets/ajax/tickets.php?hash_to_words='+hash,
+        type: 'get',
+        dataType: 'json',
+        success: get_words_done});
+    $('#ticket_view_modal').modal('hide');
+    $('#ticket_id_modal').modal('show');
+}
+
+function view_ticket(control)
+{
+    var jq = $(control);
+    var id = jq.attr('for');
+    var json = $("#ticketList").DataTable().ajax.json();
+    var ticket = null;
+    for(var i = 0; i < json.data.length; i++)
+    {
+        if(json.data[i].hash == id)
+        {
+            ticket = json.data[i];
+        }
+    }
+    if(ticket == null)
+    {
+        alert('Cannot find ticket');
+        return;
+    }
+    $('[title]').tooltip('hide');
+    $('#view_first_name').html(ticket.firstName);
+    $('#view_last_name').html(ticket.lastName);
+    $('#view_type').html(ticket.type);
+    $('#view_short_code').html(ticket.hash.substring(0,7)).attr('onclick', 'show_long_id(\''+ticket.hash+'\')');
+    $('#ticket_view_modal').modal('show');
+}
+
+function short_hash(data, type, row, meta)
+{
+    return '<a href="#" onclick="show_long_id(\''+data+'\')">'+data.substring(0,7)+'</a>';
+}
+
+function make_actions(data, type, row, meta)
+{
+    var res = '';
+    var view_options = {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'View Ticket Code', for: data, onclick: 'view_ticket(this)'};
+    var edit_options = {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Edit Ticket', for: data, onclick: 'edit_ticket(this)'};
+    var pdf_options =  {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Download PDF', for: data, onclick: 'download_ticket(this)'};
+    var transfer_options = {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Transfer Ticket', for: data, onclick: 'transfer_ticket(this)'};
+    if(browser_supports_font_face())
+    {
+        if($(window).width() < 768)
+        {
+            view_options.type = 'button';
+            var button = $('<button/>', view_options);
+            var glyph = $('<span/>', {class: 'glyphicon glyphicon-search'});
+            glyph.appendTo(button);
+            res += button.prop('outerHTML');
+        }
+        edit_options.type = 'button';
+        var button = $('<button/>', edit_options);
+        var glyph = $('<span/>', {class: 'glyphicon glyphicon-pencil'});
+        glyph.appendTo(button);
+        res += button.prop('outerHTML');
+
+        pdf_options.type = 'button';
+        button = $('<button/>', pdf_options);
+        glyph = $('<span/>', {class: 'glyphicon glyphicon-cloud-download'});
+        glyph.appendTo(button);
+        res += button.prop('outerHTML');
+
+        transfer_options.type = 'button';
+        button = $('<button/>', transfer_options);
+        glyph = $('<span/>', {class: 'glyphicon glyphicon-send'});
+        glyph.appendTo(button);
+        res += button.prop('outerHTML');
+    }
+    else
+    {
+        if($(window).width() < 768)
+        {
+            var link = $('<a/>', view_options);
+            link.append("View");
+            res += link.prop('outerHTML');
+            res += '|';
+        }
+        var link = $('<a/>', edit_options);
+        link.append("Edit");
+        res += link.prop('outerHTML');
+        res += '|';
+
+        link = $('<a/>', pdf_options);
+        link.append("Download");
+        res += link.prop('outerHTML');
+        res += '|';
+
+        link = $('<a/>', transfer_options);
+        link.append("Transfer");
+        res += link.prop('outerHTML');
+    }
+    return res;
 }
 
 function init_table()
 {
     $('#ticketList').dataTable({
-        "ajax": '/tickets/ajax/tickets.php'
+        "ajax": '/tickets/ajax/tickets.php',
+        columns: [
+            {'data': 'firstName'},
+            {'data': 'lastName'},
+            {'data': 'type'},
+            {'data': 'hash', 'render': short_hash},
+            {'data': 'hash', 'render': make_actions, 'class': 'action-buttons', 'orderable': false}
+        ],
+        paging: false,
+        info: false,
+        searching: false
     });
 
     $("#ticketList").on('draw.dt', tableDrawComplete);

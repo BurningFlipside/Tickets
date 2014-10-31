@@ -107,5 +107,54 @@ class Ticket extends FlipsideDBObject
         }
         return true;
     }
+
+    static function get_tickets_for_user($user)
+    {
+        $db = new FlipsideTicketDB();
+        $res = self::select_from_db($db, 'email', $user->mail[0]);
+        if($res === FALSE)
+        {
+            return FALSE;
+        }
+        else if(!is_array($res))
+        {
+            $res = array($res);
+        }
+        return $res;
+    }
+
+    static function getAll($year = FALSE)
+    {
+        $db = new FlipsideTicketDB();
+        if($year === FALSE)
+        {
+            $year = $db->getVariable('year');
+        }
+        $type = self::select_from_db($db, 'year', $year);
+        if($type == FALSE)
+        {
+            return FALSE;
+        }
+        if(!is_array($type))
+        {
+            $type = array($type);
+        }
+        return $type;
+    }
+
+    static function hash_to_words($hash)
+    {
+        require_once("static.words.php");
+        $res = substr($hash, 0, 8);
+        $remainder = gmp_init(substr($hash, 8), 16);
+        $my_words = '';
+        while(gmp_intval($remainder) > 0)
+        {
+            $pos = gmp_mod($remainder, 4096);
+            $my_words = $words[gmp_intval($pos)].' '.$my_words;
+            $remainder = gmp_div($remainder,4096);
+        }
+        return $res.' '.$my_words;
+    }
 }
 ?>
