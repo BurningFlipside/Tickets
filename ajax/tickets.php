@@ -5,6 +5,27 @@ require_once("class.Ticket.php");
 require_once("class.FlipJax.php");
 class TicketsAjax extends FlipJaxSecure
 {
+    function validate_user_can_read_hash($hash)
+    {
+        if($this->user_in_group("TicketAdmins") || $this->user_in_group("TicketTeam"))
+        {
+            return self::SUCCESS;
+        }
+        $tickets = Ticket::get_tickets_for_user($this->get_user());
+        if($tickets == FALSE)
+        {
+            return array('err_code' => self::INTERNAL_ERROR, 'reason' => "Failed to obtain ticket IDs for user!");
+        }
+        for($i = 0; $i < count($tickets); $i++)
+        {
+            if($tickets[$i]->hash == $hash)
+            {
+                return self::SUCCESS;
+            }
+        }
+        return array('err_code' => self::INTERNAL_ERROR, 'reason' => "Unauthorized!");
+    }
+
     function get_sold_ticket_count()
     {
         $db = new FlipsideTicketDB();
@@ -90,11 +111,47 @@ class TicketsAjax extends FlipJaxSecure
         }
     }
 
+    function post_pdf($hash, $year)
+    {
+        $res = $this->validate_user_can_read_hash($hash);
+        if($res != self::SUCCESS)
+        {
+            return $res;
+        }
+        $ticket = Ticket::get_ticket_by_hash($hash); 
+        if($ticket == FALSE)
+        {
+            return array('err_code' => self::INTERNAL_ERROR, 'reason' => "Failed to obtain ticket!");
+        }
+        else
+        {
+            $file_name = $ticket[0]->generatePDF();
+            if($file_name == FALSE)
+            {
+                return array('err_code' => self::INTERNAL_ERROR, 'reason' => "Failed to generate PDF!");
+            }
+            else
+            {
+                $file_name = substr($file_name, strpos($file_name, 'tmp/'));
+                return array('pdf' => $file_name);
+            }
+        }
+    }
+
     function post($params)
     {
         if(!$this->is_logged_in())
         {
             return array('err_code' => self::ACCESS_DENIED, 'reason' => "Not Logged In!");
+        }
+        else if(isset($params['pdf']))
+        {
+            $res = $this->validate_params($params, array('hash'=>'string', 'year'=>'int'));
+            if($res == self::SUCCESS)
+            {
+                $res = $this->post_pdf($params['hash'], $params['year']);
+            }
+            return $res; 
         }
         else
         {

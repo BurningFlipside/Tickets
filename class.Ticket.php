@@ -1,6 +1,7 @@
 <?php
 require_once('class.FlipsideDBObject.php');
 require_once('class.FlipsideTicketDB.php');
+require_once('class.TicketPDF.php');
 class Ticket extends FlipsideDBObject
 {
     protected $_tbl_name = 'tblTickets';
@@ -77,6 +78,12 @@ class Ticket extends FlipsideDBObject
         return parent::replace_in_db($db);
     }
 
+    function generatePDF()
+    {
+        $pdf = new TicketPDF($this);
+        return $pdf->generatePDF();
+    }
+
     static function create_new($count, $type='', $db=FALSE, $flush = TRUE)
     {
         if($db == FALSE)
@@ -112,6 +119,21 @@ class Ticket extends FlipsideDBObject
     {
         $db = new FlipsideTicketDB();
         $res = self::select_from_db($db, 'email', $user->mail[0]);
+        if($res === FALSE)
+        {
+            return FALSE;
+        }
+        else if(!is_array($res))
+        {
+            $res = array($res);
+        }
+        return $res;
+    }
+
+    static function get_ticket_by_hash($hash)
+    {
+        $db = new FlipsideTicketDB();
+        $res = self::select_from_db($db, 'hash', $hash);
         if($res === FALSE)
         {
             return FALSE;

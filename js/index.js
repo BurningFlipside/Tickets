@@ -100,13 +100,56 @@ function edit_ticket(control)
     $('[title]').tooltip('hide');
     $('#edit_first_name').val(ticket.firstName);
     $('#edit_last_name').val(ticket.lastName);
-    $('#show_short_code').val(ticket.hash.substring(0,7)).data('hash', id);
+    $('#show_short_code').val(ticket.hash.substring(0,8)).data('hash', id);
     $('#ticket_edit_modal').modal('show');
+}
+
+function download_ticket_done(data)
+{
+    if(data.pdf != undefined)
+    {
+        var win = window.open(data.pdf, '_blank');
+        if(win == undefined)
+        {
+            alert('Popups are blocked! Please enable popups.');
+        }
+    }
+}
+
+function download_ticket(control)
+{
+    var jq = $(control);
+    var id = jq.attr('for');
+    var ticket = get_ticket_data_by_hash(id);
+    if(ticket == null)
+    {
+        alert('Cannot find ticket');
+        return;
+    }
+    $.ajax({
+        url: '/tickets/ajax/tickets.php',
+        type: 'post',
+        data: 'hash='+ticket.hash+'&year='+ticket.year+'&pdf=1',
+        dataType: 'json',
+        success: download_ticket_done});
+}
+
+function transfer_ticket(control)
+{
+    var jq = $(control);
+    var id = jq.attr('for');
+    var ticket = get_ticket_data_by_hash(id);
+    if(ticket == null)
+    {
+        alert('Cannot find ticket');
+        return;
+    }
+    window.location = 'transfer.php?id='+ticket.hash;
 }
 
 function short_hash(data, type, row, meta)
 {
-    return '<a href="#" onclick="show_long_id(\''+data+'\')">'+data.substring(0,7)+'</a>';
+    return '<a href="#" onclick="show_long_id(\''+data+'\')">'+data.substring(0,8)+'</a>';
 }
 
 function make_actions(data, type, row, meta)
