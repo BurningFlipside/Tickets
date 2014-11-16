@@ -89,6 +89,23 @@ class TicketsAjax extends FlipJaxSecure
             return array('data'=>$data);
         }
     }
+
+    function post($params)
+    {
+        if(!$this->is_logged_in())
+        {
+            return array('err_code' => self::ACCESS_DENIED, 'reason' => "Not Logged In!");
+        }
+        else
+        {
+            $res = $this->validate_params($params, array('hash'=>'string','first'=>'string','last'=>'string'));
+            if($res == self::SUCCESS)
+            {
+                $res = $this->do_post_user_edit($params);
+            }
+            return $res;    
+        }
+    }
 }
 
 $ajax = new TicketsAjax();

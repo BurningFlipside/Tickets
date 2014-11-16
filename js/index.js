@@ -34,19 +34,25 @@ function show_long_id(hash)
     $('#ticket_id_modal').modal('show');
 }
 
-function view_ticket(control)
+function get_ticket_data_by_hash(hash)
 {
-    var jq = $(control);
-    var id = jq.attr('for');
     var json = $("#ticketList").DataTable().ajax.json();
     var ticket = null;
     for(var i = 0; i < json.data.length; i++)
     {
-        if(json.data[i].hash == id)
+        if(json.data[i].hash == hash)
         {
             ticket = json.data[i];
         }
     }
+    return ticket;
+}
+
+function view_ticket(control)
+{
+    var jq = $(control);
+    var id = jq.attr('for');
+    var ticket = get_ticket_data_by_hash(id);
     if(ticket == null)
     {
         alert('Cannot find ticket');
@@ -60,6 +66,44 @@ function view_ticket(control)
     $('#ticket_view_modal').modal('show');
 }
 
+function save_ticket_done(data)
+{
+    if(data.error !== undefined)
+    {
+        alert(data.error);
+        return;
+    }
+    console.log(data);
+}
+
+function save_ticket()
+{
+    $.ajax({
+        url: '/tickets/ajax/tickets.php',
+        type: 'post',
+        data: 'hash='+$('#show_short_code').data('hash')+'&first='+$('#edit_first_name').val()+'&last='+$('#edit_last_name').val(),
+        dataType: 'json',
+        success: save_ticket_done});
+    $('#ticket_edit_modal').modal('hide');
+}
+
+function edit_ticket(control)
+{
+    var jq = $(control);
+    var id = jq.attr('for');
+    var ticket = get_ticket_data_by_hash(id);
+    if(ticket == null)
+    {
+        alert('Cannot find ticket');
+        return;
+    }
+    $('[title]').tooltip('hide');
+    $('#edit_first_name').val(ticket.firstName);
+    $('#edit_last_name').val(ticket.lastName);
+    $('#show_short_code').val(ticket.hash.substring(0,7)).data('hash', id);
+    $('#ticket_edit_modal').modal('show');
+}
+
 function short_hash(data, type, row, meta)
 {
     return '<a href="#" onclick="show_long_id(\''+data+'\')">'+data.substring(0,7)+'</a>';
@@ -69,9 +113,9 @@ function make_actions(data, type, row, meta)
 {
     var res = '';
     var view_options = {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'View Ticket Code', for: data, onclick: 'view_ticket(this)'};
-    var edit_options = {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Edit Ticket', for: data, onclick: 'edit_ticket(this)'};
+    var edit_options = {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Edit Ticket<br/>Use this option to keep the ticket<br/>on your account but<br/>change the legal name.', 'data-html': true, for: data, onclick: 'edit_ticket(this)'};
     var pdf_options =  {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Download PDF', for: data, onclick: 'download_ticket(this)'};
-    var transfer_options = {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Transfer Ticket', for: data, onclick: 'transfer_ticket(this)'};
+    var transfer_options = {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Transfer Ticket<br/>Use this option to send<br/>the ticket to someone else', 'data-html': true, for: data, onclick: 'transfer_ticket(this)'};
     if(browser_supports_font_face())
     {
         if($(window).width() < 768)

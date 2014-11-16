@@ -156,5 +156,29 @@ class Ticket extends FlipsideDBObject
         }
         return $res.' '.$my_words;
     }
+
+    static function test_ticket()
+    {
+         $type = new static();
+         $type->year           = FlipsideTicketDB::get_var('year');
+         $type->firstNAme      = 'Test';
+         $type->lastName       = 'User';
+         $type->email          = 'test@test.org';
+         $type->request_id     = '000000';
+         $type->assigned       = TRUE;
+         $type->void           = FALSE;
+         $type->sold           = TRUE;
+         $type->used           = FALSE;
+         $type->discretionary  = FALSE;
+         $type->type           = 'A';
+         $type->guardian_first = null;
+         $type->guardian_last  = null;
+         $type->pool_id        = -1;
+
+         $db = new FlipsideTicketDB();
+         $type->generate_hash($db);
+
+         return $type;
+    }
 }
 ?>

@@ -200,6 +200,41 @@ else
             </div>
         </div>
     </div>
+    <div class="modal fade in" aria-hidden="false" id="ticket_edit_modal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                        <h4 class="modal-title" id="modal_title">Edit Ticket</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="show_short_code" class="col-sm-2 control-label">Short Code:</label>
+                            <div class="col-sm-10">
+                                <input class="form-control" type="text" name="show_short_code" id="show_short_code" readonly/>
+                            </div>
+                        </div>
+                        <div class="clearfix visible-sm visible-md visible-lg"></div>
+                        <div class="form-group">
+                            <label for="edit_first_name" class="col-sm-2 control-label">First Name:</label>
+                            <div class="col-sm-10">
+                                <input class="form-control" type="text" name="edit_first_name" id="edit_first_name"/>
+                            </div>
+                        </div>
+                        <div class="clearfix visible-sm visible-md visible-lg"></div>
+                        <div class="form-group">
+                            <label for="edit_last_name" class="col-sm-2 control-label">Last Name:</label>
+                            <div class="col-sm-10">
+                                <input class="form-control" type="text" name="edit_last_name" id="edit_last_name"/>
+                            </div>
+                        </div>
+                        <div class="clearfix visible-sm visible-md visible-lg"></div>
+                    </div>
+                    <div class="modal-footer"><button type="button" class="btn btn-default" onclick="save_ticket()">Save</button><button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button></div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 ';
 
