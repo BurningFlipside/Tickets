@@ -161,7 +161,7 @@ class Ticket extends FlipsideDBObject
     {
          $type = new static();
          $type->year           = FlipsideTicketDB::get_var('year');
-         $type->firstNAme      = 'Test';
+         $type->firstName      = 'Test';
          $type->lastName       = 'User';
          $type->email          = 'test@test.org';
          $type->request_id     = '000000';

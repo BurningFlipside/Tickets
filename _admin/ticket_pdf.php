@@ -25,9 +25,11 @@ $pdf = new TicketPDF(FALSE);
 </div>
 <div class="row">
     {$barcode}         => The barcode<br/>
+    {$transfer_qr}     => Ticket Transfer QR Code<br/>
     {$year}            => The ticket year<br/>
     {$ticket_id}       => The ticket id<br/>
     {$short_id}        => The short ticket id<br/>
+    {$word_code}       => The "word code" version of the full ticket id<br/>
     {$name}            => The ticketed person\'s full name<br/>
     {$email}           => The ticketed person\'s email<br/>
     {$type}            => The ticket type<br/>
