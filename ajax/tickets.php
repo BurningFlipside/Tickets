@@ -138,6 +138,27 @@ class TicketsAjax extends FlipJaxSecure
         }
     }
 
+    function do_post_ticket_edit($hash, $first, $last)
+    {
+        $res = $this->validate_user_can_read_hash($hash);
+        if($res != self::SUCCESS)
+        {
+            return $res;
+        }
+        $ticket = Ticket::get_ticket_by_hash($hash);
+        if($ticket == FALSE)
+        {
+            return array('err_code' => self::INTERNAL_ERROR, 'reason' => "Failed to obtain ticket!");
+        }
+        $ticket[0]->firstName = $first;
+        $ticket[0]->lastName  = $last;
+        if($ticket[0]->insert_to_db() === FALSE)
+        {
+            return array('err_code' => self::INTERNAL_ERROR, 'reason' => "Failed to update ticket!");
+        }
+        return self::SUCCESS;
+    }
+
     function post($params)
     {
         if(!$this->is_logged_in())
@@ -158,7 +179,7 @@ class TicketsAjax extends FlipJaxSecure
             $res = $this->validate_params($params, array('hash'=>'string','first'=>'string','last'=>'string'));
             if($res == self::SUCCESS)
             {
-                $res = $this->do_post_user_edit($params);
+                $res = $this->do_post_ticket_edit($params['hash'], $params['first'], $params['last']);
             }
             return $res;    
         }

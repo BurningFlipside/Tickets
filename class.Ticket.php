@@ -51,8 +51,12 @@ class Ticket extends FlipsideDBObject
         } while(self::hash_exists($this->hash, $db));
     }
 
-    function insert_to_db($db)
+    function insert_to_db($db = FALSE)
     {
+        if($db === FALSE)
+        {
+            $db = new FlipsideTicketDB();
+        }
         if($db->getVariable('test_mode'))
         {
             $this->test = 1;
@@ -66,7 +70,14 @@ class Ticket extends FlipsideDBObject
             $this->previous_hash = $this->hash;
             $this->generate_hash($db);
         }
-        return parent::insert_to_db($db);
+        $res = parent::insert_to_db($db);
+        if($res !== FALSE && ($this->previous_hash !== FALSE && $this->previous_hash !== null))
+        {
+            $hash_str = '\''.$this->previous_hash.'\'';
+            $db->sql_query('INSERT INTO tblTicketsHistory SELECT * FROM tblTickets WHERE hash='.$hash_str.'');
+            $db->delete($this->_tbl_name, array('hash'=> '='.$hash_str));
+        }
+        return $res;
     }
 
     function replace_in_db($db)
