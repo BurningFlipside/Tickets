@@ -2,6 +2,7 @@
 require_once('class.FlipsideDBObject.php');
 require_once('class.FlipsideTicketDB.php');
 require_once('class.TicketPDF.php');
+require_once('class.TicketEmail.php');
 class Ticket extends FlipsideDBObject
 {
     protected $_tbl_name = 'tblTickets';
@@ -93,6 +94,17 @@ class Ticket extends FlipsideDBObject
     {
         $pdf = new TicketPDF($this);
         return $pdf->generatePDF();
+    }
+
+    function send_email($email = FALSE, $attachment = TRUE)
+    {
+        if($email == FALSE)
+        {
+            $email = $this->email;
+        }
+        $mail = new TicketEmail($this, $email, $attachment);
+        $ret = $mail->send_HTML();
+        return $ret;
     }
 
     static function create_new($count, $type='', $db=FALSE, $flush = TRUE)

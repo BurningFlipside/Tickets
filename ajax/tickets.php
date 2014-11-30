@@ -159,6 +159,25 @@ class TicketsAjax extends FlipJaxSecure
         return self::SUCCESS;
     }
 
+    function post_transfer($hash, $email)
+    {
+        $res = $this->validate_user_can_read_hash($hash);
+        if($res != self::SUCCESS)
+        {
+            return $res;
+        }
+        $ticket = Ticket::get_ticket_by_hash($hash);
+        if($ticket == FALSE)
+        {
+            return array('err_code' => self::INTERNAL_ERROR, 'reason' => "Failed to obtain ticket!");
+        }
+        if($ticket[0]->send_email($email, FALSE) === FALSE)
+        {
+            return array('err_code' => self::INTERNAL_ERROR, 'reason' => "Failed to send email about ticket!");
+        }
+        return self::SUCCESS;
+    }
+
     function post($params)
     {
         if(!$this->is_logged_in())
@@ -173,6 +192,15 @@ class TicketsAjax extends FlipJaxSecure
                 $res = $this->post_pdf($params['hash'], $params['year']);
             }
             return $res; 
+        }
+        else if(isset($params['transfer']))
+        {
+            $res = $this->validate_params($params, array('hash'=>'string', 'email'=>'string'));
+            if($res == self::SUCCESS)
+            {
+                $res = $this->post_transfer($params['hash'], $params['email']);
+            }
+            return $res;
         }
         else
         {

@@ -73,7 +73,10 @@ function save_ticket_done(data)
         alert(data.error);
         return;
     }
-    console.log(data);
+    else
+    {
+        location.reload();
+    }
 }
 
 function save_ticket()
