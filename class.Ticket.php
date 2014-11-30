@@ -190,6 +190,33 @@ class Ticket extends FlipsideDBObject
         return $res.' '.$my_words;
     }
 
+    static function words_to_hash($my_words)
+    {
+        require_once("static.words.php");
+        $res = strtok($my_words, ' ');
+        $token = strtok(' ');
+        while($token !== FALSE)
+        {
+            $pos = array_search($token, $words);
+            $pos = dechex($pos);
+            if(strlen($pos) < 1)
+            {
+                $pos = '000';
+            }
+            if(strlen($pos) < 2)
+            {
+                $pos = '00'.$pos;
+            }
+            else if(strlen($pos) < 3)
+            {
+                $pos = '0'.$pos;
+            }
+            $res .= $pos;
+            $token = strtok(' ');
+        }
+        return $res;
+    }
+
     static function test_ticket()
     {
          $type = new static();
@@ -212,6 +239,23 @@ class Ticket extends FlipsideDBObject
          $type->generate_hash($db);
 
          return $type;
+    }
+
+    static function user_has_ticket($hash, $user)
+    {
+        $tickets = Ticket::get_tickets_for_user($user);
+        if($tickets == FALSE)
+        {
+            return FALSE;
+        }
+        for($i = 0; $i < count($tickets); $i++)
+        {
+            if($tickets[$i]->hash == $hash)
+            {
+                return TRUE;
+            }
+        }
+        return FALSE;
     }
 }
 ?>
