@@ -31,6 +31,16 @@ function transfer()
         success: change_name_done});
 }
 
+function claim_ticket()
+{
+    $.ajax({
+        url: '/tickets/ajax/tickets.php',
+        type: 'post',
+        data: 'claim=1&hash='+$('#hash').val()+'&first='+$('#firstName').val()+'&last='+$('#lastName').val(),
+        dataType: 'json',
+        success: change_name_done});
+}
+
 function init_page()
 {
     $('[title]').tooltip();

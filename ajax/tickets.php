@@ -178,6 +178,28 @@ class TicketsAjax extends FlipJaxSecure
         return self::SUCCESS;
     }
 
+    function post_claim($hash, $first, $last)
+    {
+        $ticket = Ticket::get_ticket_by_hash($hash);
+        if($ticket == FALSE)
+        {
+            return array('err_code' => self::INTERNAL_ERROR, 'reason' => "Failed to obtain ticket!");
+        }
+        $user = $this->get_user();
+        if($user == FALSE)
+        {
+            return array('err_code' => self::ACCESS_DENIED, 'reason' => "Not Logged In!");
+        }
+        $ticket[0]->firstName = $first;
+        $ticket[0]->lastName  = $last;
+        $ticket[0]->email     = $user->mail[0];
+        if($ticket[0]->insert_to_db() === FALSE)
+        {
+            return array('err_code' => self::INTERNAL_ERROR, 'reason' => "Failed to update ticket!");
+        }
+        return self::SUCCESS;
+    }
+
     function post($params)
     {
         if(!$this->is_logged_in())
@@ -199,6 +221,15 @@ class TicketsAjax extends FlipJaxSecure
             if($res == self::SUCCESS)
             {
                 $res = $this->post_transfer($params['hash'], $params['email']);
+            }
+            return $res;
+        }
+        else if(isset($params['claim']))
+        {
+            $res = $this->validate_params($params, array('hash'=>'string', 'first'=>'string', 'last'=>'string'));
+            if($res == self::SUCCESS)
+            {
+                $res = $this->post_claim($params['hash'], $params['first'], $params['last']);
             }
             return $res;
         }
