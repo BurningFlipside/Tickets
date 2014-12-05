@@ -30,7 +30,14 @@ if(!FlipSession::is_logged_in())
 {
     $page->body .= '
 <div id="content">
-    <h1>You must log in to access the Burning Flipside Ticket system!</h1>
+    <h1>Login</h1>
+    <form id="login_form" role="form" action="https://profiles.burningflipside.com/ajax/login.php" method="POST">
+        <input class="form-control" type="text" name="username" placeholder="Username or Email" required autofocus/>
+        <input class="form-control" type="password" name="password" placeholder="Password" required/>
+        <input type="hidden" name="return" value="'.$page->current_url().'"/>
+        <input type="hidden" name="redirect" value="1"/>
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Login</button>
+    </form>
 </div>';
 }
 else
