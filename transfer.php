@@ -18,7 +18,7 @@ function ticket_id_entry_form()
                     <div class="form-group">
                         <label for="id" class="col-sm-2 control-label">Ticket ID:</label>
                         <div class="col-sm-10">
-                            <input class="form-control" type="text" name="id" id="id" data-toggle="tooltip" data-placement="top" title="The ticket ID can take two forms. One form is a 32-character string of letters and numbers. The other form is an 8 character string followed by approximately 8 works. You may enter either value here."/>
+                            <input class="form-control" type="text" name="id" id="id" data-toggle="tooltip" data-placement="top" title="The ticket ID can take two forms. One form is a 32-character string of letters and numbers. The other form is an 8 character string followed by approximately 8 words. You may enter either value here."/>
                         </div>
                     </div>
                     <button type="submit" name="submit" class="btn btn-primary">Lookup Ticket</button>
