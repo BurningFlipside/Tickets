@@ -43,6 +43,9 @@ function generate_tickets($type, $count, $auto_pop, $db)
                     $new_tickets[$i]->guardian_first = $request->givenName;
                     $new_tickets[$i]->guardian_last  = $request->sn;
                 }
+                $new_tickets[$i]->queue_email();
+                $request->private_status = 6;
+                $request->replace_in_db($db);
             }
             $i++;
         }

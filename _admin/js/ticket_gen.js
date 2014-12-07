@@ -1,6 +1,12 @@
 function generation_done(data)
 {
-    console.log(data);
+    var str = 'Created '+data.passed+' tickets\n';
+    if(data.failed > 0)
+    {
+        str += 'Failed to create '+data.failed+' tickets';
+    }
+    alert(str);
+    location.reload();
 }
 
 function gen_tickets()

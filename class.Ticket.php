@@ -107,6 +107,12 @@ class Ticket extends FlipsideDBObject
         return $ret;
     }
 
+    function queue_email()
+    {
+        $mail = new TicketEmail($this, $this->email, TRUE);
+        return $mail->queue_email();
+    }
+
     static function create_new($count, $type='', $db=FALSE, $flush = TRUE)
     {
         if($db == FALSE)

@@ -15,6 +15,40 @@ class TicketEmail extends FlipsideMail
         $this->attach_pdf = $attachment;
     }
 
+    public function queue_email()
+    {
+        $filename = FlipsideSettings::$filesystem['data'].'/pending_ticket_emails';
+        $old_str  = file_get_contents($filename);
+        $array    = array();
+        if($old_str !== FALSE && strlen($old_str) > 0)
+        {
+            $array    = unserialize($old_str);
+        }
+        array_push($array, $this);
+        $str = serialize($array);
+        file_put_contents($filename, $str, LOCK_EX);
+    }
+
+    public static function pop_queued_emails($count)
+    {
+        $filename = FlipsideSettings::$filesystem['data'].'/pending_ticket_emails';
+        $old_str  = file_get_contents($filename);
+        $array    = unserialize($old_str);
+        if(count($array) <= $count)
+        {
+            unlink($filename);
+            return $array;
+        }
+        else
+        {
+            $ret = array_slice($array, 0, $count);
+            $array = array_slice($array, $count);
+            $str = serialize($array);
+            file_put_contents($filename, $str, LOCK_EX);
+            return $ret;
+        }
+    }
+
     public function send_HTML()
     {
         $this->From     = 'tickets@burningflipside.com';
@@ -38,11 +72,12 @@ class TicketEmail extends FlipsideMail
             '{$ticket_id}'      => $ticket_id,
             '{$short_id}'       => $short_id,
             '{$word_code}'      => $word_code,
+            '{$firstName}'      => $this->ticket->firstName,
             '{$name}'           => $name,
             '{$email}'          => $email,
             '{$type}'           => $type
         );
-        if($this->email == $ticket->email)
+        if($this->email == $this->ticket->email)
         {
             $this->addAddress($this->email, $this->ticket->firstName.' '.$this->ticket->lastName);
             $this->Subject = 'Burning Flipside '.$this->ticket->year.' Will Call Ticket Form';
