@@ -195,7 +195,7 @@ class Ticket extends FlipsideDBObject
 
     static function hash_to_words($hash)
     {
-        require_once("static.words.php");
+        require("static.words.php");
         $res = substr($hash, 0, 8);
         $remainder = gmp_init(substr($hash, 8), 16);
         $my_words = '';

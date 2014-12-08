@@ -540,6 +540,10 @@ class FlipsideTicketRequest extends FlipsideDBObject
     {
         $db = new FlipsideTicketDB();
         $current = $this->tickets;
+        if($current == FALSE || !is_array($current))
+        {
+            return;
+        }
         $all = FlipsideTicketRequestTicket::select_from_db_multi_conditions($db, array('request_id'=>'=\''.$this->request_id.'\'', 'year'=>'='.$this->year));
         if($all == FALSE)
         {

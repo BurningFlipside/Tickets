@@ -18,11 +18,14 @@ class TicketEmail extends FlipsideMail
     public function queue_email()
     {
         $filename = FlipsideSettings::$filesystem['data'].'/pending_ticket_emails';
-        $old_str  = file_get_contents($filename);
-        $array    = array();
-        if($old_str !== FALSE && strlen($old_str) > 0)
+        $array = array();
+        if(stat($filename) !== FALSE)
         {
-            $array    = unserialize($old_str);
+            $old_str  = file_get_contents($filename);
+            if($old_str !== FALSE && strlen($old_str) > 0)
+            {
+                $array    = unserialize($old_str);
+            }
         }
         array_push($array, $this);
         $str = serialize($array);
