@@ -19,7 +19,7 @@ class TicketEmail extends FlipsideMail
     {
         $filename = FlipsideSettings::$filesystem['data'].'/pending_ticket_emails';
         $array = array();
-        if(stat($filename) !== FALSE)
+        if(file_exists($filename))
         {
             $old_str  = file_get_contents($filename);
             if($old_str !== FALSE && strlen($old_str) > 0)

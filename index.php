@@ -159,6 +159,7 @@ else
              </thead>
         </table>
     </fieldset>
+    <a href="transfer.php">Transfer Tickets</a>
     <fieldset>
         <legend>FAQ</legend>
         <div class="panel-group" id="faq">
