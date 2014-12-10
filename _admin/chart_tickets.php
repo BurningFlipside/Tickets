@@ -29,6 +29,16 @@ $page->add_head_tag($css_tag);
         </div>
         <div class="row">
             <div class="panel-group" id="accordion">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#requestTypes">Ticket Types</a></h4>
+                    </div>
+                    <div id="ticketTypes" class="panel-collapse collapse in">
+                        <div class="panel-body">
+                            <canvas id="ticket_type_chart" height="150" width="300" style="width: 300px; height: 150px;"></canvas>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

@@ -101,6 +101,31 @@ class FlipsideTicketDB extends FlipsideDB
         return $ret;
     }
 
+    function getTickets()
+    {
+        $ret = array();
+        $types = FlipsideTicketType::get_all_of_type($this);
+        for($i = 0; $i < count($types); $i++)
+        {
+            $ret[$i]['typeCode']    = $types[$i]->typeCode;
+            $ret[$i]['description'] = $types[$i]->description;
+            $stmt = $this->db->query('SELECT COUNT(*) FROM tblTickets WHERE YEAR = \''.self::getTicketYear().'\' AND type = \''.$types[$i]->typeCode.'\';');
+            if($stmt == FALSE)
+            {
+                $ret[$i]['count'] = 0;
+                continue;
+            }
+            $data = $stmt->fetchAll();
+            if($data == FALSE || !isset($data[0]) || !isset($data[0][0]))
+            {
+                $ret[$i]['count'] = 0;
+                continue;
+            }
+            $ret[$i]['count'] = $data[0][0];
+        }
+        return $ret;
+    }
+
     function getView($viewName, $year = FALSE)
     {
         if($year == FALSE)

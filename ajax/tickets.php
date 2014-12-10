@@ -45,10 +45,17 @@ class TicketsAjax extends FlipJaxSecure
         }
     }
 
-    function get_type_counts($type = 'all')
+    function get_type_counts($type = 'all', $actual = TRUE)
     {
         $db = new FlipsideTicketDB();
-        $counts = $db->getRequestedTickets();
+        if($actual)
+        {
+            $counts = $db->getTickets();
+        }
+        else
+        {
+            $counts = $db->getRequestedTickets();
+        }
         if($type != 'all')
         {
             $res = array();
@@ -89,7 +96,15 @@ class TicketsAjax extends FlipJaxSecure
             {
                 return array('err_code' => self::ACCESS_DENIED, 'reason' => "User must be a member of TicketAdmins or TicketTeam!");
             }
-            return $this->get_type_counts($params['requested_type']);
+            return $this->get_type_counts($params['requested_type'], FALSE);
+        }
+        else if(isset($params['type']))
+        {
+            if(!$this->user_in_group("TicketAdmins") && !$this->user_in_group("TicketTeam"))
+            {
+                return array('err_code' => self::ACCESS_DENIED, 'reason' => "User must be a member of TicketAdmins or TicketTeam!");
+            }
+            return $this->get_type_counts($params['type'], TRUE);
         }
         else if(isset($params['hash_to_words']))
         {
