@@ -200,6 +200,19 @@ class TicketsAjax extends FlipJaxSecure
         return self::SUCCESS;
     }
 
+    function post_verify($hash)
+    {
+        $ticket = Ticket::get_by_short_code($hash);
+        if($ticket === FALSE)
+        {
+            return array('verified'=>0);
+        }
+        else
+        {
+            return array('verified'=>1);
+        }
+    }
+
     function post($params)
     {
         if(!$this->is_logged_in())
@@ -230,6 +243,15 @@ class TicketsAjax extends FlipJaxSecure
             if($res == self::SUCCESS)
             {
                 $res = $this->post_claim($params['hash'], $params['first'], $params['last']);
+            }
+            return $res;
+        }
+        else if(isset($params['verify_id']))
+        {
+            $res = $this->validate_params($params, array('verify_id'=>'string'));
+            if($res == self::SUCCESS)
+            {
+                $res = $this->post_verify($params['verify_id']);
             }
             return $res;
         }

@@ -174,6 +174,21 @@ class Ticket extends FlipsideDBObject
         return $res;
     }
 
+    static function get_by_short_code($hash)
+    {
+        $db = new FlipsideTicketDB();
+        $res = self::select_from_db_multi_conditions($db, array('hash' => ' LIKE \''.$hash.'%\''));
+        if($res === FALSE)
+        {
+            return FALSE;
+        }
+        else if(!is_array($res))
+        {
+            $res = array($res);
+        }
+        return $res;
+    }
+
     static function getAll($year = FALSE)
     {
         $db = new FlipsideTicketDB();
