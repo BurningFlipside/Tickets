@@ -45,6 +45,25 @@ class TicketsAjax extends FlipJaxSecure
         }
     }
 
+    function get_used_ticket_count()
+    {
+        $db = new FlipsideTicketDB();
+        $used = $db->getTicketUsedCount();
+        $unused = $db->getTicketUnusedCount();
+        if($used === FALSE)
+        {
+            return array('err_code' => self::INTERNAL_ERROR, 'reason' => "Failed to obtain used ticket count!");
+        }
+        else if($unused === FALSE)
+        {
+            return array('err_code' => self::INTERNAL_ERROR, 'reason' => "Failed to obtain unused ticket count!");
+        }
+        else
+        {
+            return array('used' => $used, 'unused' => $unused);
+        }
+    }
+
     function get_type_counts($type = 'all', $actual = TRUE)
     {
         $db = new FlipsideTicketDB();
@@ -89,6 +108,14 @@ class TicketsAjax extends FlipJaxSecure
                 return array('err_code' => self::ACCESS_DENIED, 'reason' => "User must be a member of TicketAdmins or TicketTeam!");
             }
             return $this->get_sold_ticket_count();
+        }
+        else if(isset($params['used']))
+        {
+            if(!$this->user_in_group("TicketAdmins") && !$this->user_in_group("TicketTeam"))
+            {
+                return array('err_code' => self::ACCESS_DENIED, 'reason' => "User must be a member of TicketAdmins or TicketTeam!");
+            }
+            return $this->get_used_ticket_count();
         }
         else if(isset($params['requested_type']))
         {

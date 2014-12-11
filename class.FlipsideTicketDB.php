@@ -170,6 +170,18 @@ class FlipsideTicketDB extends FlipsideDB
         return $this->getTicketCount($conds);
     }
 
+    function getTicketUsedCount()
+    {
+        $conds = array('used'=>'=\'1\'');
+        return $this->getTicketCount($conds);
+    }
+
+    function getTicketUnusedCount()
+    {
+        $conds = array('used'=>'=\'0\'');
+        return $this->getTicketCount($conds);
+    }
+
     function getTicketCountByType($type)
     {
         $conds = array('type'=>'=\''.$type.'\'');
