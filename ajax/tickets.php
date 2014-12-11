@@ -90,9 +90,22 @@ class TicketsAjax extends FlipJaxSecure
         return $counts;
     }
 
-    function get_all_tickets()
+    function get_all_tickets($meta = FALSE)
     {
-        return array('data'=>Ticket::getAll());
+        $tickets = Ticket::getAll();
+        if($meta != FALSE)
+        {
+            $tmp = array();
+            for($i = 0; $i < count($tickets); $i++)
+            {
+                if(strpos($meta, 'sold') !== FALSE && $tickets[$i]->sold == 1)
+                {
+                    array_push($tmp, $tickets[$i]);
+                }
+            }
+            $tickets = $tmp;
+        }
+        return array('data'=>$tickets);
     }
 
     function get($params)
@@ -143,7 +156,14 @@ class TicketsAjax extends FlipJaxSecure
             {
                 return array('err_code' => self::ACCESS_DENIED, 'reason' => "User must be a member of TicketAdmins or TicketTeam!");
             }
-            return $this->get_all_tickets();
+            if(isset($params['meta']))
+            {
+                return $this->get_all_tickets($params['meta']);
+            }
+            else
+            {
+                return $this->get_all_tickets();
+            }
         }
         else
         {
