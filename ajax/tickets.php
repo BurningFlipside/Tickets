@@ -165,6 +165,28 @@ class TicketsAjax extends FlipJaxSecure
                 return $this->get_all_tickets();
             }
         }
+        else if(isset($params['hash']))
+        {
+            if(!isset($params['with_history']) || $params['with_history'] == 0)
+            {
+                $res = $this->validate_user_can_read_hash($params['hash']);
+                if($res != self::SUCCESS)
+                {
+                    return $res;
+                }
+                $ticket = Ticket::get_ticket_by_hash($params['hash']);
+                return array('data'=>$ticket);
+            }
+            else
+            {
+                if(!$this->user_in_group("TicketAdmins") && !$this->user_in_group("TicketTeam"))
+                {
+                    return array('err_code' => self::ACCESS_DENIED, 'reason' => "User must be a member of TicketAdmins or TicketTeam!");
+                }
+                $tickets = Ticket::get_ticket_history_by_hash($params['hash']);
+                return array('data'=>$tickets);
+            }
+        }
         else
         {
             $data = Ticket::get_tickets_for_user($this->get_user());

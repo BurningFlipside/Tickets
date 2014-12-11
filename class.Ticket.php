@@ -113,6 +113,20 @@ class Ticket extends FlipsideDBObject
         return $mail->queue_email();
     }
 
+    function has_previous()
+    {
+        return ($this->previous_hash !== FALSE && $this->previous_hash !== null && strlen($this->previous_hash)>0);
+    }
+
+    function get_previous($db)
+    {
+        $ticket_data = $db->select('tblTicketsHistory', '*', array('hash'=>'=\''.$this->previous_hash.'\''));
+        if($ticket_data === FALSE) return FALSE;
+        $ticket = new static();
+        $ticket->set_object_vars($ticket_data[0]);
+        return $ticket;
+    }
+
     static function create_new($count, $type='', $db=FALSE, $flush = TRUE)
     {
         if($db == FALSE)
@@ -170,6 +184,64 @@ class Ticket extends FlipsideDBObject
         else if(!is_array($res))
         {
             $res = array($res);
+        }
+        return $res;
+    }
+
+    static function find_current_from_old_hash($hash, $db = FALSE)
+    {
+        if($db === FALSE)
+        {
+            $db = new FlipsideTicketDB();
+        }
+        //Try current first
+        $current = self::select_from_db($db, 'hash', $hash);
+        if($current === FALSE)
+        {
+             //Find this ticket by checking previous_hash
+            $current = self::select_from_db($db, 'previous_hash', $hash);
+            if($current == FALSE)
+            {
+                //Find this ticket in the history table and work forward
+                $ticket_data = $db->select('tblTicketsHistory', '*', array('previous_hash'=>'=\''.$hash.'\''));
+                if($ticket_data === FALSE)
+                {
+                    return FALSE;
+                }
+                $current = self::find_current_from_old_hash($ticket_data[0]['hash'], $db);
+            }
+        }
+        return $current;
+    }
+
+    static function get_ticket_history_by_hash($hash)
+    {
+        $db = new FlipsideTicketDB();
+        $current = self::find_current_from_old_hash($hash, $db);
+        if($current === FALSE)
+        {
+            return FALSE;
+        }
+        $res = array('current'=>$current, 'history'=>array());
+        $ticket = $current;
+        while($ticket->has_previous())
+        {
+            $ticket = $ticket->get_previous($db);
+            array_push($res['history'], $ticket);
+        }
+        if($current->hash == $hash)
+        {
+            $res['selected'] = -1;
+        }
+        else
+        {
+            for($i = 0; $i < count($res['history']); $i++)
+            {
+                if($res['history'][$i]->hash == $hash)
+                {
+                    $res['selected'] = $i;
+                }
+            }
         }
         return $res;
     }
