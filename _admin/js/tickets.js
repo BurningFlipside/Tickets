@@ -3,6 +3,15 @@ function short_hash(data, type, row, meta)
     return data.substring(0,7);
 }
 
+function table_searched()
+{
+    var dt_api = $('#tickets').DataTable();
+    if(dt_api.rows({'search':'applied'})[0].length == 0)
+    {
+        alert("TODO: Search backend for ticket ID because not already on client");
+    }
+}
+
 function init_page()
 {
     $('#tickets').dataTable({
@@ -14,6 +23,8 @@ function init_page()
             {'data': 'type'}
         ]
     });
+
+    $('#tickets').on('search.dt', table_searched);
 }
 
 $(init_page)
