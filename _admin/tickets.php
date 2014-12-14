@@ -126,6 +126,9 @@ if($ticket_count == 0 || $ticket_count === FALSE)
                             </div>
                             <div class="clearfix visible-sm visible-md visible-lg"></div>
                         </form>
+                        <div class="col-md-6" style="text-align: center;"><a onclick="prev_ticket()" style="cursor: pointer;" id="left_arrow"><span class="glyphicon glyphicon-chevron-left"></span></a></div>
+                        <div class="col-md-6" style="text-align: center;"><a onclick="next_ticket()" style="cursor: pointer;" id="right_arrow"><span class="glyphicon glyphicon-chevron-right"></span></a></div>
+                        <div class="clearfix visible-sm visible-md visible-lg"></div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
