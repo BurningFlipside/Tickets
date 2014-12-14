@@ -8,6 +8,7 @@ function short_hash(data, type, row, meta)
 
 function show_ticket_from_data(data)
 {
+    var read_only = true;
     if(data.selected == -1)
     {
         ticket = data.current;
@@ -20,6 +21,7 @@ function show_ticket_from_data(data)
         {
             $('#left_arrow').hide();
         }
+        read_only = false;
     }
     else
     {
@@ -46,6 +48,32 @@ function show_ticket_from_data(data)
     $('#sold').val(ticket.sold);
     $('#used').val(ticket.used);
     $('#void').val(ticket.void);
+    if(read_only)
+    {
+        $('#firstName').prop('disabled', true);
+        $('#lastName').prop('disabled', true);
+        $('#email').prop('disabled', true);
+        $('#request_id').prop('disabled', true);
+        $('#type').prop('disabled', true);
+        $('#guardian_first').prop('disabled', true);
+        $('#guardian_last').prop('disabled', true);
+        $('#sold').prop('disabled', true);
+        $('#used').prop('disabled', true);
+        $('#void').prop('disabled', true);
+    }
+    else
+    {
+        $('#firstName').prop('disabled', false);
+        $('#lastName').prop('disabled', false);
+        $('#email').prop('disabled', false);
+        $('#request_id').prop('disabled', false);
+        $('#type').prop('disabled', false);
+        $('#guardian_first').prop('disabled', false);
+        $('#guardian_last').prop('disabled', false);
+        $('#sold').prop('disabled', false);
+        $('#used').prop('disabled', false);
+        $('#void').prop('disabled', false);
+    }
     $('#ticket_modal').modal('show');
     console.log(data);
 }
