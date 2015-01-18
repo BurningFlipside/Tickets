@@ -232,6 +232,7 @@ function delete_ticket()
     button.removeAttr('disabled');
     var cell = button.parent();
     cell.tooltip('destroy');
+    calculate_ticket_subtotal();
 }
 
 function donation_amount_changed(elem)

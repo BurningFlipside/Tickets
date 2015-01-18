@@ -26,7 +26,7 @@ class FlipsideTicketRequestEmail extends FlipsideMail
                 <body>
                 We\'ve received your ticket registration for Burning Flipside '.$this->request->year.' and your Ticket Request form for mailing in with your payment is attached. 
                 <b>Please print the Ticket Request form (PDF) and follow the instructions on it to complete your ticket request.</b><br><br>
-                Reminder:  The dates for mailing your ticket request envelope are 01-15-2014 through 01-23-2014. Your postmark must be within that date range.<br><br>
+                Reminder:  The dates for mailing your ticket request envelope are 01-07-2015 through 01-22-2015. Your postmark must be within that date range.<br><br>
                 If you need to update your ticket registration before mailing in your ticket request, return to <a href="https://secure.burningflipside.com/tickets/">secure.burningflipside.com/tickets/</a>.<br><br>
                 You will receive a confirmation message each time you Save your online ticket registration. Be sure to mail in the most recent Ticket Request form (check the Last Updated time on the form if you are unsure).<br><br>
                 Caution: We recommend that you use a form of payment you can easily return for a refund if necessary. <br><br>
@@ -38,7 +38,7 @@ class FlipsideTicketRequestEmail extends FlipsideMail
         $this->AltBody = '
             We\'ve received your ticket registration for Burning Flipside '.$this->request->year.' and your Ticket Request form for mailing in with your payment is attached.
             Please print the Ticket Request form (PDF) and follow the instructions on it to complete your ticket request.
-            Reminder:  The dates for mailing your ticket request envelope are 01-15-2014 through 01-23-2014. Your postmark must be within that date range.
+            Reminder:  The dates for mailing your ticket request envelope are 01-07-2015 through 01-22-2015. Your postmark must be within that date range.
             If you need to update your ticket registration before mailing in your ticket request, return to https://secure.burningflipside.com/tickets/.
             You will receive a confirmation message each time you Save your online ticket registration. Be sure to mail in the most recent Ticket Request form (check the Last Updated time on the form if you are unsure).
             Caution: We recommend that you use a form of payment you can easily return for a refund if necessary.

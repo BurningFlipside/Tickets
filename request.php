@@ -138,7 +138,7 @@ else
                 <h4 id="minor-title" class="modal-title">Important Information About Minors At Burning Flipside</h4>
             </div>
             <div class="modal-body">
-                <p>Your ticket request indicates that you are brining a minor child to Burning Flipside. If this is a mistake pleae hit
+                <p>Your ticket request indicates that you are brining a minor child to Burning Flipside. If this is a mistake please hit
                 the correct button below and fix your request. If this is not a mistake and you are bringing minor children to Burning Flipside 
                 then you must read the content below.</p>
                 <ul>
