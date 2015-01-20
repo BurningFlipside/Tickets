@@ -454,9 +454,11 @@ function get_window_done(data)
     {
         var my_window = data.window;
         var now = Date.now();
-        var start = new Date(my_window.request_start_date);
-        var end = new Date(my_window.request_stop_date);
-        var mail_start = new Date(my_window.mail_start_date);
+        var start = new Date(my_window.request_start_date+" GMT-0600");
+        var end = new Date(my_window.request_stop_date+" GMT-0600");
+        var mail_start = new Date(my_window.mail_start_date+" GMT-0600");
+        end.setHours(23);
+        end.setMinutes(59);
         if(now < start || now > end)
         {
             var alert_div = $('<div/>', {class: 'alert alert-info', role: 'alert'});
@@ -481,9 +483,17 @@ function get_window_done(data)
         if(now > mail_start && now < end)
         {
             var days = Math.floor(end/(1000*60*60*24) - now/(1000*60*60*24));
+            days += 1;
             var alert_div = $('<div/>', {class: 'alert alert-warning', role: 'alert'});
             $('<strong/>').html('Notice: ').appendTo(alert_div);
-            alert_div.append('The mail in window is currently open! You have '+days+' days left to mail your request!');
+            if(days == 1)
+            {
+                alert_div.append('The mail in window is currently open! You have '+days+' day left to mail your request!');
+            }
+            else
+            {
+                alert_div.append('The mail in window is currently open! You have '+days+' days left to mail your request!');
+            }
             $('#request_set').prepend(alert_div);
         }
     }
