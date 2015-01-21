@@ -453,7 +453,7 @@ function get_window_done(data)
     if(data.window != undefined)
     {
         var my_window = data.window;
-        var now = Date.now();
+        var now = new Date(Date.now());
         var start = new Date(my_window.request_start_date+" GMT-0600");
         var end = new Date(my_window.request_stop_date+" GMT-0600");
         var mail_start = new Date(my_window.mail_start_date+" GMT-0600");
@@ -483,12 +483,15 @@ function get_window_done(data)
         if(now > mail_start && now < end)
         {
             var days = Math.floor(end/(1000*60*60*24) - now/(1000*60*60*24));
-            days += 1;
             var alert_div = $('<div/>', {class: 'alert alert-warning', role: 'alert'});
             $('<strong/>').html('Notice: ').appendTo(alert_div);
             if(days == 1)
             {
                 alert_div.append('The mail in window is currently open! You have '+days+' day left to mail your request!');
+            }
+            else if(days == 0)
+            {
+                alert_div.append('The mail in window is currently open! Today is the last day to mail your request!');
             }
             else
             {
