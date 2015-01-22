@@ -457,8 +457,13 @@ function get_window_done(data)
         var start = new Date(my_window.request_start_date+" GMT-0600");
         var end = new Date(my_window.request_stop_date+" GMT-0600");
         var mail_start = new Date(my_window.mail_start_date+" GMT-0600");
+        var server_now = new Date(my_window.current+" GMT-0600");
         end.setHours(23);
         end.setMinutes(59);
+        if(server_now < now)
+        {
+            now = server_now;
+        }
         if(now < start || now > end)
         {
             var alert_div = $('<div/>', {class: 'alert alert-info', role: 'alert'});

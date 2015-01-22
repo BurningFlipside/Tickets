@@ -29,6 +29,8 @@ if(strtoupper($_SERVER['REQUEST_METHOD']) == 'GET')
             }
         }
         unset($vars);
+        date_default_timezone_set('CST');
+        $window['current'] = date("Y-m-d");
         echo json_encode(array('success' => 0, 'window' => $window));
     }
 }
