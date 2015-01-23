@@ -57,7 +57,7 @@ else
     <a href="transfer.php">Transfer Tickets</a> | <a href="verify.php">Verify Tickets</a>
     <fieldset>
         <legend>FAQ</legend>
-        <a href="http://www.test.burningflipside.com/event/tickets/faq">Ticket FAQ</a>
+        <a href="http://www.burningflipside.com/event/tickets/faq">Ticket FAQ</a>
     </fieldset>
     <div class="modal fade in" aria-hidden="false" id="ticket_id_modal">
             <div class="modal-dialog">

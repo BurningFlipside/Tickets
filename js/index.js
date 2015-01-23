@@ -411,9 +411,16 @@ function get_requests_done(data)
     {
         if(data.requests == undefined || data.requests == null)
         {
-            $('#request_set').empty();
-            $('#request_set').append("You do not currently have a ticket request.<br/>");
-            $('#request_set').append('<a href="/tickets/request.php">Create a Ticket Request</a>');
+            if(out_of_window)
+            {
+                $('#requestList').empty();
+            }
+            else
+            {
+                $('#request_set').empty();
+                $('#request_set').append("You do not currently have a ticket request.<br/>");
+                $('#request_set').append('<a href="/tickets/request.php">Create a Ticket Request</a>');
+            }
         }
         else
         {
@@ -477,7 +484,7 @@ function get_window_done(data)
             }
             else
             {
-                $('#request_set').replaceWith(alert_div);
+                $('#request_set').prepend(alert_div);
             }
             out_of_window = true;
             if(!test_mode)
