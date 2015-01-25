@@ -295,7 +295,16 @@ class RequestAjax extends FlipJaxSecure
         {
             return array('err_code' => self::ACCESS_DENIED, 'reason' => "User must be a member of TicketAdmins or TicketTeam!");
         }
-        $request = new FlipsideTicketRequest($params['id'], FALSE);
+        $id = '';
+        if(isset($params['id']))
+        {
+            $id = $params['id'];
+        }
+        else
+        {
+            $id = $params['request_id'];
+        }
+        $request = new FlipsideTicketRequest($id, FALSE);
         if($request == FALSE)
         {
             return array('err_code' => self::INTERNAL_ERROR, 'reason' => "Failed to obtain request!");

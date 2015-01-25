@@ -88,10 +88,28 @@ function details_clicked()
     }
 }
 
+function save_request_done(data)
+{
+    $('#modal').modal('hide');
+    if(data.error !== undefined)
+    {
+        alert(data.error);
+        console.log(data);
+    }
+    else
+    {
+        change_year($('#year'));
+    }
+}
+
 function save_request(control)
 {
-    var form = $('#request_edit_form');
-    console.log(form.serialize());
+    $.ajax({
+        url: '/tickets/ajax/request.php',
+        data: $('#request_edit_form').serialize()+"&dataentry=1",
+        dataType: 'json',
+        type: 'post',
+        success: save_request_done});
 }
 
 function row_clicked()
