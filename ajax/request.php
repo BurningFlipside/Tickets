@@ -205,7 +205,7 @@ class RequestAjax extends FlipJaxSecure
         {
             return $res;
         }
-        $request = new FlipsideTicketRequest($id, FALSE, $year);
+        $request = FlipsideTicketRequest::get_request_by_id_and_year($id, $year);
         if($request == FALSE)
         {
             return array('err_code' => self::INTERNAL_ERROR, 'reason' => "Failed to obtain request!");
@@ -232,7 +232,7 @@ class RequestAjax extends FlipJaxSecure
         {
             return $res;
         }
-        $request = new FlipsideTicketRequest($id, FALSE, $year);
+        $request = FlipsideTicketRequest::get_request_by_id_and_year($id, $year);
         if($request == FALSE)
         {
             return array('err_code' => self::INTERNAL_ERROR, 'reason' => "Failed to obtain request!");
@@ -257,7 +257,7 @@ class RequestAjax extends FlipJaxSecure
         {
             return array('err_code' => self::ACCESS_DENIED, 'reason' => "User must be a member of TicketAdmins!");
         } 
-        $request = new FlipsideTicketRequest($id, FALSE);
+        $request = FlipsideTicketRequest::get_request_by_id_and_year($id);
         if($request == FALSE)
         {
             return array('err_code' => self::INTERNAL_ERROR, 'reason' => "Failed to obtain request!");
@@ -276,7 +276,7 @@ class RequestAjax extends FlipJaxSecure
         {
             return array('err_code' => self::ACCESS_DENIED, 'reason' => "User must be a member of TicketAdmins!");
         }
-        $request = new FlipsideTicketRequest($id, FALSE);
+        $request = FlipsideTicketRequest::get_request_by_id_and_year($id, FALSE);
         if($request == FALSE)
         {
             return array('err_code' => self::INTERNAL_ERROR, 'reason' => "Failed to obtain request!");
@@ -304,7 +304,7 @@ class RequestAjax extends FlipJaxSecure
         {
             $id = $params['request_id'];
         }
-        $request = new FlipsideTicketRequest($id, FALSE);
+        $request = FlipsideTicketRequest::get_request_by_id_and_year($id);
         if($request == FALSE)
         {
             return array('err_code' => self::INTERNAL_ERROR, 'reason' => "Failed to obtain request!");
@@ -363,7 +363,7 @@ class RequestAjax extends FlipJaxSecure
             if($res == self::SUCCESS)
             {
                 $db = new FlipsideTicketDB();
-                $request = new FlipsideTicketRequest($params['request_id'], TRUE);
+                $request = FlipsideTicketRequest();
                 $request->populateFromPOSTData($params);
                 if(!isset($_POST['minor_confirm']) && $request->hasMinors())
                 {

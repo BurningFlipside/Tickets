@@ -43,7 +43,7 @@ class FlipsideTicketDB extends FlipsideDB
 
     function getRequestForUser($user)
     {
-        return new FlipsideTicketRequest($this->getRequestIdForUser($user), FALSE, $this->getVariable('year'));
+        return FlipsideTicketRequest::get_request_by_id_and_year($this->getRequestIdForUser($user), $this->getVariable('year'), $this);
     }
 
     function getRequestCount($conds = FALSE)

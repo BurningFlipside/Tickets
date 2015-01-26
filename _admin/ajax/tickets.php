@@ -27,6 +27,7 @@ function generate_tickets($type, $count, $auto_pop, $db)
         {
             $extended = "Not enough tickets for all received requests";
         }
+        $year = $db->getVariable('year');
         foreach($requested_tickets as $requested_ticket)
         {
             if($i >= $count) break;
@@ -34,7 +35,7 @@ function generate_tickets($type, $count, $auto_pop, $db)
             $new_tickets[$i]->lastName   = $requested_ticket->last;
             $new_tickets[$i]->request_id = $requested_ticket->request_id;
             $new_tickets[$i]->assigned   = 1;
-            $request = new FlipsideTicketRequest($requested_ticket->request_id, FALSE);
+            $request = FlipsideTicketRequest::get_request_by_id_and_year($requested_ticket->request_id, $year, $db);
             if($request !== FALSE)
             {
                 $new_tickets[$i]->email   = $request->mail;

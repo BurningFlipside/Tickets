@@ -198,6 +198,19 @@ class FlipsideTicketRequest extends FlipsideDBObject
          return $type;
     }
 
+    static function get_request_by_id_and_year($id, $year = FALSE, $db = FALSE)
+    {
+        if($db === FALSE)
+        {
+            $db = new FlipsideTicketDB();
+        }
+        if($year === FALSE)
+        {
+            $year = $db->getVariable('year');
+        }
+        return self::select_from_db_multi_conditions($db, array('request_id'=>'=\''.$id.'\'', 'year'=>'='.$year));
+    }
+
     static function find_request($id)
     {
         $cond['request_id'] = '=\''.$id.'\'';
@@ -260,25 +273,8 @@ class FlipsideTicketRequest extends FlipsideDBObject
         return $data;
     }
 
-    function __construct($request_id='', $new = TRUE, $year = '')
+    function __construct()
     {
-        $this->request_id = $request_id;
-        $db = new FlipsideTicketDB();
-        if($year == '')
-        {
-            $this->year = $db->getVariable('year');
-        }
-        else
-        {
-            $this->year = $year;
-        }
-        if($new)
-        {
-        }
-        else
-        {
-            $this->populateFromDB($db);
-        }
     }
 
     function populateFromDB($db)
@@ -292,6 +288,7 @@ class FlipsideTicketRequest extends FlipsideDBObject
 
     function populateFromPOSTData($data)
     {
+        $this->request_id = $data['request_id'];
         $this->givenName = $data['givenName'];
         $this->sn        = $data['sn'];
         $this->mail      = $data['mail'];
@@ -304,7 +301,7 @@ class FlipsideTicketRequest extends FlipsideDBObject
         $this->populateTicketDataFromPOSTData($data);
         $this->populateDonationDataFromPOSTData($data);
         $this->total_due = $this->getTotalAmount();
-        $old = new FlipsideTicketRequest($this->request_id, FALSE, $this->year);
+        $old = FlipsideTicketRequest::get_request_by_id_and_year($this->request_id, $this->year);
         if($old == FALSE)
         {
             $this->total_received = 0;
@@ -514,7 +511,7 @@ class FlipsideTicketRequest extends FlipsideDBObject
 
     function create_revisions()
     {
-        $old = new FlipsideTicketRequest($this->request_id, FALSE, $this->year);
+        $old = self::get_request_by_id_and_year($this->request_id, $this->year);
         if($old == FALSE)
         {
             $this->revisions = NULL;

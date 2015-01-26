@@ -6,6 +6,8 @@ class FlipsideTicketRequestTicket extends FlipsideDBObject
     protected $_sql_special = array('type' => 'FlipsideTicketRequestTicket::type_to_type_code');
     protected $_sql_ai_key = array('requested_ticket_id');
 
+    private static $ticket_types = array();
+
     public $requested_ticket_id = null;
     public $request_id;
     public $year;
@@ -17,7 +19,16 @@ class FlipsideTicketRequestTicket extends FlipsideDBObject
 
     static function populate_children($db, &$type)
     {
-        $type->type = FlipsideTicketType::select_from_db($db, 'typeCode', $type->type);
+        if(isset(self::$ticket_types[$type->type]))
+        {
+            $type->type = self::$ticket_types[$type->type];
+        }
+        else
+        {
+            $res = FlipsideTicketType::select_from_db($db, 'typeCode', $type->type);
+            self::$ticket_types[$type->type] = $res;
+            $type->type = $res;
+        }
     }
 
     static function select_from_db($db, $col, $value)
