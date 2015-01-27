@@ -151,3 +151,12 @@ body {
 .panel-yellow a:hover {
     color: #df8a13;
 }
+
+@media print {
+    .dataTables_filter{
+         display: none;
+    }
+    .dataTables_length{
+        display: none;
+    }
+}
