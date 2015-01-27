@@ -151,7 +151,8 @@ function row_clicked()
     }
     $('#total_due').val('$'+data.total_due);
     $('#status').val(data.private_status);
-    $('#total_received').val(data.total_received)
+    $('#total_received').val(data.total_received);
+    $('#comments').val(data.comments);
     $('#bucket').val(data.bucket);
 }
 
