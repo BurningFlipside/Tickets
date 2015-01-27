@@ -512,7 +512,7 @@ class FlipsideTicketRequest extends FlipsideDBObject
     function create_revisions()
     {
         $old = self::get_request_by_id_and_year($this->request_id, $this->year);
-        if($old == FALSE)
+        if($old == FALSE || !method_exists($old, 'get_request_by_id_and_year'))
         {
             $this->revisions = NULL;
             return;
