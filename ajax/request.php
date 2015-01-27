@@ -64,6 +64,7 @@ class RequestAjax extends FlipJaxSecure
             if($gen_bucket)
             {
                 $requests[0]->genBucket();
+                $requests[0]->replace_in_db($db);
             }
             if($year != null)
             {
