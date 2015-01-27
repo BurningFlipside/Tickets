@@ -40,9 +40,9 @@ class FlipsideDonation extends FlipsideDBObject
         return $type;
     }
 
-    static function select_from_db_multi_conditions($db, $conds)
+    static function select_from_db_multi_conditions($db, $conds, $conj = 'AND')
     {
-        $type = parent::select_from_db_multi_conditions($db, $conds);
+        $type = parent::select_from_db_multi_conditions($db, $conds, $conj);
         if($type == FALSE)
         {
             return FALSE;

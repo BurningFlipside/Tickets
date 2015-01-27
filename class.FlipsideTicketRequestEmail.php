@@ -11,7 +11,7 @@ class FlipsideTicketRequestEmail extends FlipsideMail
         $this->request = $request;
     }
 
-    public function send_HTML()
+    public function send_HTML($mail = FALSE)
     {
         $this->From     = 'tickets@burningflipside.com';
         $this->FromName = 'Flipside Tickets';
