@@ -363,7 +363,7 @@ class RequestAjax extends FlipJaxSecure
             if($res == self::SUCCESS)
             {
                 $db = new FlipsideTicketDB();
-                $request = FlipsideTicketRequest();
+                $request = new FlipsideTicketRequest();
                 $request->populateFromPOSTData($params);
                 if(!isset($_POST['minor_confirm']) && $request->hasMinors())
                 {
