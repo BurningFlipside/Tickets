@@ -180,6 +180,10 @@ class RequestAjax extends FlipJaxSecure
         {
             return $this->get_search_requests($params['type'], $params['value']);
         }
+        else if(isset($params['pdf']) && isset($params['id']))
+        {
+            return $this->post_pdf($params['id'], $params['year']);
+        }
         else if(isset($params['meta']))
         {
             if(!$this->user_in_group("TicketAdmins"))
@@ -310,9 +314,56 @@ class RequestAjax extends FlipJaxSecure
         {
             return array('err_code' => self::INTERNAL_ERROR, 'reason' => "Failed to obtain request!");
         }
+        if(isset($params['givenName']))
+        {
+            $request->givenName  = $params['givenName'];
+        }
+        if(isset($params['sn']))
+        {
+            $request->sn         = $params['sn'];
+        }
+        if(isset($params['mail']))
+        {
+            $request->mail       = $params['mail'];
+        }
+        if(isset($params['mobile']))
+        {
+            $request->mobile     = $params['mobile'];
+        }
+        if(isset($params['c']))
+        {
+            $request->c          = $params['c'];
+        }
+        if(isset($params['street']))
+        {
+            $request->street     = $params['street'];
+        }
+        if(isset($params['zip']))
+        {
+            $request->zip        = $params['zip'];
+        }
+        if(isset($params['l']))
+        {
+            $request->l          = $params['l'];
+        }
+        if(isset($params['st']))
+        {
+            $request->st         = $params['st'];
+        }
         $request->total_received = $params['total_received'];
         $request->private_status = $params['status'];
         $request->comments = $params['comments'];
+        if(isset($params['critvol']))
+        {
+            if($params['critvol'] === 'on')
+            {
+                $request->crit_vol = true;
+            }
+            else
+            {
+                $request->crit_vol = false;
+            }
+        }
         $db = new FlipsideTicketDB();
         if($request->replace_in_db($db) === FALSE)
         {

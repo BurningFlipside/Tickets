@@ -7,7 +7,11 @@ function request_ajax_done(data)
         $('#request_id').focus();
         return;
     }
+    $('#modal_title').html('Request #'+data.requests[0].request_id);
+    $('#given_name').val(data.requests[0].givenName);
+    $('#last_name').val(data.requests[0].sn);
     $('#total_due').val('$'+data.requests[0].total_due);
+    $('#comments').val(data.requests[0].comments);
     $('#status').val(data.requests[0].private_status);
     if(data.requests[0].total_received == 0)
     {
@@ -19,12 +23,12 @@ function request_ajax_done(data)
     }
     $('#bucket').val(data.requests[0].bucket);
     $('#request_id_hidden').val(data.requests[0].request_id);
+    $('#save_btn').data('id', data.requests[0].id);
 }
 
 function lookup_request(control)
 {
     var id = $(control).val();
-    $('#modal_title').html('Request #'+id);
     $('#modal').modal('show');
     $.ajax({
             url: '/tickets/ajax/request.php',
@@ -32,8 +36,63 @@ function lookup_request(control)
             type: 'get',
             dataType: 'json',
             success: request_ajax_done});
-    $('#save_btn').data('id', id);
     $(control).val('');
+}
+
+function lookup_request_by_id(id)
+{
+    $('#request_select').modal('hide');
+    $('#modal').modal('show');
+    $.ajax({
+            url: '/tickets/ajax/request.php',
+            data: 'request_id='+id+'&genbucket=1',
+            type: 'get',
+            dataType: 'json',
+            success: request_ajax_done});
+}
+
+function lookup_ajax_done(data)
+{
+    if(data.requests.length == 1)
+    {
+        $('#request_id').val(data.requests[0].request_id);
+        lookup_request($('#request_id'));
+    }
+    else
+    {
+        $('#request_select').modal('show');
+        var table = $('#request_table').DataTable();
+        table.clear();
+        for(i = 0; i < data.requests.length; i++)
+        {
+            var row = [
+                '<a href="#" onclick="lookup_request_by_id(\''+data.requests[i].request_id+'\');">'+data.requests[i].request_id+'</a>',
+                data.requests[i].givenName+' '+data.requests[i].sn,
+                data.requests[i].mail
+            ];
+            table.row.add(row);
+        }
+        table.draw();
+    }
+}
+
+function lookup_request_by_value(control)
+{
+    var type  = $('#type').data('type');
+    var value = $(control).val();
+    $.ajax({
+            url: '/tickets/ajax/request.php',
+            data: 'type='+type+'&value='+value,
+            type: 'get',
+            dataType: 'json',
+            success: lookup_ajax_done});
+    $(control).val('');
+}
+
+function change_menu(value, text)
+{
+    $('#type').data('type', value);
+    $('#type').html(text+'  <span class="caret"></span>');
 }
 
 function restore_focus()
@@ -62,6 +121,11 @@ function save_request_done(data)
 
 function save_request()
 {
+    if($('#total_received').val() == '')
+    {
+        alert('Need Total Received!');
+        return;
+    }
     $.ajax({
         url: '/tickets/ajax/request.php',
         data: $('#req_form').serialize(),
@@ -78,6 +142,7 @@ function init_page()
         url: 'ajax/status.php',
         dataType: 'json',
         success: status_ajax_done});
+    $('#request_table').dataTable();
 }
 
 $(init_page);

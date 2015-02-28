@@ -59,7 +59,7 @@ class TicketPage extends SecurePage
     {
         if(!FlipSession::is_logged_in())
         {
-            $this->add_link('Login', 'http://profiles.burningflipside.com/login.php');
+            $this->add_link('Login', 'http://profiles.burningflipside.com/login.php?return='.$this->current_url());
         }
         else
         {
@@ -72,10 +72,12 @@ class TicketPage extends SecurePage
                 $this->add_link('Data Entry', 'https://secure.burningflipside.com/tickets/_admin/data.php');
             }
             $secure_menu = array(
-                'Ticket Registration or Transfer'=>'/tickets/index.php',
-                'Theme Camp Registration'=>'/theme_camp/registration.php',
-                'Art Project Registration'=>'/art/registration.php',
-                'Event Registration'=>'/event/index.php'
+                'Tickets'=>'/tickets/index.php',
+                'View Registrations'=>'/register/view.php',
+                'Theme Camp Registration'=>'/register/tc_reg.php',
+                'Art Project Registration'=>'/register/art_reg.php',
+                'Art Car Registration'=>'/register/artCar_reg.php',
+                'Event Registration'=>'/register/event_reg.php'
             );
             $this->add_link('Secure', 'https://secure.burningflipside.com/', $secure_menu);
             $this->add_link('Logout', 'http://profiles.burningflipside.com/logout.php');

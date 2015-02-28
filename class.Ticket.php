@@ -96,20 +96,28 @@ class Ticket extends FlipsideDBObject
         return $pdf->generatePDF();
     }
 
-    function send_email($email = FALSE, $attachment = TRUE)
+    function send_email($email = FALSE, $attachment = TRUE, $message = FALSE)
     {
         if($email == FALSE)
         {
             $email = $this->email;
         }
         $mail = new TicketEmail($this, $email, $attachment);
+        if($message)
+        {
+            $mail->set_private_message($message);
+        }
         $ret = $mail->send_HTML();
         return $ret;
     }
 
-    function queue_email()
+    function queue_email($mesage = FALSE)
     {
         $mail = new TicketEmail($this, $this->email, TRUE);
+        if($message)
+        {
+            $mail->set_private_message($message);
+        }
         return $mail->queue_email();
     }
 
@@ -125,6 +133,26 @@ class Ticket extends FlipsideDBObject
         $ticket = new static();
         $ticket->set_object_vars($ticket_data[0]);
         return $ticket;
+    }
+
+    function sell_to($email, $send_now = TRUE, $message = FALSE, $db = FALSE)
+    {
+        $this->email = $email;
+        $this->sold  = 1;
+        if($this->insert_to_db($db) === FALSE)
+        {
+            return FALSE;
+        }
+        $res = FALSE;
+        if($send_now)
+        {
+            $res = $this->send_email($this->email, TRUE, $message);
+        }
+        else
+        {
+            $res = $this->queue_email($message);
+        }
+        return $res;
     }
 
     static function create_new($count, $type='', $db=FALSE, $flush = TRUE)
@@ -158,10 +186,50 @@ class Ticket extends FlipsideDBObject
         return true;
     }
 
-    static function get_tickets_for_user($user)
+    static function get_tickets_for_user($user, $criteria = FALSE)
     {
         $db = new FlipsideTicketDB();
-        $res = self::select_from_db($db, 'email', $user->mail[0]);
+        $conds = array('email' => '=\''.$user->mail[0].'\'');
+        if($criteria != FALSE)
+        {
+            $conds = array_merge($conds, $criteria);
+        }
+        $res = self::select_from_db_multi_conditions($db, $conds);
+        if($res === FALSE)
+        {
+            return FALSE;
+        }
+        else if(!is_array($res))
+        {
+            $res = array($res);
+        }
+        return $res;
+    }
+
+    static function get_tickets_for_user_and_pool($user, $criteria = FALSE)
+    {
+        $groups = $user->getGroups();
+        $count = count($groups);
+        for($i = 0; $i < $count; $i++)
+        {
+            $groups[$i] = '\''.$groups[$i]->cn[0].'\'';
+        }
+        $groups = implode(',', $groups);
+        $db = new FlipsideTicketDB();
+        $conds = array('group_name' => ' IN ('.$groups.')');
+        $pools = $db->select('tblPoolMap', 'pool_id', $conds);
+        $count = count($pools);
+        for($i = 0; $i < $count; $i++)
+        {
+            $pools[$i] = $pools[$i]['pool_id'];
+        }
+        $pools = implode(',', $pools);
+        $conds = array('pool_id' => ' IN ('.$pools.')');
+        if($criteria != FALSE)
+        {
+            $conds = array_merge($conds, $criteria);
+        }
+        $res = self::select_from_db_multi_conditions($db, $conds);
         if($res === FALSE)
         {
             return FALSE;
@@ -361,6 +429,26 @@ class Ticket extends FlipsideDBObject
             }
         }
         return FALSE;
+    }
+
+    static function do_sale($user, $email, $types, $message = FALSE)
+    {
+        $db = new FlipsideTicketDB();
+        foreach($types as $type=>$qty)
+        {
+            $tickets = self::get_tickets_for_user_and_pool($user, array('sold'=>'=0', 'type'=>'=\''.$type.'\''));
+            $sold = 0;
+            $count = count($tickets);
+            for($i = 0; $sold < $qty; $i++)
+            {
+                if($i > $count) return FALSE;
+                if($tickets[$i]->sell_to($email, TRUE, $message, $db))
+                {
+                    $sold++;
+                }
+            }
+        }
+        return TRUE;
     }
 }
 ?>

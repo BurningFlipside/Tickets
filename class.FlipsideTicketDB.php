@@ -17,7 +17,7 @@ class FlipsideTicketDB extends FlipsideDB
     function getRequestIdForUser($user)
     {
         $conds['mail'] = '=\''.$user->mail[0].'\'';
-        $data = $this->select('tblTicketRequest', 'request_id', $conds);
+        $data = $this->select('tblRequestIDs', 'request_id', $conds);
         if($data == FALSE || !isset($data[0]) || !isset($data[0]['request_id']))
         {
             return FALSE;
@@ -25,9 +25,9 @@ class FlipsideTicketDB extends FlipsideDB
         return $data[0]['request_id'];
     }
 
-    function getNewRequestId()
+    function getNewRequestId($user)
     {
-        $data = $this->select('tblTicketRequest', 'MAX(request_id)');
+        $data = $this->select('tblRequestIDs', 'MAX(request_id)');
         if($data == FALSE || !isset($data[0]) || !isset($data[0]['MAX(request_id)']))
         {
             return FALSE;
@@ -38,6 +38,7 @@ class FlipsideTicketDB extends FlipsideDB
             return 'A00000001';
         }
         $id++;
+        $this->insert_array('tblRequestIDs', array('request_id'=>$id,'mail'=>$user->mail[0]));
         return $id;
     }
 
@@ -180,6 +181,16 @@ class FlipsideTicketDB extends FlipsideDB
     {
         $conds = array('used'=>'=\'0\'');
         return $this->getTicketCount($conds);
+    }
+
+    function getReceivedTicketCount()
+    {
+        $data = $this->sql_query("SELECT COUNT(*) FROM tblTicketRequest INNER JOIN tblRequestedTickets ON tblTicketRequest.request_id=tblRequestedTickets.request_id WHERE tblTicketRequest.private_status=1;");
+        if($data == FALSE || !isset($data[0]) || !isset($data[0]['COUNT(*)']))
+        {
+            return FALSE;
+        }
+        return $data[0]['COUNT(*)'];
     }
 
     function getTicketCountByType($type)

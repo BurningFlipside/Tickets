@@ -6,6 +6,7 @@ class TicketEmail extends FlipsideMail
     private $ticket;
     private $email;
     private $attach_pdf;
+    private $pm;
 
     function __construct($ticket, $email, $attachment)
     {
@@ -13,6 +14,7 @@ class TicketEmail extends FlipsideMail
         $this->ticket     = $ticket;
         $this->email      = $email;
         $this->attach_pdf = $attachment;
+        $this->pm         = FALSE;
     }
 
     public function queue_email()
@@ -52,6 +54,11 @@ class TicketEmail extends FlipsideMail
         }
     }
 
+    public function set_private_message($message)
+    {
+        $this->pm = $message;
+    }
+
     public function send_HTML()
     {
         $this->From     = 'tickets@burningflipside.com';
@@ -80,19 +87,33 @@ class TicketEmail extends FlipsideMail
             '{$email}'          => $email,
             '{$type}'           => $type
         );
+        if($this->pm)
+        {
+            $this->Body    ='<strong>********************Personal Message*************************</strong><br/>';
+            $this->Body   .=$this->pm;
+            $this->Body   .='<strong>******************End Personal Message***********************</strong><br/>';
+            $this->AltBody ='********************Personal Message*************************'."\n";
+            $this->AltBody.=$this->pm;
+            $this->AltBody.='******************End Personal Message***********************'."\n";
+        }
+        else
+        {
+            $this->Body    = '';
+            $this->AltBody = '';
+        }
         if($this->email == $this->ticket->email)
         {
             $this->addAddress($this->email, $this->ticket->firstName.' '.$this->ticket->lastName);
             $this->Subject = 'Burning Flipside '.$this->ticket->year.' Will Call Ticket Form';
-            $this->Body    = strtr(FlipsideTicketDB::get_long_text('ticket_email_source'), $vars);
-            $this->AltBody = strtr(strip_tags(FlipsideTicketDB::get_long_text('ticket_email_source')), $vars);
+            $this->Body   .= strtr(FlipsideTicketDB::get_long_text('ticket_email_source'), $vars);
+            $this->AltBody.= strtr(strip_tags(FlipsideTicketDB::get_long_text('ticket_email_source')), $vars);
         }
         else
         {
             $this->addAddress($this->email);
             $this->Subject = 'Burning Flipside '.$this->ticket->year.' Will Call Ticket Transfer';
-            $this->Body    = strtr(FlipsideTicketDB::get_long_text('ticket_transfer_email_source'), $vars);
-            $this->AltBody = strtr(strip_tags(FlipsideTicketDB::get_long_text('ticket_transfer_email_source')), $vars);
+            $this->Body   .= strtr(FlipsideTicketDB::get_long_text('ticket_transfer_email_source'), $vars);
+            $this->AltBody.= strtr(strip_tags(FlipsideTicketDB::get_long_text('ticket_transfer_email_source')), $vars);
         }
         $this->isHTML(true);
         if($this->attach_pdf)

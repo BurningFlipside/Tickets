@@ -154,6 +154,23 @@ function row_clicked()
     $('#total_received').val(data.total_received);
     $('#comments').val(data.comments);
     $('#bucket').val(data.bucket);
+    console.log(data);
+    if(data.crit_vol != '0')
+    {
+        $('#critvol').prop('checked', true);
+    }
+    else
+    {
+        $('#critvol').prop('checked', false);
+    }
+    if(data.protected != '0')
+    {
+        $('#protected').prop('checked', true);
+    }
+    else
+    {
+        $('#protected').prop('checked', false);
+    }
 }
 
 function status_ajax_done(data)

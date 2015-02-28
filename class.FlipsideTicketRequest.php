@@ -49,7 +49,7 @@ class FlipsideTicketRequest extends FlipsideDBObject
         {
             return $id;
         }
-        return $db->getNewRequestId();
+        return $db->getNewRequestId($user);
     }
 
     static function getOldRequestId($email)
@@ -385,7 +385,10 @@ class FlipsideTicketRequest extends FlipsideDBObject
         $total = 0;
         foreach($this->tickets as $ticket)
         {
-            $total += $ticket->getCost();
+            if(method_exists($ticket, 'getCost'))
+            {
+                $total += $ticket->getCost();
+            }
         }
         foreach($this->donations as $donation)
         {
@@ -470,11 +473,11 @@ class FlipsideTicketRequest extends FlipsideDBObject
         }
         else if($this->protected)
         {
-            $this->bucket = FlipsideTicketDB::getMaxBuckets() - 1;
+            $this->bucket = FlipsideTicketDB::getMaxBuckets();
         }
         else if($this->bucket === FALSE || $this->bucket == -1)
         {
-            $this->bucket = $this->get_random_id(1, FlipsideTicketDB::getMaxBuckets() - 2);
+            $this->bucket = $this->get_random_id(1, FlipsideTicketDB::getMaxBuckets() - 1);
         }
     }
 
@@ -542,7 +545,7 @@ class FlipsideTicketRequest extends FlipsideDBObject
             return;
         }
         $all = FlipsideTicketRequestTicket::select_from_db_multi_conditions($db, array('request_id'=>'=\''.$this->request_id.'\'', 'year'=>'='.$this->year));
-        if($all == FALSE)
+        if($all == FALSE || (!is_array($all) && get_class($all) == 'stdClass'))
         {
             return;
         }

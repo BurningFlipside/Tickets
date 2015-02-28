@@ -465,6 +465,14 @@ function get_window_done(data)
         var end = new Date(my_window.request_stop_date+" GMT-0600");
         var mail_start = new Date(my_window.mail_start_date+" GMT-0600");
         var server_now = new Date(my_window.current+" GMT-0600");
+        //You can't replace this with < 
+        if(!(start.getYear() > 2000))
+        {
+            start = new Date(my_window.request_start_date+"T06:00:00.000Z");
+            end   = new Date(my_window.request_stop_date+"T06:00:00.000Z");
+            mail_start = new Date(my_window.mail_start_date+"T06:00:00.000Z");
+            server_now = new Date(my_window.current+"T06:00:00.000Z");
+        }
         end.setHours(23);
         end.setMinutes(59);
         if(server_now < now)
@@ -512,6 +520,7 @@ function get_window_done(data)
             $('#request_set').prepend(alert_div);
         }
     }
+    init_request();
 }
 
 function init_window()
@@ -526,7 +535,6 @@ function init_window()
 function init_index()
 {
     init_window();
-    init_request();
     init_table();
 }
 
