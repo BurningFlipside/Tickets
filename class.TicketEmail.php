@@ -32,6 +32,7 @@ class TicketEmail extends FlipsideMail
         array_push($array, $this);
         $str = serialize($array);
         file_put_contents($filename, $str, LOCK_EX);
+        return true;
     }
 
     public static function pop_queued_emails($count)
