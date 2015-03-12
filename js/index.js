@@ -45,6 +45,17 @@ function get_ticket_data_by_hash(hash)
             ticket = json.data[i];
         }
     }
+    if(ticket === null)
+    {
+        json = $('#discretionary').DataTable().ajax.json();
+        for(var i = 0; i < json.data.length; i++)
+        {
+            if(json.data[i].hash == hash)
+            {
+                ticket = json.data[i];
+            }
+        }
+    }
     return ticket;
 }
 

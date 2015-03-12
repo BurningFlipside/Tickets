@@ -18,11 +18,32 @@ if(!FlipSession::is_logged_in())
 {
     $page->body .= '
 <div id="content">
-    <h1>You must log in to access the Burning Flipside Ticket system!</h1>
+    <h1>You must <a href="https://profiles.burningflipside.com/login.php?return='.$page->current_url().'">log in <span class="glyphicon glyphicon-log-in"></span></a> to access the Burning Flipside Ticket system!</h1>
 </div>';
 }
 else
 {
+    $discretionary = '';
+    $user = FlipSession::get_user(TRUE);
+    if($user !== false && $user->isInGroupNamed("AAR"))
+    {
+        $page->add_js_from_src('js/discretionary.js');
+        $discretionary = '
+        <fieldset id="discretionary_set">
+            <legend>Discretionary Tickets</legend>
+            <table id="discretionary" class="table">
+                <thead>
+                <tr>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Type</th>
+                    <th>Short Ticket Code</th>
+                    <th></th>
+                </tr>
+                </thead>
+             </table>
+        </fieldset>';
+    }
     $page->body .= '
 <div id="content">
     <fieldset id="request_set" style="display: none;">
@@ -55,6 +76,7 @@ else
         </table>
     </fieldset>
     <a href="transfer.php">Transfer Tickets</a> | <a href="verify.php">Verify Tickets</a>
+    '.$discretionary.'
     <fieldset>
         <legend>FAQ</legend>
         <a href="http://www.burningflipside.com/event/tickets/faq">Ticket FAQ</a>
