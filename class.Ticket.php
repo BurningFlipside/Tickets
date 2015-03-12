@@ -189,7 +189,7 @@ class Ticket extends FlipsideDBObject
     static function get_tickets_for_user($user, $criteria = FALSE)
     {
         $db = new FlipsideTicketDB();
-        $conds = array('email' => '=\''.$user->mail[0].'\'');
+        $conds = array('email' => '=\''.$user->mail[0].'\'', 'sold'=>'=1', 'used'=>'=0');
         if($criteria != FALSE)
         {
             $conds = array_merge($conds, $criteria);
