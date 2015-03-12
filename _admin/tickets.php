@@ -32,6 +32,7 @@ if($ticket_count == 0 || $ticket_count === FALSE)
                         <th>Short Code</th>
                         <th>First Name</th>
                         <th>Last Name</th>
+                        <th>Email</th>
                         <th>Type</th>
                     </tr>
                 </thead>
