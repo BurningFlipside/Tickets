@@ -130,6 +130,7 @@ function init_page()
             {'data': 'hash', 'render':short_hash},
             {'data': 'firstName'},
             {'data': 'lastName'},
+            {'data': 'email'},
             {'data': 'type'}
         ]
     });
