@@ -14,47 +14,10 @@ function generate_tickets($type, $count, $auto_pop, $db)
     $failed = 0;
     $extended = FALSE;
     $new_tickets = Ticket::create_new($count, $type, $db, FALSE);
-    if($auto_pop)
-    {
-        $i = 0;
-
-        $type_class = FlipsideTicketDB::getTicketTypeByType($type);
-
-        $requested_ticket_ids = $db->select('vRequestWTickets', 'requested_ticket_id', array('private_status'=>'=1', 'type'=>"='$type'"));
-        $ids = implode(',', array_map(filter, $requested_ticket_ids));
-        $requested_tickets = FlipsideTicketRequestTicket::select_from_db_multi_conditions($db, array('requested_ticket_id'=>' IN ('.$ids.')'));
-        if($count < count($requested_tickets))
-        {
-            $extended = "Not enough tickets for all received requests";
-        }
-        $year = $db->getVariable('year');
-        foreach($requested_tickets as $requested_ticket)
-        {
-            if($i >= $count) break;
-            $new_tickets[$i]->firstName  = $requested_ticket->first;
-            $new_tickets[$i]->lastName   = $requested_ticket->last;
-            $new_tickets[$i]->request_id = $requested_ticket->request_id;
-            $new_tickets[$i]->assigned   = 1;
-            $request = FlipsideTicketRequest::get_request_by_id_and_year($requested_ticket->request_id, $year, $db);
-            if($request !== FALSE)
-            {
-                $new_tickets[$i]->email   = $request->mail;
-                if($type_class->is_minor)
-                {
-                    $new_tickets[$i]->guardian_first = $request->givenName;
-                    $new_tickets[$i]->guardian_last  = $request->sn;
-                }
-                $request->private_status = 6;
-                $request->replace_in_db($db);
-            }
-            $i++;
-        }
-    }
     foreach($new_tickets as $ticket)
     {
         if($ticket->insert_to_db($db) !== FALSE)
         {
-            $ticket->queue_email();
             $passed++;
         }
         else
@@ -70,6 +33,92 @@ function generate_tickets($type, $count, $auto_pop, $db)
     {
         return array('passed'=>$passed, 'failed'=>$failed, 'extended'=>$extended);
     }
+}
+
+function get_ticket_of_correct_type($type, $year, $db)
+{
+    $new_tickets = Ticket::select_from_db_multi_conditions($db, 
+        array('sold'=>'=0', 'discretionary'=>'=0', 'pool_id'=>'=-1', 'year'=>'='.$year, 'type'=>"='$type'"));
+    if(is_array($new_tickets))
+    {
+        return $new_tickets[0];
+    }
+    return $new_tickets;
+}
+
+function auto_pop_tickets($db, $limit)
+{
+    $year = $db->getVariable('year');
+    $requests = FlipsideTicketRequest::select_from_db_multi_conditions($db, array('private_status'=>'=1', 'year'=>'='.$year));
+    $count = count($requests);
+    if($limit != false && $limit < $count)
+    {
+        $count = $limit;
+    }
+    $passed = 0;
+    $failed = 0;
+    for($i = 0; $i < $count; $i++)
+    {
+        $fail = false;
+        $requested_tickets = $requests[$i]->tickets;
+        foreach($requested_tickets as $requested_ticket)
+        {
+            $type = $requested_ticket->type->typeCode;
+            $new_ticket = get_ticket_of_correct_type($type, $year, $db);
+            if($new_ticket === false)
+            {
+                //TODO Backout any changes to the DB
+                error_log($requests[$i]->request_id.': Failed to get ticket of correct type '.$type);
+                $fail = true;
+                break;
+            }
+            $new_ticket->firstName  = $requested_ticket->first;
+            $new_ticket->lastName   = $requested_ticket->last;
+            $new_ticket->request_id = $requested_ticket->request_id;
+            $new_ticket->assigned   = 1;
+            $new_ticket->sold       = 1;
+            $new_ticket->email      = $requests[$i]->mail;
+            if($requested_ticket->type->is_minor)
+            {
+                $new_ticket->guardian_first = $requests[$i]->givenName;
+                $new_ticket->guardian_last  = $requests[$i]->sn;
+            }
+            if($new_ticket->replace_in_db($db) === false)
+            {
+                //TODO Backout any changes to the DB
+                error_log($requests[$i]->request_id.': Failed to update ticket in DB');
+                $fail = true;
+                break;
+            }
+            if($new_ticket->queue_email() === false)
+            {
+                //TODO Backout any changes to the DB
+                error_log($requests[$i]->request_id.': Failed to queue email');
+                $fail = true;
+                break;
+            }
+        }
+        if($fail)
+        {
+            $failed++;
+        }
+        else
+        {
+            $requests[$i]->private_status = 6;
+            $requests[$i]->status         = 6;
+            if($requests[$i]->replace_in_db($db) === false)
+            {
+                 //TODO Backout any changes to the DB
+                 error_log($requests[$i]->request_id.': Failed to update request in DB');
+                 $failed++;
+            }
+            else
+            {
+                $passed++;
+            }
+        }
+    }
+    return array('passed'=>$passed, 'failed'=>$failed);
 }
 
 class TicketsAjax extends FlipJaxSecure
@@ -109,6 +158,17 @@ class TicketsAjax extends FlipJaxSecure
         return $res;
     }
 
+    function post_populate($params)
+    {
+        $db = new FlipsideTicketDB();
+        $limit = false;
+        if(isset($params['limit']))
+        {
+            $limit = $params['limit'];
+        }
+        return auto_pop_tickets($db, $limit);
+    }
+
     function post($params)
     {
         if(!$this->is_logged_in())
@@ -127,6 +187,10 @@ class TicketsAjax extends FlipJaxSecure
                 case 'generate':
                     unset($params['action']);
                     $res = $this->post_generate($params);
+                    break;
+                case 'populate':
+                    unset($params['action']);
+                    $res = $this->post_populate($params);
                     break;
                 default:
                     $res = array('err_code' => self::INVALID_PARAM, 'action_name' => $params['action']);
