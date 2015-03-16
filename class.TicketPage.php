@@ -7,6 +7,7 @@ class TicketPage extends SecurePage
     private $user;
     private $is_admin;
     private $is_data;
+    public  $ticket_root;
 
     function __construct($title)
     {
@@ -22,8 +23,11 @@ class TicketPage extends SecurePage
             $this->is_data  = FALSE;
         }
         parent::__construct($title);
-        $this->add_tickets_css();
-        $this->add_tickets_script();
+        $root = $_SERVER['DOCUMENT_ROOT'];
+        $script_dir = dirname(__FILE__);
+        $this->ticket_root = substr($script_dir, strlen($root));
+        $this->add_tickets_css($this->ticket_root);
+        $this->add_tickets_script($this->ticket_root);
         $this->add_sites();
         $this->add_links();
         if(FlipsideTicketDB::getTestMode())
@@ -41,10 +45,9 @@ class TicketPage extends SecurePage
         }
     }
 
-    function add_tickets_css()
+    function add_tickets_css($root)
     {
-        $css_tag = $this->create_open_tag('link', array('rel'=>'stylesheet', 'href'=>'/tickets/css/tickets.css', 'type'=>'text/css'), true);
-        $this->add_head_tag($css_tag);
+        $this->add_css_from_src($root.'/css/tickets.css');
     }
 
     function add_sites()
@@ -90,7 +93,7 @@ class TicketPage extends SecurePage
         $this->add_link('About', 'http://www.burningflipside.com/about', $about_menu);
     }
 
-    function add_tickets_script()
+    function add_tickets_script($root)
     {
     }
 
