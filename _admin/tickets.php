@@ -133,7 +133,7 @@ if($ticket_count == 0 || $ticket_count === FALSE)
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary" onclick="save_ticket()">Save changes</button>
+                        <button type="button" class="btn btn-primary" id="saveticket" onclick="save_ticket()">Save changes</button>
                     </div>
                 </div>
             </div>

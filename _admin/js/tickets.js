@@ -6,6 +6,15 @@ function short_hash(data, type, row, meta)
     return '<a style="cursor: pointer;" onclick="view_ticket(\''+data+'\');">'+short_hash+'</a>';
 }
 
+function get_ticket_by_selected()
+{
+    if(ticket_data.selected == -1)
+    {
+        return ticket_data.current;
+    }
+    return ticket_data.history[ticket_data.selected];
+}
+
 function show_ticket_from_data(data)
 {
     var read_only = true;
@@ -22,6 +31,7 @@ function show_ticket_from_data(data)
             $('#left_arrow').hide();
         }
         read_only = false;
+        $('#saveticket').removeAttr('disabled');
     }
     else
     {
@@ -35,6 +45,7 @@ function show_ticket_from_data(data)
             $('#left_arrow').show();
         }
         $('#right_arrow').show();
+        $('#saveticket').attr('disabled', 'true');
     }
     $('#hash').val(ticket.hash);
     $('#year').val(ticket.year);
@@ -45,9 +56,30 @@ function show_ticket_from_data(data)
     $('#type').val(ticket.type);
     $('#guardian_first').val(ticket.guardian_first);
     $('#guardian_last').val(ticket.guardian_last);
-    $('#sold').val(ticket.sold);
-    $('#used').val(ticket.used);
-    $('#void').val(ticket.void);
+    if(ticket.sold == 1)
+    {
+        $('#sold').prop('checked', true);
+    }
+    else
+    {
+        $('#sold').prop('checked', false);
+    }
+    if(ticket.used == 1)
+    {
+        $('#used').prop('checked', true);
+    }
+    else
+    {
+        $('#used').prop('checked', false);
+    }
+    if(ticket.void == 1)
+    {
+        $('#void').prop('checked', true);
+    }
+    else
+    {
+        $('#void').prop('checked', false);
+    }
     if(read_only)
     {
         $('#firstName').prop('disabled', true);
@@ -113,12 +145,107 @@ function next_ticket()
     show_ticket_from_data(ticket_data);
 }
 
+function set_if_value_different(ticket, obj, inputname, fieldname)
+{
+    if(fieldname === undefined)
+    {
+        fieldname = inputname;
+    }
+    var input = $('#'+inputname);
+    if(input.attr('type') === 'checkbox')
+    {
+         if(input.is(':checked'))
+         {
+             if(ticket[fieldname] == 0)
+             {
+                 obj[fieldname] = 1;
+             }
+         }
+         else if(ticket[fieldname] == 1)
+         {
+             obj[fieldname] = 0;
+         }
+    }
+    else
+    {
+        var val = $('#'+inputname).val();
+        if(val != ticket[fieldname])
+        {
+            obj[fieldname] = val;
+        }
+    }
+}
+
+function save_ticket_done(jqXHR)
+{
+    if(jqXHR.status != 200)
+    {
+        alert("Unable to save ticket!");
+    }
+    else
+    {
+        console.log(jqXHR);
+    }
+}
+
+function save_ticket()
+{
+    var ticket = get_ticket_by_selected();
+    var obj = {};
+    set_if_value_different(ticket, obj, 'email');
+    set_if_value_different(ticket, obj, 'firstName');
+    set_if_value_different(ticket, obj, 'lastName');
+    set_if_value_different(ticket, obj, 'request_id');
+    set_if_value_different(ticket, obj, 'type');
+    set_if_value_different(ticket, obj, 'guardian_first');
+    set_if_value_different(ticket, obj, 'guardian_last');
+    set_if_value_different(ticket, obj, 'sold');
+    set_if_value_different(ticket, obj, 'used');
+    set_if_value_different(ticket, obj, 'void');
+    if(Object.keys(obj).length > 0)
+    {
+        $.ajax({
+            url: '/tickets/api/v1/ticket/'+ticket.hash,
+            contentType: 'application/json',
+            data: JSON.stringify(obj),
+            type: 'patch',
+            dataType: 'json',
+            complete: save_ticket_done});
+    }
+    else
+    {
+        $('#ticket_modal').modal('hide');
+    }
+}
+
+function backend_search_done(data)
+{
+    var tickets = data;
+    var history = false;
+    if(data.old_tickets !== undefined)
+    {
+        tickets = data.old_tickets;
+        history = true;
+    }
+    $.ajax({
+        url: '/tickets/ajax/tickets.php',
+        data: 'hash='+tickets[0].hash+'&with_history=1',
+        type: 'get',
+        dataType: 'json',
+        success: ticket_data_done});
+}
+
 function table_searched()
 {
     var dt_api = $('#tickets').DataTable();
     if(dt_api.rows({'search':'applied'})[0].length == 0)
     {
-        alert("TODO: Search backend for ticket ID because not already on client");
+        $.ajax({
+            url: '/tickets/api/v1/ticket/search/'+dt_api.search(),
+            type: 'get',
+            dataType: 'json',
+            success: backend_search_done
+        });
     }
 }
 

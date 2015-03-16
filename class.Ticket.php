@@ -139,6 +139,7 @@ class Ticket extends FlipsideDBObject
     {
         $this->email = $email;
         $this->sold  = 1;
+        $this->discretionary = 0;
         if($this->insert_to_db($db) === FALSE)
         {
             return FALSE;
@@ -450,5 +451,50 @@ class Ticket extends FlipsideDBObject
         }
         return TRUE;
     }
+
+    static function searchForTickets($type, $value, $include_history=FALSE)
+    {
+        $cond = array();
+        switch($type)
+        {
+            default:
+            case '*':
+                $cond['hash'] = ' LIKE \'%'.$value.'%\'';
+                $cond['firstName'] = ' LIKE \''.$value.'\'';
+                $cond['email'] = ' LIKE \''.$value.'\'';
+                $cond['lastName'] = ' LIKE \''.$value.'\'';
+                break;
+            case 'hash':
+                $cond['hash'] = ' LIKE \'%'.$value.'%\'';
+                break;
+            case 'email':
+                $cond['email'] = ' LIKE \''.$value.'\'';
+                break;
+            case 'first':
+                $cond['firstName'] = ' LIKE \''.$value.'\'';
+                break;
+            case 'last':
+                $cond['lastName'] = ' LIKE \''.$value.'\'';
+                break;
+        }
+        $db = new FlipsideTicketDB();
+        $type = self::select_from_db_multi_conditions($db, $cond, 'OR');
+        if($type === false && $include_history === true)
+        {
+            $ticket_data = $db->select('tblTicketsHistory', '*', $cond, 'OR');
+            if($ticket_data === false) return false;
+            $type = array('history'=>1);
+            $count = count($ticket_data);
+            for($i = 0; $i < $count; $i++)
+            {
+                $ticket = new static();
+                $ticket->set_object_vars($ticket_data[$i]);
+                array_push($type, $ticket);
+            }
+            return $type;
+        }
+        return $type;
+    }
+
 }
 ?>
