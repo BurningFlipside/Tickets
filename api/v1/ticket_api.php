@@ -123,7 +123,7 @@ function list_discretionary_tickets()
         throw new Exception('Must be member of AAR group', ACCESS_DENIED);
     }
     $db = new FlipsideTicketDB();
-    $conds = array('email' => '=\''.$app->user->mail[0].'\'', 'discretionary'=>'=1', 'used'=>'=0');
+    $conds = array('email' => '=\''.$app->user->getEmail().'\'', 'discretionary'=>'=1', 'used'=>'=0');
     $tickets = Ticket::select_from_db_multi_conditions($db, $conds);
     if($tickets === false)
     {
@@ -204,7 +204,14 @@ function process_params(&$params)
 {
     foreach($params as $key=>$value)
     {
-        $params[$key] = '='.$value;
+        if($key === '_')
+        {
+            unset($params[$key]);
+        }
+        else
+        {
+            $params[$key] = '='.$value;
+        }
     }
 }
 

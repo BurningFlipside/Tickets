@@ -76,7 +76,7 @@ function make_d_action(data, type, row, meta)
 function init_d_table()
 {
     $('#discretionary').dataTable({
-        "ajax": '/tickets/api/v1/ticket/discretionary?fmt=data-table',
+        "ajax": 'api/v1/ticket/discretionary?fmt=data-table',
         columns: [
             {'data': 'firstName'},
             {'data': 'lastName'},

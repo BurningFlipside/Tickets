@@ -230,7 +230,7 @@ function make_actions(data, type, row, meta)
 function init_table()
 {
     $('#ticketList').dataTable({
-        "ajax": '/tickets/ajax/tickets.php',
+        "ajax": 'api/v1/ticket?fmt=data-table',
         columns: [
             {'data': 'firstName'},
             {'data': 'lastName'},
@@ -407,60 +407,46 @@ function add_request_to_table(tbody, request)
 
 function get_requests_done(data)
 {
-    if(data.error)
+    if(data.length === undefined || data.length === 0)
     {
-        if(data.error.startsWith("Access Denied"))
+        if(out_of_window)
         {
+            $('#requestList').empty();
         }
         else
         {
-            alert('Error obtaining request data: '+data.error);
-            console.log(data);
+            $('#request_set').empty();
+            $('#request_set').append("You do not currently have a ticket request.<br/>");
+            $('#request_set').append('<a href="/tickets/request.php">Create a Ticket Request</a>');
         }
     }
     else
     {
-        if(data.requests == undefined || data.requests == null)
+        var tbody = $('#requestList tbody');
+        for(i = 0; i < data.length; i++)
         {
-            if(out_of_window)
-            {
-                $('#requestList').empty();
-            }
-            else
-            {
-                $('#request_set').empty();
-                $('#request_set').append("You do not currently have a ticket request.<br/>");
-                $('#request_set').append('<a href="/tickets/request.php">Create a Ticket Request</a>');
-            }
+            add_request_to_table(tbody, data[i]);
         }
-        else
+        if($('[title]').length > 0)
         {
-            var tbody = $('#requestList tbody');
-            for(i = 0; i < data.requests.length; i++)
-            {
-                add_request_to_table(tbody, data.requests[i]);
-            }
-            if($('[title]').length > 0)
-            {
-                $('[title]').tooltip();
-            }
-            if($(window).width() < 768)
-            {
-                $('#requestList th:nth-child(1)').hide();
-                $('#requestList td:nth-child(1)').hide();
-            } 
+            $('[title]').tooltip();
         }
-        if($('#request_set').length > 0)
+        if($(window).width() < 768)
         {
-            $('#request_set').show();
-        }
+            $('#requestList th:nth-child(1)').hide();
+            $('#requestList td:nth-child(1)').hide();
+        } 
+    }
+    if($('#request_set').length > 0)
+    {
+       $('#request_set').show();
     }
 }
 
 function init_request()
 {
     $.ajax({
-        url: '/tickets/ajax/request.php?full',
+        url: 'api/v1/request',
         type: 'get',
         dataType: 'json',
         success: get_requests_done});
@@ -468,68 +454,65 @@ function init_request()
 
 function get_window_done(data)
 {
-    if(data.window != undefined)
+    var my_window = data;
+    var now = new Date(Date.now());
+    var start = new Date(my_window.request_start_date+" GMT-0600");
+    var end = new Date(my_window.request_stop_date+" GMT-0600");
+    var mail_start = new Date(my_window.mail_start_date+" GMT-0600");
+    var server_now = new Date(my_window.current+" GMT-0600");
+    //You can't replace this with < 
+    if(!(start.getYear() > 2000))
     {
-        var my_window = data.window;
-        var now = new Date(Date.now());
-        var start = new Date(my_window.request_start_date+" GMT-0600");
-        var end = new Date(my_window.request_stop_date+" GMT-0600");
-        var mail_start = new Date(my_window.mail_start_date+" GMT-0600");
-        var server_now = new Date(my_window.current+" GMT-0600");
-        //You can't replace this with < 
-        if(!(start.getYear() > 2000))
+        start = new Date(my_window.request_start_date+"T06:00:00.000Z");
+        end   = new Date(my_window.request_stop_date+"T06:00:00.000Z");
+        mail_start = new Date(my_window.mail_start_date+"T06:00:00.000Z");
+        server_now = new Date(my_window.current+"T06:00:00.000Z");
+    }
+    end.setHours(23);
+    end.setMinutes(59);
+    if(server_now < now)
+    {
+        now = server_now;
+    }
+    if(now < start || now > end)
+    {
+        var alert_div = $('<div/>', {class: 'alert alert-info', role: 'alert'});
+        $('<strong/>').html('Notice: ').appendTo(alert_div);
+        alert_div.append('The request window is currently closed.');
+        if(my_window.test_mode == '1')
         {
-            start = new Date(my_window.request_start_date+"T06:00:00.000Z");
-            end   = new Date(my_window.request_stop_date+"T06:00:00.000Z");
-            mail_start = new Date(my_window.mail_start_date+"T06:00:00.000Z");
-            server_now = new Date(my_window.current+"T06:00:00.000Z");
+            alert_div.append(' But test mode is enabled. Any requests created will be deleted before ticketing starts!');
+            $('#request_set').prepend(alert_div);
+            test_mode = true;
         }
-        end.setHours(23);
-        end.setMinutes(59);
-        if(server_now < now)
+        else
         {
-            now = server_now;
-        }
-        if(now < start || now > end)
-        {
-            var alert_div = $('<div/>', {class: 'alert alert-info', role: 'alert'});
-            $('<strong/>').html('Notice: ').appendTo(alert_div);
-            alert_div.append('The request window is currently closed.');
-            if(my_window.test_mode == '1')
-            {
-                alert_div.append(' But test mode is enabled. Any requests created will be deleted before ticketing starts!');
-                $('#request_set').prepend(alert_div);
-                test_mode = true;
-            }
-            else
-            {
-                $('#request_set').prepend(alert_div);
-            }
-            out_of_window = true;
-            if(!test_mode)
-            {
-                $('#requestList th:nth-child(4)').html("Request Status");
-            }
-        }
-        if(now > mail_start && now < end)
-        {
-            var days = Math.floor(end/(1000*60*60*24) - now/(1000*60*60*24));
-            var alert_div = $('<div/>', {class: 'alert alert-warning', role: 'alert'});
-            $('<strong/>').html('Notice: ').appendTo(alert_div);
-            if(days == 1)
-            {
-                alert_div.append('The mail in window is currently open! You have '+days+' day left to mail your request!');
-            }
-            else if(days == 0)
-            {
-                alert_div.append('The mail in window is currently open! Today is the last day to mail your request!');
-            }
-            else
-            {
-                alert_div.append('The mail in window is currently open! You have '+days+' days left to mail your request!');
-            }
             $('#request_set').prepend(alert_div);
         }
+        out_of_window = true;
+        if(!test_mode)
+        {
+            $('#requestList th:nth-child(4)').html("Request Status");
+        }
+    }
+    if(now > mail_start && now < end)
+    {
+        var days = Math.floor(end/(1000*60*60*24) - now/(1000*60*60*24));
+        var alert_div = $('<div/>', {class: 'alert alert-warning', role: 'alert'});
+        $('<strong/>').html('Notice: ').appendTo(alert_div);
+        if(days == 1)
+        {
+            alert_div.append('The mail in window is currently open! You have '+days+' day left to mail your request!');
+        }
+        else if(days == 0)
+        {
+            alert_div.append('The mail in window is currently open! Today is the last day to mail your request!');
+        }
+        else
+        {
+            alert_div.append('The mail in window is currently open! You have '+days+' days left to mail your request!');
+        }
+        $('#request_set').prepend(alert_div);
     }
     init_request();
 }
@@ -537,8 +520,8 @@ function get_window_done(data)
 function init_window()
 {
     $.ajax({
-        url: '/tickets/ajax/window.php',
-        type: 'get',
+        url: 'api/v1/globals/window',
+        type: 'GET',
         dataType: 'json',
         success: get_window_done});
 }

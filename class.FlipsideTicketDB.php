@@ -16,7 +16,7 @@ class FlipsideTicketDB extends FlipsideDB
 
     function getRequestIdForUser($user)
     {
-        $conds['mail'] = '=\''.$user->mail[0].'\'';
+        $conds['mail'] = '=\''.$user->getEmail().'\'';
         $data = $this->select('tblRequestIDs', 'request_id', $conds);
         if($data == FALSE || !isset($data[0]) || !isset($data[0]['request_id']))
         {
@@ -38,7 +38,7 @@ class FlipsideTicketDB extends FlipsideDB
             return 'A00000001';
         }
         $id++;
-        $this->insert_array('tblRequestIDs', array('request_id'=>$id,'mail'=>$user->mail[0]));
+        $this->insert_array('tblRequestIDs', array('request_id'=>$id,'mail'=>$user->getEmail()));
         return $id;
     }
 
