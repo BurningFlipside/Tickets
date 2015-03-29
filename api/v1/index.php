@@ -11,6 +11,7 @@ if($_SERVER['REQUEST_URI'][0] == '/' && $_SERVER['REQUEST_URI'][1] == '/')
 $app = new FlipREST();
 $app->group('/ticket', 'ticket_api_group');
 $app->group('/request', 'request_api_group');
+$app->group('/requests', 'request_api_group');
 
 $app->run();
 ?>
