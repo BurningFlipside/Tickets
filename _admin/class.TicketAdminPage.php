@@ -139,7 +139,7 @@ class TicketAdminPage extends FlipPage
                           <a class="navbar-brand" href="index.php">Tickets</a>
                       </div>
                       <ul class="nav navbar-top-links navbar-right">
-                           <a href="/tickets/">
+                           <a href="../">
                               <span class="glyphicon glyphicon-home"></span>
                            </a>
                           &nbsp;&nbsp;
