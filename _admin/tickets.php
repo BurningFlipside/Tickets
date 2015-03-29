@@ -44,7 +44,7 @@ if($ticket_count == 0 || $ticket_count === FALSE)
                         <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
                         <h4 class="modal-title">Ticket</h4>
                     </div>
-                    <div class="modal-body">
+                    <div class="modal-body"><div class-"containter-fluid">
                         <form id="ticket_data">
                             <div class="form-group">
                                 <label for="hash" class="col-sm-2 control-label">ID:</label>
@@ -124,11 +124,17 @@ if($ticket_count == 0 || $ticket_count === FALSE)
                                 <label for="void" class="col-sm-2 control-label">Void?</label>
                             </div>
                             <div class="clearfix visible-sm visible-md visible-lg"></div>
+                            <div class="form-group">
+                                 <label for="comments" class="col-sm-2 control-label">Comments:</label>
+                                 <div class="col-sm-10">
+                                    <textarea class="form-control" rows="5" name="comments" id="comments"></textarea>
+                                </div>
+                            </div>
                         </form>
                         <div class="col-md-6" style="text-align: center;"><a onclick="prev_ticket()" style="cursor: pointer;" id="left_arrow"><span class="glyphicon glyphicon-chevron-left"></span></a></div>
                         <div class="col-md-6" style="text-align: center;"><a onclick="next_ticket()" style="cursor: pointer;" id="right_arrow"><span class="glyphicon glyphicon-chevron-right"></span></a></div>
                         <div class="clearfix visible-sm visible-md visible-lg"></div>
-                    </div>
+                    </div></div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                         <button type="button" class="btn btn-primary" id="saveticket" onclick="save_ticket()">Save changes</button>

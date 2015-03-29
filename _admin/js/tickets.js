@@ -80,6 +80,7 @@ function show_ticket_from_data(data)
     {
         $('#void').prop('checked', false);
     }
+    $('#comments').val(ticket.comments);
     if(read_only)
     {
         $('#firstName').prop('disabled', true);
@@ -92,6 +93,7 @@ function show_ticket_from_data(data)
         $('#sold').prop('disabled', true);
         $('#used').prop('disabled', true);
         $('#void').prop('disabled', true);
+        $('#comments').prop('disabled', true);
     }
     else
     {
@@ -105,6 +107,7 @@ function show_ticket_from_data(data)
         $('#sold').prop('disabled', false);
         $('#used').prop('disabled', false);
         $('#void').prop('disabled', false);
+        $('#comments').prop('disabled', false);
     }
     $('#ticket_modal').modal('show');
     console.log(data);
