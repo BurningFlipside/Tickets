@@ -68,11 +68,11 @@ class TicketPage extends SecurePage
         {
             if($this->is_admin)
             {
-                $this->add_link('Admin', 'https://secure.burningflipside.com/tickets/_admin/');
+                $this->add_link('Admin', '_admin/');
             }
-            if($this->is_data)
+            else if($this->is_data)
             {
-                $this->add_link('Data Entry', 'https://secure.burningflipside.com/tickets/_admin/data.php');
+                $this->add_link('Data Entry', '_admin/data.php');
             }
             $secure_menu = array(
                 'Tickets'=>'/tickets/index.php',

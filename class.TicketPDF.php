@@ -27,7 +27,7 @@ class TicketPDF
         }
     }
 
-    function generatePDF()
+    function generatePDF($std_out = false)
     {
         $mpdf = new mPDF();
         $barcode        = '<barcode code="'.$this->ticket->hash.'" type="C93"/>';
@@ -52,9 +52,16 @@ class TicketPDF
         );
         $html           = strtr($this->source, $vars);
         $mpdf->WriteHTML($html);
-        $filename = '/var/www/secure/tickets/tmp/'.hash('sha512', json_encode($this->request)).'.pdf';
-        $mpdf->Output($filename);
-        return $filename;
+        if($std_out === false)
+        {
+            $filename = '/var/www/secure/tickets/tmp/'.hash('sha512', json_encode($this->request)).'.pdf';
+            $mpdf->Output($filename);
+            return $filename;
+        }
+        else
+        {
+            $mpdf->Output();
+        }
     }
 }
 ?>

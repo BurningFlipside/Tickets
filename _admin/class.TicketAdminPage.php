@@ -10,11 +10,11 @@ class TicketAdminPage extends FlipPage
 
     function __construct($title)
     {
-        $this->user = FlipSession::get_user(TRUE);
-        if($this->user == FALSE)
+        $this->user = FlipSession::get_user(true);
+        if($this->user === false)
         {
-            $this->is_admin = FALSE;
-            $this->is_data  = FALSE;
+            $this->is_admin = false;
+            $this->is_data  = false;
         }
         else
         {
@@ -38,25 +38,19 @@ class TicketAdminPage extends FlipPage
                                          self::NOTIFICATION_WARNING);
              }
         }
-        $this->add_js_from_src('/js/bootstrap-switch.min.js');
-        $this->add_js_from_src('/js/bootstrap-formhelpers.min.js');
-        $this->add_js_from_src('js/metisMenu.min.js');
+        $this->add_js(JS_BOOTSTRAP_SW);
+        $this->add_js(JS_BOOTSTRAP_FH);
+        $this->add_js(JS_METISMENU);
         $this->add_js_from_src('js/admin.js');
     }
 
     function add_tickets_css()
     {
-        $css_tag = $this->create_open_tag('link', array('rel'=>'stylesheet', 'href'=>'/css/bootstrap-formhelpers.min.css', 'type'=>'text/css'), true);
-        $this->add_head_tag($css_tag);
+        $this->add_css(CSS_BOOTSTRAP_SW);
+        $this->add_css(CSS_BOOTSTRAP_FH);
 
-        $css_tag = $this->create_open_tag('link', array('rel'=>'stylesheet', 'href'=>'/css/bootstrap-switch.min.css', 'type'=>'text/css'), true);
-        $this->add_head_tag($css_tag);
-
-        $css_tag = $this->create_open_tag('link', array('rel'=>'stylesheet', 'href'=>'/tickets/css/tickets.css', 'type'=>'text/css'), true);
-        $this->add_head_tag($css_tag);
-
-        $css_tag = $this->create_open_tag('link', array('rel'=>'stylesheet', 'href'=>'/tickets/_admin/css/admin.css', 'type'=>'text/css'), true);
-        $this->add_head_tag($css_tag);
+	$this->add_css_from_src('../css/tickets.css');
+	$this->add_css_from_src('css/admin.css');
     }
 
     function add_sites()
@@ -77,12 +71,7 @@ class TicketAdminPage extends FlipPage
         {
             if($this->is_admin)
             {
-                $admin_menu = array(
-                    'Donation Types'=>'https://secure.burningflipside.com/tickets/_admin/donation_type.php',
-                    'Ticket Types'=>'https://secure.burningflipside.com/tickets/_admin/ticket_type.php',
-                    'Variable Edit'=>'https://secure.burningflipside.com/tickets/_admin/vars.php'
-                );
-                $this->add_link('Admin', 'https://secure.burningflipside.com/tickets/_admin/', $admin_menu);
+                $this->add_link('Admin', 'https://secure.burningflipside.com/tickets/_admin/');
             }
             if($this->is_data)
             {
@@ -229,7 +218,7 @@ class TicketAdminPage extends FlipPage
         return 'http'.(isset($_SERVER['HTTPS'])?'s':'').'://'."{$_SERVER['HTTP_HOST']}/{$_SERVER['REQUEST_URI']}";
     }
 
-    function print_page()
+    function print_page($header = true)
     {
         if($this->user == FALSE)
         {
@@ -249,7 +238,7 @@ class TicketAdminPage extends FlipPage
             </div>
         </div>';
         }
-        parent::print_page(true);
+        parent::print_page($header);
     }
 }
 ?>

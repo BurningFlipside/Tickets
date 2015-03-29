@@ -4,9 +4,9 @@ error_reporting(E_ALL);
 require_once('class.TicketPage.php');
 $page = new TicketPage('Burning Flipside - Tickets');
 
-$page->add_js_from_src($page->secure_root.'/js/jquery.dataTables.js');
+$page->add_js(JS_DATATABLE);
+$page->add_css(CSS_DATATABLE);
 $page->add_js_from_src($page->ticket_root.'/js/index.js');
-$page->add_css_from_src($page->secure_root.'/css/jquery.dataTables.css');
 
 if(!FlipSession::is_logged_in())
 {

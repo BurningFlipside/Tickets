@@ -3,44 +3,23 @@ require_once('class.FlipsideDBObject.php');
 require_once('class.FlipsideTicketDB.php');
 require_once('class.TicketPDF.php');
 require_once('class.TicketEmail.php');
-class Ticket extends FlipsideDBObject
+class Ticket extends SerializableObject
 {
-    protected $_tbl_name = 'tblTickets';
-    protected $_sql_ignore = array('last_updated_dt');
-
-    public $hash;
-    public $year;
-    public $firstName;
-    public $lastName;
-    public $email;
-    public $request_id;
-    public $assigned;
-    public $void;
-    public $sold;
-    public $used;
-    public $discretionary;
-    public $type;
-    public $guardian_first;
-    public $guardian_last;
-    public $pool_id;
-    public $previous_hash;
-    public $physical_ticket_id;
-    public $comments;
-    public $last_updated_by;
-    public $last_updated_dt;
-    public $last_updated_ip;
-    public $used_dt;
-    public $rand;
-    public $test;
-
-    function __construct()
+    public function offsetGet($offset)
     {
-        $this->assigned = 0;
-        $this->void = 0;
-        $this->sold = 0;
-        $this->used = 0;
-        $this->discretionary = 0;
-        $this->pool_id = -1;
+        switch($offset)
+        {
+            case 'hash_words':
+                return self::hash_to_words($this->hash);
+            default:
+                return parent::offsetGet($offset);
+        }
+    }
+
+    public function jsonSerialize()
+    {
+        $this->hash_words = self::hash_to_words($this->hash);
+        return parent::jsonSerialize();
     }
 
     function generate_hash($db)
@@ -123,16 +102,19 @@ class Ticket extends FlipsideDBObject
 
     function has_previous()
     {
-        return ($this->previous_hash !== FALSE && $this->previous_hash !== null && strlen($this->previous_hash)>0);
+        return ($this->previous_hash !== false && $this->previous_hash !== null && strlen($this->previous_hash)>0);
     }
 
-    function get_previous($db)
+    function get_previous()
     {
-        $ticket_data = $db->select('tblTicketsHistory', '*', array('hash'=>'=\''.$this->previous_hash.'\''));
-        if($ticket_data === FALSE) return FALSE;
-        $ticket = new static();
-        $ticket->set_object_vars($ticket_data[0]);
-        return $ticket;
+        $history_table = self::get_history_data_table();
+        $filter = new \Data\Filter('hash eq \''.$this->previous_hash.'\'');
+        $ticket_data = $history_table->read($filter);
+        if($ticket_data === false)
+        {
+            return false;
+        }
+        return new Ticket($ticket_data[0]);
     }
 
     function sell_to($email, $send_now = TRUE, $message = FALSE, $db = FALSE)
@@ -154,6 +136,94 @@ class Ticket extends FlipsideDBObject
             $res = $this->queue_email($message);
         }
         return $res;
+    }
+
+    static function get_data_table()
+    {
+        $ticket_data_set = DataSetFactory::get_data_set('tickets');
+        return $ticket_data_set['Tickets'];
+    }
+
+    static function get_history_data_table()
+    {
+        $ticket_data_set = DataSetFactory::get_data_set('tickets');
+        return $ticket_data_set['TicketsHistory'];
+    }
+
+    static function get_tickets($filter=false, $select=false)
+    {
+        $ticket_data_table = self::get_data_table();
+        if($select !== false && !in_array('hash', $select))
+        {
+            array_push($select, 'hash');
+        }
+        $tickets = $ticket_data_table->search($filter, $select);
+        if($tickets === false)
+        {
+            return false;
+        }
+        else if(!is_array($tickets))
+        {
+            $tickets = array($tickets);
+        }
+        $count = count($tickets);
+        for($i = 0; $i < $count; $i++)
+        {
+            $tickets[$i] = new Ticket($tickets[$i]);
+        }
+        return $tickets;
+    }
+
+    static function get_ticket_by_hash($hash, $select=false)
+    {
+        $ticket_data_table = self::get_data_table();
+        $filter = new \Data\Filter('hash eq \''.$hash.'\'');
+        if($select !== false && !in_array('hash', $select))
+        {
+            array_push($select, 'hash');
+        }
+        $tickets = $ticket_data_table->search($filter, $select);
+        if($tickets == false)
+        {
+            return false;
+        }
+        else if(!is_array($tickets))
+        {
+            return false;
+        }
+        return new Ticket($tickets);
+    }
+
+    static function get_tickets_for_user($user, $filter=false, $select=false)
+    {
+        $user_filter = new \Data\Filter('email eq \''.$user->getEmail().'\'');
+        if($filter === false)
+        {
+            $filter = $user_filter;
+        }
+        else
+        {
+            $filter->add($user_filter);
+        }
+        return self::get_tickets($filter, $select);
+    }
+
+    static function find_current_from_old_hash($hash)
+    {
+        $filter = new \Data\Filter("hash eq '$hash' or previous_hash eq '$hash'");
+        $current = self::get_tickets($filter);
+        if($current === false)
+        {
+            $filter = new \Data\Filter("previous_hash eq '$hash'");
+            $history_table = self::get_history_data_table();
+            $ticket_data = $history_table->search($filter);
+            if($ticket_data === false)
+            {
+                return false;
+            }
+            $current = self::find_current_from_old_hash($ticket_data[0]['hash']);
+        }
+        return $current[0];
     }
 
     static function create_new($count, $type='', $db=FALSE, $flush = TRUE)
@@ -185,26 +255,6 @@ class Ticket extends FlipsideDBObject
             return false;
         }
         return true;
-    }
-
-    static function get_tickets_for_user($user, $criteria = FALSE)
-    {
-        $db = new FlipsideTicketDB();
-        $conds = array('email' => '=\''.$user->getEmail().'\'', 'sold'=>'=1', 'used'=>'=0');
-        if($criteria != FALSE)
-        {
-            $conds = array_merge($conds, $criteria);
-        }
-        $res = self::select_from_db_multi_conditions($db, $conds);
-        if($res === FALSE)
-        {
-            return FALSE;
-        }
-        else if(!is_array($res))
-        {
-            $res = array($res);
-        }
-        return $res;
     }
 
     static function get_tickets_for_user_and_pool($user, $criteria = FALSE)
@@ -242,73 +292,35 @@ class Ticket extends FlipsideDBObject
         return $res;
     }
 
-    static function get_ticket_by_hash($hash)
-    {
-        $db = new FlipsideTicketDB();
-        $res = self::select_from_db($db, 'hash', $hash);
-        if($res === FALSE)
-        {
-            return FALSE;
-        }
-        else if(!is_array($res))
-        {
-            $res = array($res);
-        }
-        return $res;
-    }
-
-    static function find_current_from_old_hash($hash, $db = FALSE)
-    {
-        if($db === FALSE)
-        {
-            $db = new FlipsideTicketDB();
-        }
-        //Try current first
-        $current = self::select_from_db($db, 'hash', $hash);
-        if($current === FALSE)
-        {
-             //Find this ticket by checking previous_hash
-            $current = self::select_from_db($db, 'previous_hash', $hash);
-            if($current == FALSE)
-            {
-                //Find this ticket in the history table and work forward
-                $ticket_data = $db->select('tblTicketsHistory', '*', array('previous_hash'=>'=\''.$hash.'\''));
-                if($ticket_data === FALSE)
-                {
-                    return FALSE;
-                }
-                $current = self::find_current_from_old_hash($ticket_data[0]['hash'], $db);
-            }
-        }
-        return $current;
-    }
-
     static function get_ticket_history_by_hash($hash)
     {
-        $db = new FlipsideTicketDB();
-        $current = self::find_current_from_old_hash($hash, $db);
-        if($current === FALSE)
+        $current = self::find_current_from_old_hash($hash);
+        if($current === false)
         {
-            return FALSE;
+            return false;
         }
-        $res = array('current'=>$current, 'history'=>array());
+        $res = new SerializableObject();
+        $res->current = $current;
+        $res->history = array();
         $ticket = $current;
         while($ticket->has_previous())
         {
-            $ticket = $ticket->get_previous($db);
-            array_push($res['history'], $ticket);
+            $ticket = $ticket->get_previous();
+            array_push($res->history, $ticket);
         }
         if($current->hash == $hash)
         {
-            $res['selected'] = -1;
+            $res->selected = -1;
         }
         else
         {
-            for($i = 0; $i < count($res['history']); $i++)
+            $count = count($res->history);
+            for($i = 0; $i < $count; $i++)
             {
-                if($res['history'][$i]->hash == $hash)
+                if($res->history[$i]->hash == $hash)
                 {
-                    $res['selected'] = $i;
+                    $res->selected = $i;
+                    break;
                 }
             }
         }

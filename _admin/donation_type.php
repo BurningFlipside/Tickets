@@ -6,9 +6,6 @@ $page = new TicketAdminPage('Burning Flipside - Tickets');
 
 $page->add_js_from_src('js/donation_type.js');
 
-$css_tag = $page->create_open_tag('link', array('rel'=>'stylesheet', 'href'=>'css/admin.css', 'type'=>'text/css'), true);
-$page->add_head_tag($css_tag);
-
 $user = FlipSession::get_user(TRUE);
 $is_admin = $user->isInGroupNamed("TicketAdmins");
 if(!$is_admin)

@@ -1,8 +1,8 @@
 function change_year(control)
 {
-    var data = 'tickets='+$(control).val();
+    var data = 'filter=year eq '+$(control).val()+'&select=request_id,first,last,type&fmt=data-table';
     var table = $('#tickets').DataTable();
-    table.ajax.url('/tickets/ajax/request.php?'+data).load();
+    table.ajax.url('../api/v1/requests_w_tickets?'+data).load();
 }
 
 function init_page()
@@ -12,7 +12,7 @@ function init_page()
             {'data': 'request_id'},
             {'data': 'first'},
             {'data': 'last'},
-            {'data': 'type.description'}
+            {'data': 'type'}
         ]
     });
     change_year($('#year'));

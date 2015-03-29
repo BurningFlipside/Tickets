@@ -5,26 +5,136 @@ require_once('class.TicketAdminPage.php');
 require_once('class.FlipsideTicketDB.php');
 $page = new TicketAdminPage('Burning Flipside - Tickets');
 
-$page->add_js_from_src('/js/jquery.dataTables.js');
+$page->add_js(JS_DATATABLE);
+$page->add_css(CSS_DATATABLE);
+$page->add_js(JS_BOOTBOX);
 $page->add_js_from_src('js/gate.js');
 
-$css_tag = $page->create_open_tag('link', array('rel'=>'stylesheet', 'href'=>'/css/jquery.dataTables.css', 'type'=>'text/css'), true);
-$page->add_head_tag($css_tag);
-
-$db = new FlipsideTicketDB();
-
-    $page->body .= '
-        <div class="row">
-            <div class="col-lg-12">
-                <h1 class="page-header">Gate Graphs</h1>
-            </div>
+$page->body .= '
+    <div class="row">
+        <div class="col-sm-12">
+            <h1 class="page-header">
+                Gate
+                <button id="screen" class="btn btn-default pull-right" title="fullscreen" onclick="fullscreen()"><span class="glyphicon glyphicon-fullscreen"></span></button>
+            </h1>
         </div>
-        <div class="row">
-            <div class="panel-group" id="accordion">
+    </div>
+    <div class="row">
+        <div class="form-group">
+            <label for="ticket_search" class="col-sm-2 control-label">Search:</label>
+            <div class="col-sm-10">
+                <input class="form-control" type="text" name="ticket_search" id="ticket_search"/>
             </div>
         </div>
     </div>
-</div>
+    <div class="modal fade" aria-hidden="true" id="process_ticket_modal" style="display: none;" data-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title" id="modal_title">Process Ticket</h4>
+                </div>
+                <div class="modal-body"><div class="container-fluid">
+                    <div class="form-group">
+                        <label for="hash" class="col-sm-2 control-label">Code:</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" type="text" name="hash" id="hash" readonly="">
+                        </div>
+                    </div>
+                    <div class="clearfix visible-sm visible-md visible-lg"></div>
+                    <div class="form-group">
+                        <label for="firstName" class="col-sm-2 control-label">First Name:</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" type="text" name="firstName" id="firstName">
+                        </div>
+                    </div>
+                    <div class="clearfix visible-sm visible-md visible-lg"></div>
+                    <div class="form-group">
+                        <label for="lastName" class="col-sm-2 control-label">Last Name:</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" type="text" name="lastName" id="lastName"/>
+                        </div>
+                    </div>
+                    <div class="clearfix visible-sm visible-md visible-lg"></div>
+                    <div class="well" id="minor_block">
+                        <div class="form-group">
+                            <label for="guardian_first" class="col-sm-2 control-label">Guardian First Name:</label>
+                            <div class="col-sm-10">
+                                <input class="form-control" type="text" name="guardian_first" id="guardian_first"/>
+                            </div>
+                        </div>
+                        <div class="clearfix visible-sm visible-md visible-lg"></div>
+                        <div class="form-group">
+                            <label for="guardian_last" class="col-sm-2 control-label">Guardian Last Name:</label>
+                            <div class="col-sm-10">
+                                <input class="form-control" type="text" name="guardian_last" id="guardian_last"/>
+                            </div>
+                        </div>
+                        <div class="clearfix visible-sm visible-md visible-lg"></div>
+                    </div>
+                    <div class="clearfix visible-sm visible-md visible-lg"></div>
+                    <div class="form-group">
+                        <label for="void" class="col-sm-2 control-label">Void:</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" type="checkbox" name="void" id="void"/>
+                        </div>
+                    </div>
+                    <div class="clearfix visible-sm visible-md visible-lg"></div>
+                    <div class="form-group">
+                        <label for="used" class="col-sm-2 control-label">Used:</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" type="checkbox" name="used" id="used"/>
+                        </div>
+                    </div>
+                    <div class="clearfix visible-sm visible-md visible-lg"></div>
+                    <div class="form-group">
+                        <label for="physical_ticket_id" class="col-sm-2 control-label">Physical Ticket ID:</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" type="text" name="physical_ticket_id" id="physical_ticket_id"/>
+                        </div>
+                    </div>
+                    <div class="clearfix visible-sm visible-md visible-lg"></div>
+                    <div class="form-group">
+                        <label for="comments" class="col-sm-2 control-label">Comments:</label>
+                        <div class="col-sm-10">
+                            <textarea rows="5" class="form-control" name="comments" id="comments"></textarea>
+                        </div>
+                    </div>
+                    <div class="clearfix visible-sm visible-md visible-lg"></div>
+                </div></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" onclick="process_ticket()">Process</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" aria-hidden="true" id="search_ticket_modal" style="display: none;" data-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title" id="modal_title">Search Tickets</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <table class-"table table-striped stripe" id="search_ticket_table">
+                            <thead>
+                                <tr>
+                                    <th>Hash</th>
+                                    <th>First Name</th>
+                                    <th>Last Name</th>
+                                    <th>Type</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 ';
 
 $page->print_page();

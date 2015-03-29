@@ -1,4 +1,5 @@
 <?php
+require_once('Autoload.php');
 require_once('class.Ticket.php');
 
 function ticket_api_group()
@@ -7,8 +8,8 @@ function ticket_api_group()
     $app->get('', 'list_tickets');
     $app->get('/types', 'list_ticket_types');
     $app->get('/discretionary', 'list_discretionary_tickets');
-    $app->get('/search/:data', 'search_tickets');
     $app->get('/:hash', 'show_ticket');
+    $app->get('/:hash/pdf', 'get_pdf');
     $app->patch('/:hash', 'update_ticket');
     $app->post('/pos/sell', 'sell_multiple_tickets');
 }
@@ -21,23 +22,24 @@ function list_tickets()
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
     $params = $app->request->params();
-    if(isset($params['fmt']))
+    $filter = false;
+    $select = false;
+    if(isset($params['select']))
     {
-       unset($params['fmt']);
+        $select = explode(',',$params['select']);
     }
-    $tickets = array();
-    if(isset($params['with_pool']) && $params['with_pool'])
+    if($app->user->isInGroupNamed('TicketAdmins') && isset($params['filter']))
     {
-        unset($params['with_pool']);
-        process_params($params);
-        $tickets = Ticket::get_tickets_for_user_and_pool($app->user, $params);
+        $filter = new \Data\Filter($params['filter']);
     }
     else
     {
-        process_params($params);
-        $tickets = Ticket::get_tickets_for_user($app->user, $params);
+        $filter = new \Data\Filter('email eq \''.$app->user->getEmail().'\' and discretionary eq 0');
     }
-    if($tickets === FALSE)
+    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $ticket_data_table = $ticket_data_set['Tickets'];
+    $tickets = $ticket_data_table->read($filter, $select);
+    if($tickets === false)
     {
         $tickets = array();
     }
@@ -48,19 +50,46 @@ function list_tickets()
     echo json_encode($tickets);
 }
 
-function show_ticket($id)
+function show_ticket($hash)
 {
     global $app;
     if(!$app->user)
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $ticket = Ticket::get_ticket_by_hash($id);
-    if(is_array($ticket))
+    $params = $app->request->params();
+    $select = false;
+    if(isset($params['select']))
     {
-        $ticket = $ticket[0];
+        $select = explode(',',$params['select']);
     }
-    echo json_encode($ticket);
+    if(isset($params['with_history']) && $params['with_history'] === '1')
+    {
+        $ticket = Ticket::get_ticket_history_by_hash($hash);
+    }
+    else
+    {
+        $ticket = Ticket::get_ticket_by_hash($hash, $select);
+    }
+    if($ticket === false)
+    {
+        throw new Exception('Unknown ticket', INVALID_PARAM);
+    }
+    echo $ticket->serializeObject($app->fmt, $select);
+}
+
+function get_pdf($hash)
+{
+    global $app;
+    if(!$app->user)
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    $ticket = Ticket::get_ticket_by_hash($hash);
+    $pdf = new TicketPDF($ticket);
+    $app->fmt = 'passthru';
+    $app->response->headers->set('Content-Type', 'application/pdf');
+    $pdf->generatePDF(true);
 }
 
 function typecast($old_object, $new_classname) {
@@ -87,28 +116,46 @@ function update_ticket($id)
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    if(!$app->user->isInGroupNamed("TicketAdmins"))
+    $params = $app->request->params();
+    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $ticket_data_table = $ticket_data_set['Tickets'];
+    $filter = new \Data\Filter('hash eq \''.$id.'\'');    
+    $body = $app->request->getBody();
+    $array = json_decode($body, true);
+    $copy = $array;
+    unset($copy['firstName']);
+    unset($copy['lastName']);
+    unset($copy['email']);
+    if(count($copy) > 0 && !$app->user->isInGroupNamed("TicketAdmins"))
     {
         throw new Exception('Must be member of TicketAdmins group', ACCESS_DENIED);
     }
-    $ticket = Ticket::get_ticket_by_hash($id);
-    if(is_array($ticket))
+    $res = false;
+    $hash = false;
+    if(count($copy) > 0)
     {
-        $ticket = $ticket[0];
-    }
-    $body   = $app->request->getBody();
-    $patch  = json_decode($body);
-    $ticket = (object)array_merge((array)$ticket, (array)$patch);
-    $ticket = typecast($ticket, 'Ticket');
-    $db = new FlipsideTicketDB();
-    if($ticket->replace_in_db($db))
-    {
-        echo json_encode($ticket);
+        $hash = $id;
+        $res = $ticket_data_table->update($filter, $array);
     }
     else
     {
-        throw new Exception('Failed to update ticket', INTERNAL_ERROR);
+        if(isset($array['email']))
+        {
+            $hash = $id;
+        }
+        else
+        {
+            $hash = $id;
+        }
+        $res = $ticket_data_table->update($filter, $array);
     }
+    if($res === false)
+    {
+        throw new Exception('Unable to update DB', INTERNAL_ERROR);
+    }
+    $url = $app->request->getRootUri().$app->request->getResourceUri();
+    $url = substr($url, 0, strrpos($url, '/')+1);
+    echo json_encode(array('hash'=>$hash, 'href'=>$url.$hash));
 }
 
 function list_discretionary_tickets()
@@ -118,46 +165,29 @@ function list_discretionary_tickets()
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    if(!$app->user->isInGroupNamed("AAR"))
+    if(!$app->user->isInGroupNamed('AAR'))
     {
         throw new Exception('Must be member of AAR group', ACCESS_DENIED);
     }
-    $db = new FlipsideTicketDB();
-    $conds = array('email' => '=\''.$app->user->getEmail().'\'', 'discretionary'=>'=1', 'used'=>'=0');
-    $tickets = Ticket::select_from_db_multi_conditions($db, $conds);
+    $params = $app->request->params();
+    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $ticket_data_table = $ticket_data_set['Tickets'];
+    $select = false;
+    if(isset($params['select']))
+    {
+        $select = explode(',',$params['select']);
+    }
+    $filter = new \Data\Filter('email eq \''.$app->user->getEmail().'\' and discretionary eq 1 and used eq 0');
+    $tickets = $ticket_data_table->search($filter, $select);
     if($tickets === false)
     {
-        echo json_encode(false);
-        return;
+        $tickets = array();
     }
     else if(!is_array($tickets))
     {
         $tickets = array($tickets);
     }
     echo json_encode($tickets);
-}
-
-function search_tickets($data)
-{
-    $tickets = Ticket::searchForTickets('*', $data, TRUE);
-    if($tickets === false)
-    {
-        echo json_encode(false);
-        return;
-    }
-    else if(!is_array($tickets))
-    {
-        $tickets = array($tickets);
-    }
-    if(isset($tickets['history']))
-    {
-        unset($tickets['history']);
-        echo json_encode(array('old_tickets'=>$tickets));
-    }
-    else
-    {
-        echo json_encode($tickets);
-    }
 }
 
 function list_ticket_types()
@@ -167,9 +197,29 @@ function list_ticket_types()
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $db = new FlipsideTicketDB();
-    $constraints = $db->getFlipsideTicketConstraints();
-    echo json_encode($constraints);
+    $params = $app->request->params();
+    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $ticket_type_data_table = $ticket_data_set['TicketTypes'];
+    $filter = false;
+    $select = false;
+    if(isset($params['select']))
+    {
+        $select = explode(',',$params['select']);
+    }
+    if(isset($params['filter']))
+    {
+        $filter = new \Data\Filter($params['filter']);
+    }
+    $ticket_types = $ticket_type_data_table->search($filter, $select);
+    if($ticket_types === false)
+    {
+        $ticket_types = array();
+    }
+    else if(!is_array($ticket_types))
+    {
+        $ticket_types = array($ticket_types);
+    }
+    echo json_encode($ticket_types);
 }
 
 function sell_multiple_tickets()
@@ -198,21 +248,6 @@ function sell_multiple_tickets()
     }
     $res = Ticket::do_sale($app->user, $obj['email'], $obj['tickets'], $message);
     echo json_encode($res); 
-}
-
-function process_params(&$params)
-{
-    foreach($params as $key=>$value)
-    {
-        if($key === '_')
-        {
-            unset($params[$key]);
-        }
-        else
-        {
-            $params[$key] = '='.$value;
-        }
-    }
 }
 
 ?>

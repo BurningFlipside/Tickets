@@ -5,18 +5,10 @@ require_once('class.TicketAdminPage.php');
 require_once('class.FlipsideTicketDB.php');
 $page = new TicketAdminPage('Burning Flipside - Tickets');
 
-$script_start_tag = $page->create_open_tag('script', array('src'=>'/js/jquery.dataTables.js'));
-$script_close_tag = $page->create_close_tag('script');
-$page->add_head_tag($script_start_tag.$script_close_tag);
-
-$script_start_tag = $page->create_open_tag('script', array('src'=>'/js/Chart.min.js'));
-$page->add_head_tag($script_start_tag.$script_close_tag);
-
-$script_start_tag = $page->create_open_tag('script', array('src'=>'js/chart_requests.js'));
-$page->add_head_tag($script_start_tag.$script_close_tag);
-
-$css_tag = $page->create_open_tag('link', array('rel'=>'stylesheet', 'href'=>'/css/jquery.dataTables.css', 'type'=>'text/css'), true);
-$page->add_head_tag($css_tag);
+$page->add_js(JS_DATATABLE);
+$page->add_js(JS_CHART);
+$page->add_css(CSS_DATATABLE);
+$page->add_js_from_src('js/chart_requests.js');
 
     $db = new FlipsideTicketDB();
     $request_count = $db->getRequestCount();

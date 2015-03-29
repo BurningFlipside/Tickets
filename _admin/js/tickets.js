@@ -113,21 +113,20 @@ function show_ticket_from_data(data)
 function ticket_data_done(data)
 {
     var ticket = null;
-    if(data.data.selected === undefined)
+    if(data.selected === undefined)
     {
-        alert(data.error);
+        alert('Unable to retrieve ticket history data');
         console.log(data);
         return;
     }
-    ticket_data = data.data;
-    show_ticket_from_data(data.data);
+    ticket_data = data;
+    show_ticket_from_data(data);
 }
 
 function view_ticket(hash)
 {
     $.ajax({
-        url: '/tickets/ajax/tickets.php',
-        data: 'hash='+hash+'&with_history=1',
+        url: '../api/v1/tickets/'+hash+'?with_history=1',
         type: 'get',
         dataType: 'json',
         success: ticket_data_done}); 
@@ -252,7 +251,7 @@ function table_searched()
 function init_page()
 {
     $('#tickets').dataTable({
-        "ajax": '/tickets/ajax/tickets.php?all=1',
+        "ajax": '../api/v1/tickets?filter=year eq 2015&fmt=data-table',
         columns: [
             {'data': 'hash', 'render':short_hash},
             {'data': 'firstName'},

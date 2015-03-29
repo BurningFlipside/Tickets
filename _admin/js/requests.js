@@ -1,39 +1,19 @@
 function change_year(control)
 {
-    var data = 'all='+$(control).val();
+    var data = 'filter=year eq '+$(control).val()+'&fmt=data-table';
     var table = $('#requests').DataTable();
-    table.ajax.url('/tickets/ajax/request.php?'+data).load();
-}
-
-function ticket_count(row, type, val, meta)
-{
-    return row.tickets.length;
+    table.ajax.url('../api/v1/requests?'+data).load();
 }
 
 function total_due(row, type, val, meta)
 {
-    var total = 0;
-    if(row.tickets !== undefined)
-    {
-        for(i = 0; i < row.tickets.length; i++)
-        {
-            total += row.tickets[i].type.cost*1;
-        }
-    }
-    if(row.donations !== undefined)
-    {
-        for(i = 0; i < row.donations.length; i++)
-        {
-            total += row.donations[i].amount*1;
-        }
-    }
-    return '$'+total;
+    return '$'+row.total_due;
 }
 
 function child_data(row, type, val, meta)
 {
     var res = '';
-    if(row.tickets !== undefined)
+    if(row.tickets !== undefined && row.tickets !== null)
     {
         for(i = 0; i < row.tickets.length; i++)
         {
@@ -175,31 +155,32 @@ function row_clicked()
 
 function status_ajax_done(data)
 {
-    for(i = 0; i < data.data.length; i++)
+    for(i = 0; i < data.length; i++)
     {
-        $('#status').append('<option value="'+data.data[i].status_id+'">'+data.data[i].name+'</option>');
+        $('#status').append('<option value="'+data[i].status_id+'">'+data[i].name+'</option>');
     }
 }
 
 function init_page()
 {
+    data = 'filter=year eq '+$('#year').val()+'&fmt=data-table';
     $('#requests').dataTable({
         columns: [
             {'class': 'details-control', 'orderable': false, 'data': null, 'defaultContent': ''},
             {'data': 'request_id'},
             {'data': 'givenName'},
             {'data': 'sn'},
-            {'data': ticket_count},
             {'data': total_due},
             {'data': child_data, 'visible': false}
-        ]
+        ],
+        'order': [[1, 'asc']],
+        'ajax': '../api/v1/requests?'+data
     });
     $('#requests').on('draw.dt', draw_done);
     $('#requests tbody').on('click', 'td.details-control', details_clicked);
     $('#requests tbody').on('click', 'td:not(.details-control)', row_clicked);
-    change_year($('#year'));
     $.ajax({
-        url: 'ajax/status.php',
+        url: '../api/v1/globals/statuses',
         dataType: 'json',
         success: status_ajax_done});
 }

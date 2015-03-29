@@ -18,7 +18,7 @@ function tableDrawComplete()
 
 function get_words_done(data)
 {
-    $('#long_id_words').html(data.data);
+    $('#long_id_words').html(data.hash_words);
 }
 
 function show_long_id(hash)
@@ -26,7 +26,7 @@ function show_long_id(hash)
     $('#long_id').html(hash);
     $('#long_id_words').html('');
     $.ajax({
-        url: '/tickets/ajax/tickets.php?hash_to_words='+hash,
+        url: 'api/v1/tickets/'+hash+'?select=hash_words',
         type: 'get',
         dataType: 'json',
         success: get_words_done});
@@ -86,16 +86,18 @@ function save_ticket_done(data)
     }
     else
     {
-        location.reload();
+        console.log(data);
+        //location.reload();
     }
 }
 
 function save_ticket()
 {
     $.ajax({
-        url: '/tickets/ajax/tickets.php',
-        type: 'post',
-        data: 'hash='+$('#show_short_code').data('hash')+'&first='+$('#edit_first_name').val()+'&last='+$('#edit_last_name').val(),
+        url: 'api/v1/tickets/'+$('#show_short_code').data('hash'),
+        type: 'patch',
+        data: '{"firstName":"'+$('#edit_first_name').val()+'","lastName":"'+$('#edit_last_name').val()+'"}',
+        processData: false,
         dataType: 'json',
         success: save_ticket_done});
     $('#ticket_edit_modal').modal('hide');
@@ -134,18 +136,8 @@ function download_ticket(control)
 {
     var jq = $(control);
     var id = jq.attr('for');
-    var ticket = get_ticket_data_by_hash(id);
-    if(ticket == null)
-    {
-        alert('Cannot find ticket');
-        return;
-    }
-    $.ajax({
-        url: '/tickets/ajax/tickets.php',
-        type: 'post',
-        data: 'hash='+ticket.hash+'&year='+ticket.year+'&pdf=1',
-        dataType: 'json',
-        success: download_ticket_done});
+    var win = window.open('api/v1/tickets/'+id+'/pdf', '_blank');
+    
 }
 
 function transfer_ticket(control)
@@ -171,7 +163,7 @@ function make_actions(data, type, row, meta)
     var res = '';
     var view_options = {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'View Ticket Code', for: data, onclick: 'view_ticket(this)'};
     var edit_options = {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Edit Ticket<br/>Use this option to keep the ticket<br/>on your account but<br/>change the legal name.', 'data-html': true, for: data, onclick: 'edit_ticket(this)'};
-    var pdf_options =  {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Download PDF', for: data, onclick: 'download_ticket(this)'};
+    var pdf_options =  {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Download PDF', for: data, href: 'api/v1/tickets/'+data+'/pdf', target: '_blank'};
     var transfer_options = {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Transfer Ticket<br/>Use this option to send<br/>the ticket to someone else', 'data-html': true, for: data, onclick: 'transfer_ticket(this)'};
     if(browser_supports_font_face())
     {
@@ -189,11 +181,10 @@ function make_actions(data, type, row, meta)
         glyph.appendTo(button);
         res += button.prop('outerHTML');
 
-        pdf_options.type = 'button';
-        button = $('<button/>', pdf_options);
+	var link = $('<a/>', pdf_options);
         glyph = $('<span/>', {class: 'glyphicon glyphicon-cloud-download'});
-        glyph.appendTo(button);
-        res += button.prop('outerHTML');
+        glyph.appendTo(link);
+        res += link.prop('outerHTML');
 
         transfer_options.type = 'button';
         button = $('<button/>', transfer_options);

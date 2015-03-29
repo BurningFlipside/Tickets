@@ -5,11 +5,9 @@ require_once('class.TicketAdminPage.php');
 require_once('class.FlipsideTicketDB.php');
 $page = new TicketAdminPage('Burning Flipside - Tickets');
 
-$page->add_js_from_src('/js/jquery.dataTables.js');
+$page->add_js(JS_DATATABLE);
+$page->add_css(CSS_DATATABLE);
 $page->add_js_from_src('js/users.js');
-
-$css_tag = $page->create_open_tag('link', array('rel'=>'stylesheet', 'href'=>'/css/jquery.dataTables.css', 'type'=>'text/css'), true);
-$page->add_head_tag($css_tag);
 
 $page->body .= '
         <div class="row">
