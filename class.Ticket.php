@@ -178,9 +178,16 @@ class Ticket extends SerializableObject
     {
         $ticket_data_table = self::get_data_table();
         $filter = new \Data\Filter('hash eq \''.$hash.'\'');
-        if($select !== false && !in_array('hash', $select))
+        if($select !== false)
         {
-            array_push($select, 'hash');
+            if(!in_array('hash', $select))
+            {
+                array_push($select, 'hash');
+            }
+            if(in_array('hash_words', $select))
+            {
+                $select = array_diff($select, array('hash_words'));
+            }
         }
         $tickets = $ticket_data_table->search($filter, $select);
         if($tickets == false)
@@ -191,7 +198,11 @@ class Ticket extends SerializableObject
         {
             return false;
         }
-        return new Ticket($tickets);
+        else if(!isset($tickets[0]))
+        {
+            return new Ticket($tickets);
+        }
+        return new Ticket($tickets[0]);
     }
 
     static function get_tickets_for_user($user, $filter=false, $select=false)
@@ -222,6 +233,7 @@ class Ticket extends SerializableObject
                 return false;
             }
             $current = self::find_current_from_old_hash($ticket_data[0]['hash']);
+            return $current;
         }
         return $current[0];
     }
