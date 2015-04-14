@@ -503,7 +503,7 @@ function get_window_done(data)
             }
             else
             {
-                $('#request_set').prepend(alert_div);
+                //$('#request_set').prepend(alert_div);
             }
             out_of_window = true;
             if(!test_mode)
@@ -547,6 +547,11 @@ function init_index()
 {
     init_window();
     init_table();
+    if(getParameterByName('show_transfer_info') === '1')
+    {
+        var body = $('#content');
+        add_notification(body, 'You have successfully sent an email with the ticket information. The ticket will be fully transfered when the receipient logs in and claims the ticket', NOTIFICATION_SUCCESS);
+    }
 }
 
 $(init_index);

@@ -11,6 +11,19 @@ function change_name_done(data)
     }
 }
 
+function transfer_done(data)
+{
+    if(data.error !== undefined)
+    {
+        alert(data.error);
+        return;
+    }
+    else
+    {
+        window.location = '/tickets/index.php?show_transfer_info=1';
+    }
+}
+
 function change_name()
 {
     $.ajax({
@@ -28,7 +41,7 @@ function transfer()
         type: 'post',
         data: 'transfer=1&hash='+$('#hash').val()+'&email='+encodeURIComponent($('#email').val()),
         dataType: 'json',
-        success: change_name_done});
+        success: transfer_done});
 }
 
 function claim_ticket()
