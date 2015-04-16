@@ -62,6 +62,20 @@ $page->add_head_tag($css_tag);
                         </div>
                         <div class="clearfix visible-sm visible-md visible-lg"></div>
                         <div class="form-group">
+                            <label for="message" class="col-sm-2 control-label">First Name (Optional):</label>
+                            <div class="col-sm-10">
+                                <input class="form-control" type="text" name="firstName" id="firstName"/>
+                            </div>
+                        </div>
+                        <div class="clearfix visible-sm visible-md visible-lg"></div>
+                        <div class="form-group">
+                            <label for="message" class="col-sm-2 control-label">Last Name (Optional):</label>
+                            <div class="col-sm-10">
+                                <input class="form-control" type="text" name="lastName" id="lastName"/>
+                            </div>
+                        </div>
+                        <div class="clearfix visible-sm visible-md visible-lg"></div>
+                        <div class="form-group">
                             <label for="message" class="col-sm-2 control-label">Personal Message (Optional):</label>
                             <div class="col-sm-10">
                                 <textarea rows="4" class="form-control" type="text" name="message" id="message">

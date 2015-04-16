@@ -74,7 +74,7 @@ class TicketPage extends SecurePage
             $secure_menu = array(
                 'Tickets'=>'/tickets/index.php',
                 'View Registrations'=>'/register/view.php',
-                'Theme Camp Registration'=>'/register/tc_reg.php',
+                //'Theme Camp Registration'=>'/register/tc_reg.php',
                 'Art Project Registration'=>'/register/art_reg.php',
                 'Art Car Registration'=>'/register/artCar_reg.php',
                 'Event Registration'=>'/register/event_reg.php'

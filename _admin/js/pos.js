@@ -75,17 +75,23 @@ function validate_current()
 
 function final_post_done(data)
 {
+    $('.next').attr('disabled', false);
     if(data === true)
     {
         location.reload();
     }
-    console.log(data);
+    else
+    {
+        alert(data);
+        console.log(data);
+    }
 }
 
 function final_post(e)
 {
     if(validate_current())
     {
+        $('.next').attr('disabled', true);
         var obj = {};
         obj.email = $('#confirm_email').val();
         obj.tickets = {};
@@ -100,6 +106,16 @@ function final_post(e)
         if(message !== undefined && message.trim().length > 0)
         {
             obj.message = $('#message').val();
+        }
+        var firstName = $('#firstName').val();
+        if(firstName !== undefined && firstName.trim().length > 0)
+        {
+            obj.firstName = firstName;
+        }
+        var lastName = $('#lastName').val();
+        if(lastName !== undefined && lastName.trim().length > 0)
+        {
+            obj.lastName = lastName;
         }
         var data_str = JSON.stringify(obj);
         $.ajax({
