@@ -31,7 +31,14 @@ function make_d_action(data, type, row, meta)
         button = $('<button/>', pdf_options);
         glyph = $('<span/>', {class: 'glyphicon glyphicon-cloud-download'});
         glyph.appendTo(button);
-        res += button.prop('outerHTML');
+        if(button.prop('outerHTML') === undefined)
+        {
+            res += new XMLSerializer().serializeToString(button[0]);
+        }
+        else
+        {
+            res += button.prop('outerHTML');
+        }
 
         var rand = Math.floor(Math.random() * 3);
 
@@ -50,7 +57,14 @@ function make_d_action(data, type, row, meta)
                 break;
         }
         glyph.appendTo(button);
-        res += button.prop('outerHTML');
+        if(button.prop('outerHTML') === undefined)
+        {
+            res += new XMLSerializer().serializeToString(button[0]);
+        }
+        else
+        {
+            res += button.prop('outerHTML');
+        }
     }
     else
     {

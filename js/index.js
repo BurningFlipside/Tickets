@@ -173,24 +173,52 @@ function make_actions(data, type, row, meta)
             var button = $('<button/>', view_options);
             var glyph = $('<span/>', {class: 'glyphicon glyphicon-search'});
             glyph.appendTo(button);
-            res += button.prop('outerHTML');
+            if(button.prop('outerHTML') === undefined)
+            {
+                res += new XMLSerializer().serializeToString(button[0]);
+            }
+            else
+            {
+                res += button.prop('outerHTML');
+            }
         }
         edit_options.type = 'button';
         var button = $('<button/>', edit_options);
         var glyph = $('<span/>', {class: 'glyphicon glyphicon-pencil'});
         glyph.appendTo(button);
-        res += button.prop('outerHTML');
+        if(button.prop('outerHTML') === undefined)
+        {
+            res += new XMLSerializer().serializeToString(button[0]);
+        }
+        else
+        {
+            res += button.prop('outerHTML');
+        }
 
 	var link = $('<a/>', pdf_options);
         glyph = $('<span/>', {class: 'glyphicon glyphicon-cloud-download'});
         glyph.appendTo(link);
-        res += link.prop('outerHTML');
+        if(link.prop('outerHTML') === undefined)
+        {
+            res += new XMLSerializer().serializeToString(link[0]);
+        }
+        else
+        {
+            res += link.prop('outerHTML');
+        }
 
         transfer_options.type = 'button';
         button = $('<button/>', transfer_options);
         glyph = $('<span/>', {class: 'glyphicon glyphicon-send'});
         glyph.appendTo(button);
-        res += button.prop('outerHTML');
+        if(button.prop('outerHTML') === undefined)
+        {
+            res += new XMLSerializer().serializeToString(button[0]);
+        }
+        else
+        {
+            res += button.prop('outerHTML');
+        }
     }
     else
     {
