@@ -1,0 +1,65 @@
+<?php
+require_once('Autoload.php');
+require_once('class.Ticket.php');
+
+function ticket_history_api_group()
+{
+    global $app;
+    $app->get('', 'list_ticket_history');
+    $app->get('/:hash', 'show_ticket_history');
+}
+
+function list_ticket_history()
+{
+    global $app;
+    if(!$app->user)
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    if(!$app->user->isInGroupNamed('TicketAdmins'))
+    {
+        throw new Exception('Must be a ticket admin to view history', ACCESS_DENIED);
+    }
+    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $ticket_data_table = $ticket_data_set['TicketsHistory'];
+    $tickets = $ticket_data_table->read($app->odata->filter, $app->odata->select, $app->odata->top, $app->odata->skip, $app->odata->orderby);
+    if($tickets === false)
+    {
+        $tickets = array();
+    }
+    else if(!is_array($tickets))
+    {
+        $tickets = array($tickets);
+    }
+    echo json_encode($tickets);
+}
+
+function show_ticket_history($hash)
+{
+    global $app;
+    if(!$app->user)
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    $params = $app->request->params();
+    $select = false;
+    if(isset($params['select']))
+    {
+        $select = explode(',',$params['select']);
+    }
+    if(isset($params['with_history']) && $params['with_history'] === '1')
+    {
+        $ticket = Ticket::get_ticket_history_by_hash($hash);
+    }
+    else
+    {
+        $ticket = Ticket::get_ticket_by_hash($hash, $select);
+    }
+    if($ticket === false)
+    {
+        throw new Exception('Unknown ticket', INVALID_PARAM);
+    }
+    echo $ticket->serializeObject($app->fmt, $select);
+}
+
+?>
