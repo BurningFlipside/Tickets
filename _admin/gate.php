@@ -27,6 +27,28 @@ $page->body .= '
             </div>
         </div>
     </div>
+    <div class"row"><br/><br/><br/><br/><br/></div>
+    <div class="row">
+        <div class="panel-group" id="gate" role="tablist" aria-multiselectable="true">
+            <div class="panel panel-default">
+                <div class="panel-heading" role="tab" id="history_heading">
+                    <h4 class="panel-title">
+                        <a data-toggle="collapse" data-parent="#gate" href="#history" aria-expanded="true" aria-controls="history">Ticket History Search</a>
+                    </h4>
+                </div>
+                <div id="history" class="panel-collapse collapse" role="tabpanel" aria-labelledby="history_heading">
+                    <div class="panel-body">
+                        <div class="form-group">
+                            <label for="history_search" class="col-sm-2 control-label">History Search:</label>
+                            <div class="col-sm-10">
+                                <input class="form-control" type="text" name="history_search" id="history_search"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="modal fade" aria-hidden="true" id="process_ticket_modal" style="display: none;" data-backdrop="static">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -119,6 +141,117 @@ $page->body .= '
                 <div class="modal-body">
                     <div class="container-fluid">
                         <table class-"table table-striped stripe" id="search_ticket_table">
+                            <thead>
+                                <tr>
+                                    <th>Hash</th>
+                                    <th>First Name</th>
+                                    <th>Last Name</th>
+                                    <th>Type</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" aria-hidden="true" id="ticket_history_modal" style="display: none;" data-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title" id="modal_title">Ticket History</h4>
+                </div>
+                <div class="modal-body"><div class="container-fluid">
+                    <div class="form-group">
+                        <label for="history_hash" class="col-sm-2 control-label">Code:</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" type="text" name="history_hash" id="history_hash" readonly/>
+                        </div>
+                    </div>
+                    <div class="clearfix visible-sm visible-md visible-lg"></div>
+                    <div class="form-group">
+                        <label for="history_firstName" class="col-sm-2 control-label">First Name:</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" type="text" name="history_firstName" id="history_firstName"/>
+                        </div>
+                    </div>
+                    <div class="clearfix visible-sm visible-md visible-lg"></div>
+                    <div class="form-group">
+                        <label for="history_lastName" class="col-sm-2 control-label">Last Name:</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" type="text" name="history_lastName" id="history_lastName"/>
+                        </div>
+                    </div>
+                    <div class="clearfix visible-sm visible-md visible-lg"></div>
+                    <div class="well" id="minor_block">
+                        <div class="form-group">
+                            <label for="history_guardian_first" class="col-sm-2 control-label">Guardian First Name:</label>
+                            <div class="col-sm-10">
+                                <input class="form-control" type="text" name="history_guardian_first" id="history_guardian_first"/>
+                            </div>
+                        </div>
+                        <div class="clearfix visible-sm visible-md visible-lg"></div>
+                        <div class="form-group">
+                            <label for="history_guardian_last" class="col-sm-2 control-label">Guardian Last Name:</label>
+                            <div class="col-sm-10">
+                                <input class="form-control" type="text" name="history_guardian_last" id="history_guardian_last"/>
+                            </div>
+                        </div>
+                        <div class="clearfix visible-sm visible-md visible-lg"></div>
+                    </div>
+                    <div class="clearfix visible-sm visible-md visible-lg"></div>
+                    <div class="form-group">
+                        <label for="history_void" class="col-sm-2 control-label">Void:</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" type="checkbox" name="history_void" id="history_void" value="0"/>
+                        </div>
+                    </div>
+                    <div class="clearfix visible-sm visible-md visible-lg"></div>
+                    <div class="form-group">
+                        <label for="history_used" class="col-sm-2 control-label">Used:</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" type="checkbox" name="history_used" id="history_used" value="0"/>
+                        </div>
+                    </div>
+                    <div class="clearfix visible-sm visible-md visible-lg"></div>
+                    <div class="form-group">
+                        <label for="history_physical_ticket_id" class="col-sm-2 control-label">Physical Ticket ID:</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" type="text" name="history_physical_ticket_id" id="history_physical_ticket_id">
+                        </div>
+                    </div>
+                    <div class="clearfix visible-sm visible-md visible-lg"></div>
+                    <div class="form-group">
+                        <label for="history_comments" class="col-sm-2 control-label">Comments:</label>
+                        <div class="col-sm-10">
+                            <textarea rows="5" class="form-control" name="history_comments" id="history_comments"></textarea>
+                        </div>
+                    </div>
+                    <div class="clearfix visible-sm visible-md visible-lg"></div>
+                    <div class="col-md-6" style="text-align: center;"><a onclick="prev_ticket()" style="cursor: pointer;" id="left_arrow"><span class="glyphicon glyphicon-chevron-left"></span></a></div>
+                    <div class="col-md-6" style="text-align: center;"><a onclick="next_ticket()" style="cursor: pointer;" id="right_arrow"><span class="glyphicon glyphicon-chevron-right"></span></a></div>
+                    <div class="clearfix visible-sm visible-md visible-lg"></div>
+                </div></div>
+                <div class="modal-footer">
+                    <button id="process_history" type="button" class="btn btn-default" onclick="process_history_ticket()">Process</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" aria-hidden="true" id="history_ticket_modal" style="display: none;" data-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title" id="modal_title">Search Ticket History</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <table class-"table table-striped stripe" id="history_ticket_table">
                             <thead>
                                 <tr>
                                     <th>Hash</th>

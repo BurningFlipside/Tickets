@@ -1,15 +1,61 @@
+var history_data = null;
+
+function finish_processing_ticket(data)
+{
+    $('#process_ticket_modal').modal('hide');
+    console.log(data);
+}
+
+function error_processing_ticket(jqXHR)
+{
+    console.log(jqXHR);
+}
+
+function process_ticket()
+{
+    var hash = $('#hash').val();
+    var data = {};
+    data.firstName = $('#firstName').val();
+    data.lastName  = $('#lastNamie').val();
+    if($('#void:checked').length == 0)
+    {
+        data.void = 0;
+    }
+    else
+    {
+        data.void = 1;
+    }
+    if($('#used:checked').length == 0)
+    {
+        data.used = 0;
+    }
+    else
+    {
+        data.used = 1;
+        data.used_dt = new Date();
+    }
+    data.physical_ticket_id = $('#physical_ticket_id').val();
+    data.comments = $('#comments').val();
+    data = JSON.stringify(data);
+    $.ajax({
+        url:  '../api/v1/tickets/'+hash,
+        type: 'patch',
+        dataType: 'json',
+        data: data,
+        processData: false,
+        success: finish_processing_ticket,
+        error: error_processing_ticket
+    });
+}
+
 function found_ticket(data)
 {
+    $('#ticket_history_modal').modal('hide');
     $('#search_ticket_modal').modal('hide');
     console.log(data);
     if(data.used !== '0')
     {
         add_notification($('#process_ticket_modal .modal-body'), 'Ticket is already used!', NOTIFICATION_FAILED, false);
-        $('#used').attr('checked', true);
-    }
-    else
-    {
-        $('#used').removeAttr('checked');
     }
     if(data.void !== '0')
     {
@@ -20,6 +66,7 @@ function found_ticket(data)
     {
         $('#void').removeAttr('checked');
     }
+    $('#used').attr('checked', true);
     $('#hash').val(data.hash);
     $('#firstName').val(data.firstName);
     $('#lastName').val(data.lastName);
@@ -41,6 +88,114 @@ function found_ticket(data)
     $('#process_ticket_modal').modal('show');
 }
 
+function process_history_ticket()
+{
+    if(history_data.selected == -1)
+    {
+        found_ticket(history_data.current);
+    }
+    else
+    {
+        alert('Cannot process an old ticket');
+    }
+}
+
+function show_history_from_data(data)
+{
+    var read_only = true;
+    if(data.selected == -1)
+    {
+        ticket = data.current;
+        $('#right_arrow').hide();
+        if(data.history !== undefined && data.history.length > 0)
+        {
+            $('#left_arrow').show();
+        }
+        else
+        {
+            $('#left_arrow').hide();
+        }
+        read_only = false;
+    }
+    else
+    {
+        ticket = data.history[data.selected];
+        if(data.selected == (data.history.length - 1))
+        {
+            $('#left_arrow').hide();
+        }
+        else
+        {
+            $('#left_arrow').show();
+        }
+        $('#right_arrow').show();
+    }
+    $('#history_hash').val(ticket.hash);
+    $('#history_firstName').val(ticket.firstName);
+    $('#history_lastName').val(ticket.lastName);
+    $('#history_email').val(ticket.email);
+    $('#history_request_id').val(ticket.request_id);
+    $('#history_type').val(ticket.type);
+    $('#history_guardian_first').val(ticket.guardian_first);
+    $('#history_guardian_last').val(ticket.guardian_last);
+    $('#history_sold').val(ticket.sold);
+    $('#history_used').val(ticket.used);
+    $('#history_void').val(ticket.void);
+    $('#history_physical_ticket_id').val(ticket.physical_ticket_id);
+    $('#history_comments').val(ticket.comments);
+    if(read_only)
+    {
+        $('#history_firstName').prop('disabled', true);
+        $('#history_lastName').prop('disabled', true);
+        $('#history_email').prop('disabled', true);
+        $('#history_request_id').prop('disabled', true);
+        $('#history_type').prop('disabled', true);
+        $('#history_guardian_first').prop('disabled', true);
+        $('#history_guardian_last').prop('disabled', true);
+        $('#history_sold').prop('disabled', true);
+        $('#history_used').prop('disabled', true);
+        $('#history_void').prop('disabled', true);
+        $('#history_physical_ticket_id').prop('disabled', true);
+        $('#history_comments').prop('disabled', true);
+        $('#process_history').prop('disabled', true);
+    }
+    else
+    {
+        $('#history_firstName').prop('disabled', false);
+        $('#history_lastName').prop('disabled', false);
+        $('#history_email').prop('disabled', false);
+        $('#history_request_id').prop('disabled', false);
+        $('#history_type').prop('disabled', false);
+        $('#history_guardian_first').prop('disabled', false);
+        $('#history_guardian_last').prop('disabled', false);
+        $('#history_sold').prop('disabled', false);
+        $('#history_used').prop('disabled', false);
+        $('#history_void').prop('disabled', false);
+        $('#history_physical_ticket_id').prop('disabled', true);
+        $('#history_comments').prop('disabled', false);
+        $('#process_history').prop('disabled', false);
+    }
+    $('#ticket_history_modal').modal('show');
+}
+
+function found_history(data)
+{
+    history_data = data;
+    show_history_from_data(data);
+}
+
+function prev_ticket()
+{
+    history_data.selected++;
+    show_history_from_data(history_data);
+}
+
+function next_ticket()
+{
+    history_data.selected--;
+    show_history_from_data(history_data);
+}
+
 function search_done(data)
 {
     if(data.length === undefined || data.length === 0)
@@ -59,19 +214,98 @@ function search_done(data)
     $('#search_ticket_modal').modal('show');
 }
 
+function history_search_done(data)
+{
+    if(data.length === undefined || data.length === 0)
+    {
+        search_failed();
+        return;
+    }
+    var table = $('#history_ticket_table').DataTable();
+    table.clear();
+    for(i = 0; i < data.length; i++)
+    {
+        table.row.add(data[i]);
+    }
+    table.draw();
+    $('#history_ticket_modal').modal('show');
+}
+
 function search_failed(jqXHR)
 {
     alert('Unable to locate ticket!');
 }
 
+function filter_from_mag_stripe(stripe_value)
+{
+    if(stripe_value[0] !== '%')
+    {
+        return false;
+    }
+    if(stripe_value[1] === 'B' || stripe_value[1] === 'b')
+    {
+        //This appears to be a credit card
+        stripe_value = stripe_value.replace('%B', '');
+        stripe_value = stripe_value.replace('%b', '');
+        var arr = stripe_value.split('^');
+
+        var cc = {};
+        cc.number = arr[0];
+        cc.month  = arr[2].substring(2,4);
+        cc.year   = arr[2].substring(0,2);
+
+        var nameArr = arr[1].split('/');
+        cc.first  = nameArr[1];
+        cc.last   = nameArr[0];
+
+        var first = cc.first.split(' ');
+        if(first.length > 1)
+        {
+            cc.first = first[0];
+            cc.initial = first[1];
+        }
+        return 'filter='+
+                 'substringof(firstName,\''+cc.first+'\') and '+
+                 'substringof(lastName,\''+cc.last+'\')';
+    }
+    else if(stripe_value.indexOf('%TX') === 0)
+    {
+        //This appears to be a TX drivers license
+        var parts = stripe_value.split('^');
+        if(parts.length > 2)
+        {
+            var names = parts[1].split('$');
+            return 'filter='+
+                 'substringof(firstName,\''+names[1]+'\') and '+
+                 'substringof(lastName,\''+names[0]+'\')';
+        }
+    }
+    return false;
+}
+
 function really_search(jqXHR)
 {
-    var filter = 'filter='+
+    var filter = false;
+    if(this.indexOf('%') === 0)
+    {
+        filter = filter_from_mag_stripe(this);
+    }
+    else if(this.indexOf(' ') > -1)
+    {
+        var names = this.split(' ');
+        filter = 'filter='+
+                 'substringof(firstName,\''+names[0]+'\') and '+
+                 'substringof(lastName,\''+names[1]+'\')';
+    }
+    else
+    {
+        filter = 'filter='+
                  'substringof(firstName,\''+this+'\') or '+
                  'substringof(lastName,\''+this+'\') or '+
                  'substringof(hash,\''+this+'\') or '+
                  'substringof(email,\''+this+'\') or '+
                  'substringof(request_id,\''+this+'\')';
+    }
     $.ajax({
         url:  '../api/v1/tickets',
         data: filter,
@@ -82,8 +316,46 @@ function really_search(jqXHR)
     });
 }
 
+function really_search_history(jqXHR)
+{
+    var filter = false;
+    if(this.indexOf('%') === 0)
+    {
+        filter = filter_from_mag_stripe(this);
+    }
+    else if(this.indexOf(' ') > -1)
+    {
+        var names = this.split(' ');
+        filter = 'filter='+
+                 'substringof(firstName,\''+names[0]+'\') and '+
+                 'substringof(lastName,\''+names[1]+'\')';
+    }
+    else
+    {
+        filter = 'filter='+
+                 'substringof(firstName,\''+this+'\') or '+
+                 'substringof(lastName,\''+this+'\') or '+
+                 'substringof(hash,\''+this+'\') or '+
+                 'substringof(email,\''+this+'\') or '+
+                 'substringof(request_id,\''+this+'\')';
+    }
+    $.ajax({
+        url:  '../api/v1/tickets_history',
+        data: filter,
+        type: 'get',
+        dataType: 'json',
+        success: history_search_done,
+        error: search_failed
+    });
+}
+
 function get_ticket(hash)
 {
+    if(hash.indexOf('%') === 0)
+    {
+        really_search.call(hash);
+        return;
+    }
     $.ajax({
         url:  '../api/v1/tickets/'+hash,
         type: 'get',
@@ -91,6 +363,24 @@ function get_ticket(hash)
         context: hash,
         success: found_ticket,
         error: really_search
+    });
+}
+
+function get_history(hash)
+{
+    $('#history_ticket_modal').modal('hide');
+    if(hash.indexOf('%') === 0)
+    {
+        really_search_history.call(hash);
+        return;
+    }
+    $.ajax({
+        url:  '../api/v1/tickets/'+hash+'?with_history=1',
+        type: 'get',
+        dataType: 'json',
+        context: hash,
+        success: found_history,
+        error: really_search_history
     });
 }
 
@@ -102,12 +392,28 @@ function ticket_clicked()
     found_ticket(row.data());
 }
 
+function history_clicked()
+{
+    var table = $('#history_ticket_table').DataTable();
+    var tr = $(this).closest('tr');
+    var row = table.row(tr);
+    get_history(row.data().hash);
+}
+
 function ticket_search(evt)
 {
     if(evt.which !== 13) return;
     var value = $(this).val();
     //Try this as a ticket
     get_ticket(value);
+}
+
+function history_search(evt)
+{
+    if(evt.which !== 13) return;
+    var value = $(this).val();
+    //Try this as a ticket
+    get_history(value);
 }
 
 function focus_on_ticket_id()
@@ -125,19 +431,20 @@ function revert_screen()
 {
     $('.navbar').show();
     $('#page-wrapper').css('margin', '0 0 0 250px').css('width', '').css('height', '');
-    $('#screen').html('<span class="glyphicon glyphicon-fullscreen"></span>').attr('title', 'fullscreen').click(fullscreen);
+    $('#screen').html('<span class="glyphicon glyphicon-fullscreen"></span>').attr('title', 'fullscreen').unbind('click', revert_screen).click(fullscreen);
 }
 
 function fullscreen()
 {
     $('.navbar').hide();
     $('#page-wrapper').css('width', '100%').css('height', '100%').css('margin', '0');
-    $('#screen').html('<span class="glyphicon glyphicon-resize-small"></span>').attr('title', 'revert').click(revert_screen);
+    $('#screen').html('<span class="glyphicon glyphicon-resize-small"></span>').attr('title', 'revert').unbind('click', fullscreen).click(revert_screen);
 }
 
 function init_gate_page()
 {
     $('#ticket_search').keypress(ticket_search);
+    $('#history_search').keypress(history_search);
     $('#process_ticket_modal').on('shown.bs.modal', focus_on_ticket_id);
     $('#process_ticket_modal').on('hidden.bs.modal', focus_on_search);
     $('#search_ticket_table').dataTable({
@@ -148,7 +455,16 @@ function init_gate_page()
             {'data': 'type'}
         ]
     });
+    $('#history_ticket_table').dataTable({
+        'columns': [
+            {'data': 'hash'},
+            {'data': 'firstName'},
+            {'data': 'lastName'},
+            {'data': 'type'}
+        ]
+    });
     $('#search_ticket_table').on('click', 'tr', ticket_clicked);
+    $('#history_ticket_table').on('click', 'tr', history_clicked);
 }
 
 $(init_gate_page);
