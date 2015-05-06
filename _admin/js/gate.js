@@ -236,8 +236,9 @@ function search_failed(jqXHR)
     alert('Unable to locate ticket!');
 }
 
-function filter_from_mag_stripe(stripe_value)
+function process_mag_stripe(stripe_value)
 {
+    var card = {};
     if(stripe_value[0] !== '%')
     {
         return false;
@@ -245,28 +246,78 @@ function filter_from_mag_stripe(stripe_value)
     if(stripe_value[1] === 'B' || stripe_value[1] === 'b')
     {
         //This appears to be a credit card
-        stripe_value = stripe_value.replace('%B', '');
+        stipe_value = stripe_value.replace('%B', '');
         stripe_value = stripe_value.replace('%b', '');
         var arr = stripe_value.split('^');
-
-        var cc = {};
-        cc.number = arr[0];
-        cc.month  = arr[2].substring(2,4);
-        cc.year   = arr[2].substring(0,2);
+        
+        card.type          = 'cc';
+	card.cc_number     = arr[0];
+        card.expires       = {};
+        card.expires.month = arr[2].substring(2,4);
+        card.expires.year  = arr[2].substring(0,2);
 
         var nameArr = arr[1].split('/');
-        cc.first  = nameArr[1];
-        cc.last   = nameArr[0];
+        card.first  = nameArr[1];
+        card.last   = nameArr[0];
 
-        var first = cc.first.split(' ');
-        if(first.length > 1)
+        var first = card.first.split(' ');
+        if(card.length > 1)
         {
-            cc.first = first[0];
-            cc.initial = first[1];
+            card.first = first[0];
+            card.initial = first[1];
         }
+    }
+    else
+    {
+        //This appears to be a drivers license
+        var parts = stripe_value.split('^');
+        card.type  = 'dl';
+        card.state = parts[0].substring(1,3);
+        card.city  = parts[0].substring(3);
+        if(parts.length >= 2)
+        {
+             var names = parts[1].split('$');
+             card.first = names[1];
+             card.last  = names[0];
+             if(parts.length >= 3)
+             {
+                 card.address = parts[2];
+                 if(parts.length >= 4)
+                 {
+                     var subparts = parts[3].split('=');
+                     card.iin = subparts[0].substring(2, 5);
+                     card.dl_num = subparts[0].substring(8);
+                     if(subparts.length >= 2)
+                     {
+                         card.expires       = {};
+                         card.expires.month = subparts[1].substring(2,4);
+                         card.expires.year  = subparts[1].substring(0,2);
+                         card.birth         = {};
+                         card.birth.year    = subparts[1].substring(4,8);
+                         card.birth.month   = subparts[1].substring(8,10);
+                         card.birth.day     = subparts[1].substring(10,12);
+                         console.log(subparts);
+                     }
+                 }
+             }
+        }
+    }
+    console.log(card);
+    return card;
+}
+
+function filter_from_mag_stripe(stripe_value)
+{
+    if(stripe_value[0] !== '%')
+    {
+        return false;
+    }
+    var card = process_mag_stripe(stripe_value);
+    if(card.first !== undefined && card.last !== undefined)
+    {
         return 'filter='+
-                 'substringof(firstName,\''+cc.first+'\') and '+
-                 'substringof(lastName,\''+cc.last+'\')';
+                 'substringof(firstName,\''+card.first+'\') and '+
+                 'substringof(lastName,\''+card.last+'\')';
     }
     else if(stripe_value.indexOf('%TX') === 0)
     {
