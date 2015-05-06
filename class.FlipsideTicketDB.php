@@ -3,42 +3,46 @@ require_once("class.FlipsideDB.php");
 require_once('class.FlipsideTicketConstraints.php');
 require_once('class.FlipsideDonationType.php');
 require_once('class.FlipsideTicketRequest.php');
-class FlipsideTicketDB extends FlipsideDB
+class FlipsideTicketDB
 {
+    protected $data_set = null;
     protected static $test_mode = null;
     protected static $year = null;
     protected static $max_buckets = null;
 
     function __construct()
     {
-        parent::__construct('tickets');
+        $this->data_set = DataSetFactory::get_data_set('tickets');
     }
 
     function getRequestIdForUser($user)
     {
-        $conds['mail'] = '=\''.$user->getEmail().'\'';
-        $data = $this->select('tblRequestIDs', 'request_id', $conds);
-        if($data == FALSE || !isset($data[0]) || !isset($data[0]['request_id']))
+        $table  = $this->data_set['RequestIDs'];
+        $mail   = $user->getEmail();
+        $filter = new \Data\Filter("mail eq '$mail'");
+        $data   = $table->search($filter, array('request_id'));
+        if($data === false || !isset($data[0]) || !isset($data[0]['request_id']))
         {
-            return FALSE;
+            return false;
         }
         return $data[0]['request_id'];
     }
 
     function getNewRequestId($user)
     {
-        $data = $this->select('tblRequestIDs', 'MAX(request_id)');
-        if($data == FALSE || !isset($data[0]) || !isset($data[0]['MAX(request_id)']))
+        $table  = $this->data_set['RequestIDs'];
+        $data   = $table->search(false, array('MAX(request_id)'));
+        if($data === false || !isset($data[0]) || !isset($data[0]['MAX(request_id)']))
         {
-            return FALSE;
+            return false;
         }
         $id = $data[0]['MAX(request_id)'];
-        if(strpos($id, 'A') === FALSE)
+        if(strpos($id, 'A') === false)
         {
             return 'A00000001';
         }
         $id++;
-        $this->insert_array('tblRequestIDs', array('request_id'=>$id,'mail'=>$user->getEmail()));
+        $table->create(array('request_id'=>$id,'mail'=>$user->getEmail()));
         return $id;
     }
 
@@ -47,57 +51,50 @@ class FlipsideTicketDB extends FlipsideDB
         return FlipsideTicketRequest::get_request_by_id_and_year($this->getRequestIdForUser($user), $this->getVariable('year'), $this);
     }
 
-    function getRequestCount($conds = FALSE)
+    function getRequestCount($conds = false)
     {
-        if($conds == FALSE)
+        if($conds !== FALSE)
         {
-            $conds = array();
+            throw new \Exception('Unknown conditions!');
         }
-        $conds['year'] = '=\''.self::getTicketYear().'\'';
-        $data = $this->select('tblTicketRequest', 'COUNT(*)', $conds);
-        if($data == FALSE || !isset($data[0]) || !isset($data[0]['COUNT(*)']))
-        {
-            return FALSE;
-        }
-        return $data[0]['COUNT(*)'];
+        $table  = $this->data_set['TicketRequest'];
+        $filter = new \Data\Filter("year eq '".self::getTicketYear()."'");
+        $values = $table->search($filter, array('COUNT(*)'));
+        return $values[0]['COUNT(*)'];
     }
 
     function getProblemRequestCount($conds = FALSE)
     {
-        if($conds == FALSE)
+        if($conds !== FALSE)
         {
-            $conds = array();
+            throw new \Exception('Unknown conditions!');
         }
-        $conds['year'] = '=\''.self::getTicketYear().'\'';
-        $data = $this->select('vProblems', 'COUNT(*)', $conds);
-        if($data == FALSE || !isset($data[0]) || !isset($data[0]['COUNT(*)']))
-        {
-            return FALSE;
-        }
-        return $data[0]['COUNT(*)'];
+        $table  = $this->data_set['Problems'];
+        $filter = new \Data\Filter("year eq '".self::getTicketYear()."'");
+        $values = $table->search($filter, array('COUNT(*)'));
+        return $values[0]['COUNT(*)'];
     }
 
     function getRequestedTickets()
     {
         $ret = array();
-        $types = FlipsideTicketType::get_all_of_type($this);
+        $table  = $this->data_set['TicketTypes'];
+        $types  = $table->search();
         for($i = 0; $i < count($types); $i++)
         {
-            $ret[$i]['typeCode']    = $types[$i]->typeCode;
-            $ret[$i]['description'] = $types[$i]->description;
-            $stmt = $this->db->query('SELECT COUNT(*) FROM tblRequestedTickets WHERE YEAR = \''.self::getTicketYear().'\' AND type = \''.$types[$i]->typeCode.'\';');
-            if($stmt == FALSE)
+            $ret[$i]['typeCode']    = $types[$i]['typeCode'];
+            $ret[$i]['description'] = $types[$i]['description'];
+            $reqs   = $this->data_set['RequestedTickets'];
+            $filter = new \Data\Filter('year eq \''.self::getTicketYear().'\' and type = \''.$types[$i]['typeCode'].'\'');
+            $data   = $reqs->search($filter, array('COUNT(*)'));
+            if($data === false || !isset($data[0]) || !isset($data[0]['COUNT(*)']))
             {
-                $ret[$i]['count'] = 0;
-                continue;
+                 $ret[$i]['count'] = 0;
             }
-            $data = $stmt->fetchAll();
-            if($data == FALSE || !isset($data[0]) || !isset($data[0][0]))
+            else
             {
-                $ret[$i]['count'] = 0;
-                continue;
+                $ret[$i]['count'] = $data[0]['COUNT(*)'];;
             }
-            $ret[$i]['count'] = $data[0][0];
         }
         return $ret;
     }
@@ -141,46 +138,45 @@ class FlipsideTicketDB extends FlipsideDB
         return $stmt->fetchAll();
     }
 
-    function getTicketCount($conds = FALSE)
+    function getTicketCount($filter_str = false)
     {
-        if($conds == FALSE)
+        $year   = self::getTicketYear();
+        $filter = false;
+        if($filter_str === false)
         {
-            $conds = array();
+            $filter = new \Data\Filter("year eq '$year'");
         }
-        if(!isset($conds['year']))
+        else
         {
-            $conds['year'] = '=\''.self::getTicketYear().'\'';
+            $filter = new \Data\Filter("$filter_str and year eq '$year'");
         }
-        $data = $this->select('tblTickets', 'COUNT(*)', $conds);
-        if($data == FALSE || !isset($data[0]) || !isset($data[0]['COUNT(*)']))
+        $table = $this->data_set['Tickets'];
+        $data  = $table->search($filter, array('COUNT(*)'));
+        if($data === false || !isset($data[0]) || !isset($data[0]['COUNT(*)']))
         {
-            return FALSE;
+            return false;
         }
         return $data[0]['COUNT(*)'];
     }
 
     function getTicketSoldCount()
     {
-        $conds = array('sold'=>'=\'1\'');
-        return $this->getTicketCount($conds);
+        return $this->getTicketCount('sold eq 1');
     }
 
     function getTicketUnsoldCount()
     {
-        $conds = array('sold'=>'=\'0\'');
-        return $this->getTicketCount($conds);
+        return $this->getTicketCount('sold eq 0');
     }
 
     function getTicketUsedCount()
     {
-        $conds = array('used'=>'=\'1\'');
-        return $this->getTicketCount($conds);
+        return $this->getTicketCount('used eq 1');
     }
 
     function getTicketUnusedCount()
     {
-        $conds = array('used'=>'=\'0\'');
-        return $this->getTicketCount($conds);
+        return $this->getTicketCount('used eq 0');
     }
 
     function getReceivedTicketCount()
@@ -214,21 +210,23 @@ class FlipsideTicketDB extends FlipsideDB
 
     function getVariable($name)
     {
-        $array = $this->select('tblVariables', 'value', array('name'=>'=\''.$name.'\''));
-        if($array == FALSE || !isset($array[0]))
+        $table  = $this->data_set['Variables'];
+        $filter = new \Data\Filter("name eq '$name'");
+        $values = $table->search($filter, array('value'));
+        if($values === false || !isset($values[0]))
         {
-            return FALSE;
+            return false;
         }
         switch($name)
         {
             case 'year':
-                self::$year = $array[0]['value'];
+                self::$year = $values[0]['value'];
                 break;
             case 'test_mode':
-                self::$test_mode = $array[0]['value'];
+                self::$test_mode = $values[0]['value'];
                 break;
         }
-        return $array[0]['value'];
+        return $values[0]['value'];
     }
 
     function getAllVars()
