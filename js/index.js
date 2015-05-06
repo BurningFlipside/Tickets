@@ -3,7 +3,7 @@ var test_mode = false;
 
 function tableDrawComplete()
 {
-    if($("#ticketList").DataTable().data().length != 0)
+    if($("#ticketList").DataTable().data().length !== 0)
     {
         $("#ticket_set").show();
     }
@@ -38,7 +38,8 @@ function get_ticket_data_by_hash(hash)
 {
     var json = $("#ticketList").DataTable().ajax.json();
     var ticket = null;
-    for(var i = 0; i < json.data.length; i++)
+    var i;
+    for(i = 0; i < json.data.length; i++)
     {
         if(json.data[i].hash == hash)
         {
@@ -48,7 +49,7 @@ function get_ticket_data_by_hash(hash)
     if(ticket === null)
     {
         json = $('#discretionary').DataTable().ajax.json();
-        for(var i = 0; i < json.data.length; i++)
+        for(i = 0; i < json.data.length; i++)
         {
             if(json.data[i].hash == hash)
             {
@@ -64,7 +65,7 @@ function view_ticket(control)
     var jq = $(control);
     var id = jq.attr('for');
     var ticket = get_ticket_data_by_hash(id);
-    if(ticket == null)
+    if(ticket === null)
     {
         alert('Cannot find ticket');
         return;
@@ -108,7 +109,7 @@ function edit_ticket(control)
     var jq = $(control);
     var id = jq.attr('for');
     var ticket = get_ticket_data_by_hash(id);
-    if(ticket == null)
+    if(ticket === null)
     {
         alert('Cannot find ticket');
         return;
@@ -122,10 +123,10 @@ function edit_ticket(control)
 
 function download_ticket_done(data)
 {
-    if(data.pdf != undefined)
+    if(data.pdf !== undefined)
     {
         var win = window.open(data.pdf, '_blank');
-        if(win == undefined)
+        if(win === undefined)
         {
             alert('Popups are blocked! Please enable popups.');
         }
@@ -145,7 +146,7 @@ function transfer_ticket(control)
     var jq = $(control);
     var id = jq.attr('for');
     var ticket = get_ticket_data_by_hash(id);
-    if(ticket == null)
+    if(ticket === null)
     {
         alert('Cannot find ticket');
         return;
@@ -161,17 +162,20 @@ function short_hash(data, type, row, meta)
 function make_actions(data, type, row, meta)
 {
     var res = '';
-    var view_options = {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'View Ticket Code', for: data, onclick: 'view_ticket(this)'};
-    var edit_options = {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Edit Ticket<br/>Use this option to keep the ticket<br/>on your account but<br/>change the legal name.', 'data-html': true, for: data, onclick: 'edit_ticket(this)'};
-    var pdf_options =  {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Download PDF', for: data, href: 'api/v1/tickets/'+data+'/pdf', target: '_blank'};
-    var transfer_options = {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Transfer Ticket<br/>Use this option to send<br/>the ticket to someone else', 'data-html': true, for: data, onclick: 'transfer_ticket(this)'};
+    var view_options = {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'View Ticket Code', 'for': data, onclick: 'view_ticket(this)'};
+    var edit_options = {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Edit Ticket<br/>Use this option to keep the ticket<br/>on your account but<br/>change the legal name.', 'data-html': true, 'for': data, onclick: 'edit_ticket(this)'};
+    var pdf_options =  {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Download PDF', 'for': data, href: 'api/v1/tickets/'+data+'/pdf', target: '_blank'};
+    var transfer_options = {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Transfer Ticket<br/>Use this option to send<br/>the ticket to someone else', 'data-html': true, 'for': data, onclick: 'transfer_ticket(this)'};
+    var link;
     if(browser_supports_font_face())
     {
+        var button;
+        var glyph;
         if($(window).width() < 768)
         {
             view_options.type = 'button';
-            var button = $('<button/>', view_options);
-            var glyph = $('<span/>', {class: 'glyphicon glyphicon-search'});
+            button = $('<button/>', view_options);
+            glyph = $('<span/>', {'class': 'glyphicon glyphicon-search'});
             glyph.appendTo(button);
             if(button.prop('outerHTML') === undefined)
             {
@@ -183,8 +187,8 @@ function make_actions(data, type, row, meta)
             }
         }
         edit_options.type = 'button';
-        var button = $('<button/>', edit_options);
-        var glyph = $('<span/>', {class: 'glyphicon glyphicon-pencil'});
+        button = $('<button/>', edit_options);
+        glyph = $('<span/>', {'class': 'glyphicon glyphicon-pencil'});
         glyph.appendTo(button);
         if(button.prop('outerHTML') === undefined)
         {
@@ -195,8 +199,8 @@ function make_actions(data, type, row, meta)
             res += button.prop('outerHTML');
         }
 
-	var link = $('<a/>', pdf_options);
-        glyph = $('<span/>', {class: 'glyphicon glyphicon-cloud-download'});
+	link = $('<a/>', pdf_options);
+        glyph = $('<span/>', {'class': 'glyphicon glyphicon-cloud-download'});
         glyph.appendTo(link);
         if(link.prop('outerHTML') === undefined)
         {
@@ -209,7 +213,7 @@ function make_actions(data, type, row, meta)
 
         transfer_options.type = 'button';
         button = $('<button/>', transfer_options);
-        glyph = $('<span/>', {class: 'glyphicon glyphicon-send'});
+        glyph = $('<span/>', {'class': 'glyphicon glyphicon-send'});
         glyph.appendTo(button);
         if(button.prop('outerHTML') === undefined)
         {
@@ -224,12 +228,12 @@ function make_actions(data, type, row, meta)
     {
         if($(window).width() < 768)
         {
-            var link = $('<a/>', view_options);
+            link = $('<a/>', view_options);
             link.append("View");
             res += link.prop('outerHTML');
             res += '|';
         }
-        var link = $('<a/>', edit_options);
+        link = $('<a/>', edit_options);
         link.append("Edit");
         res += link.prop('outerHTML');
         res += '|';
@@ -293,10 +297,10 @@ function email_request(control)
 
 function download_request_done(data)
 {
-    if(data.pdf != undefined)
+    if(data.pdf !== undefined)
     {
         var win = window.open(data.pdf, '_blank');
-        if(win == undefined)
+        if(win === undefined)
         {
             alert('Popups are blocked! Please enable popups.');
         }
@@ -320,32 +324,35 @@ function download_request(control)
 function add_buttons_to_row(row, id, year)
 {
     var cell = $('<td/>', {style: 'white-space: nowrap;'});
-    var edit_options = {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Edit Request', for: id+'_'+year, onclick: 'edit_request(this)'};
-    var mail_options = {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Resend Request Email', for: id+'_'+year, onclick: 'email_request(this)'};
-    var pdf_options =  {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Download PDF', for: id+'_'+year, onclick: 'download_request(this)'};
+    var edit_options = {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Edit Request', 'for': id+'_'+year, onclick: 'edit_request(this)'};
+    var mail_options = {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Resend Request Email', 'for': id+'_'+year, onclick: 'email_request(this)'};
+    var pdf_options =  {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Download PDF', 'for': id+'_'+year, onclick: 'download_request(this)'};
+    var button;
+    var link;
+    var glyph;
     if(browser_supports_font_face())
     {
         edit_options.type = 'button';
-        var button = $('<button/>', edit_options);
-        var glyph = $('<span/>', {class: 'glyphicon glyphicon-pencil'});
+        button = $('<button/>', edit_options);
+        glyph = $('<span/>', {'class': 'glyphicon glyphicon-pencil'});
         glyph.appendTo(button);
         button.appendTo(cell);
 
         mail_options.type = 'button';
         button = $('<button/>', mail_options);
-        glyph = $('<span/>', {class: 'glyphicon glyphicon-envelope'});
+        glyph = $('<span/>', {'class': 'glyphicon glyphicon-envelope'});
         glyph.appendTo(button);
         button.appendTo(cell);
 
         pdf_options.type = 'button';
         button = $('<button/>', pdf_options);
-        glyph = $('<span/>', {class: 'glyphicon glyphicon-cloud-download'});
+        glyph = $('<span/>', {'class': 'glyphicon glyphicon-cloud-download'});
         glyph.appendTo(button);
         button.appendTo(cell);
     }
     else
     {
-        var link = $('<a/>', edit_options);
+        link = $('<a/>', edit_options);
         link.append("Edit");
         link.appendTo(cell);
         cell.append("|");
@@ -370,7 +377,7 @@ function add_request_to_table(tbody, request)
     cell.html(request.year);
     cell.appendTo(row);
     cell = $('<td/>');
-    if(request.tickets != null)
+    if(request.tickets !== null)
     {
         cell.html(request.tickets.length);
     }
@@ -383,14 +390,15 @@ function add_request_to_table(tbody, request)
     if(!out_of_window || test_mode)
     {
         var total = 0;
-        if(request.tickets != null)
+        var i;
+        if(request.tickets !== null)
         {
             for(i = 0; i < request.tickets.length; i++)
             {
                 total += (request.tickets[i].type.cost)*1;
             }
         }
-        if(request.donations != null)
+        if(request.donations !== null)
         {
             for(i = 0; i < request.donations.length; i++)
             {
@@ -442,7 +450,7 @@ function get_requests_done(data)
     else
     {
         var tbody = $('#requestList tbody');
-        for(i = 0; i < data.length; i++)
+        for(var i = 0; i < data.length; i++)
         {
             add_request_to_table(tbody, data[i]);
         }
@@ -493,9 +501,10 @@ function get_window_done(data)
     {
         now = server_now;
     }
+    var alert_div;
     if(now < start || now > end)
     {
-        var alert_div = $('<div/>', {class: 'alert alert-info', role: 'alert'});
+        alert_div = $('<div/>', {'class': 'alert alert-info', role: 'alert'});
         $('<strong/>').html('Notice: ').appendTo(alert_div);
         alert_div.append('The request window is currently closed.');
         if(my_window.test_mode == '1')
@@ -517,13 +526,13 @@ function get_window_done(data)
     if(now > mail_start && now < end)
     {
         var days = Math.floor(end/(1000*60*60*24) - now/(1000*60*60*24));
-        var alert_div = $('<div/>', {class: 'alert alert-warning', role: 'alert'});
+        alert_div = $('<div/>', {'class': 'alert alert-warning', role: 'alert'});
         $('<strong/>').html('Notice: ').appendTo(alert_div);
-        if(days == 1)
+        if(days === 1)
         {
             alert_div.append('The mail in window is currently open! You have '+days+' day left to mail your request!');
         }
-        else if(days == 0)
+        else if(days === 0)
         {
             alert_div.append('The mail in window is currently open! Today is the last day to mail your request!');
         }

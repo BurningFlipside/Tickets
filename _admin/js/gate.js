@@ -17,15 +17,15 @@ function process_ticket()
     var data = {};
     data.firstName = $('#firstName').val();
     data.lastName  = $('#lastNamie').val();
-    if($('#void:checked').length == 0)
+    if($('#void:checked').length === 0)
     {
-        data.void = 0;
+        data['void'] = 0;
     }
     else
     {
-        data.void = 1;
+        data['void'] = 1;
     }
-    if($('#used:checked').length == 0)
+    if($('#used:checked').length === 0)
     {
         data.used = 0;
     }
@@ -57,7 +57,7 @@ function found_ticket(data)
     {
         add_notification($('#process_ticket_modal .modal-body'), 'Ticket is already used!', NOTIFICATION_FAILED, false);
     }
-    if(data.void !== '0')
+    if(data['void'] !== '0')
     {
         add_notification($('#process_ticket_modal .modal-body'), 'Ticket is void!', NOTIFICATION_FAILED, false);
         $('#void').attr('checked', true);
@@ -103,6 +103,7 @@ function process_history_ticket()
 function show_history_from_data(data)
 {
     var read_only = true;
+    var ticket;
     if(data.selected == -1)
     {
         ticket = data.current;
@@ -140,7 +141,7 @@ function show_history_from_data(data)
     $('#history_guardian_last').val(ticket.guardian_last);
     $('#history_sold').val(ticket.sold);
     $('#history_used').val(ticket.used);
-    $('#history_void').val(ticket.void);
+    $('#history_void').val(ticket['void']);
     $('#history_physical_ticket_id').val(ticket.physical_ticket_id);
     $('#history_comments').val(ticket.comments);
     if(read_only)
@@ -205,7 +206,7 @@ function search_done(data)
     }
     var table = $('#search_ticket_table').DataTable();
     table.clear();
-    for(i = 0; i < data.length; i++)
+    for(var i = 0; i < data.length; i++)
     {
         table.row.add(data[i]);
     }
@@ -223,7 +224,7 @@ function history_search_done(data)
     }
     var table = $('#history_ticket_table').DataTable();
     table.clear();
-    for(i = 0; i < data.length; i++)
+    for(var i = 0; i < data.length; i++)
     {
         table.row.add(data[i]);
     }
