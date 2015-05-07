@@ -247,12 +247,14 @@ class FlipsideTicketDB
 
     function getLongText($name)
     {
-        $array = $this->select('tblLongText', 'value', array('name'=>'=\''.$name.'\''));
-        if($array == FALSE || !isset($array[0]))
+        $table  = $this->data_set['LongText'];
+        $filter = new \Data\Filter("name eq '$name'");
+        $values = $table->search($filter, array('value'));
+        if($values === false || !isset($values[0]))
         {
-            return FALSE;
+            return false;
         }
-        return $array[0]['value'];
+        return $values[0]['value'];
     }
 
     function setLongText($name, $value)
