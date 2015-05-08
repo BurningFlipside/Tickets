@@ -265,20 +265,17 @@ class FlipsideTicketDB
 
     function getAllYears()
     {
-        $stmt = $this->db->query('SELECT DISTINCT(year) FROM tblTicketRequest;');
-        if($stmt == FALSE)
+        $table  = $this->data_set['TicketRequest'];
+        $values = $table->search(false, array('DISTINCT(year)'));
+        if($values === false || !isset($values[0]))
         {
             return array(self::getTicketYear());
         }
-        $data = $stmt->fetchAll();
-        if($data == FALSE)
-        {
-            return array(self::getTicketYear());
-        }
+        $count = count($values);
         $ret = array();
-        for($i = 0; $i < count($data); $i++)
+        for($i = 0; $i < $count; $i++)
         {
-            $ret[$i] = $data[$i]['year'];
+            $ret[$i] = $values[$i]['year'];
         }
         if(!in_array(self::getTicketYear(), $ret))
         {

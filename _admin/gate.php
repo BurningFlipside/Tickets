@@ -50,7 +50,7 @@ $page->body .= '
         </div>
     </div>
     <div class="modal fade" aria-hidden="true" id="process_ticket_modal" style="display: none;" data-backdrop="static">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
@@ -158,7 +158,7 @@ $page->body .= '
         </div>
     </div>
     <div class="modal fade" aria-hidden="true" id="ticket_history_modal" style="display: none;" data-backdrop="static">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>

@@ -28,6 +28,16 @@ function draw_done()
     $('td.details-control').html('<span class="glyphicon glyphicon-plus"></span>');
 }
 
+function request_loaded(data)
+{
+    for(var i = 0; i < data.length; i++)
+    {
+        var tbody = $('#'+data[i].request_id);
+        tbody.append('<tr><td>'+(i*1 + 1)+'</td><td>'+data[i].first+'</td><td>'+data[i].last+'</td><td>'+data[i].type+'</td></tr>');
+    }
+    this.tickets = data;
+}
+
 function show_tickets(data)
 {
     var ret = '<table class="table">';
@@ -37,12 +47,21 @@ function show_tickets(data)
     ret += '<th>Last Name</th>';
     ret += '<th>Type</th>';
     ret += '</thead>';
-    ret += '<tbody>';
-    if(data.tickets !== undefined)
+    ret += '<tbody id="'+data.request_id+'">';
+    if(data.tickets === undefined || data.tickets === null)
+    {
+        $.ajax({
+            url: '../api/v1/requests_w_tickets?filter=request_id eq '+data.request_id+' and year eq '+data.year,
+            dataType: 'json',
+            success: request_loaded,
+            context: data
+        });
+    }
+    else
     {
         for(i = 0; i < data.tickets.length; i++)
         {
-            ret += '<tr><td>'+(i*1 + 1)+'</td><td>'+data.tickets[i].first+'</td><td>'+data.tickets[i].last+'</td><td>'+data.tickets[i].type.typeCode+'</td></tr>';
+            ret += '<tr><td>'+(i*1 + 1)+'</td><td>'+data.tickets[i].first+'</td><td>'+data.tickets[i].last+'</td><td>'+data.tickets[i].type+'</td></tr>';
         }
     }
     ret += '</tbody>';
@@ -115,7 +134,7 @@ function row_clicked()
         var new_row = $('<tr/>');
         $('<td/>').html('<input type="text" id="ticket_first_'+i+'" name="ticket_first_'+i+'" class="form-control" value="'+data.tickets[i].first+'"/>').appendTo(new_row);
         $('<td/>').html('<input type="text" id="ticket_last_'+i+'" name="ticket_last_'+i+'" class="form-control" value="'+data.tickets[i].last+'"/>').appendTo(new_row);
-        $('<td/>').html('<input type="text" id="ticket_type_'+i+'" name="ticket_type_'+i+'" class="form-control" value="'+data.tickets[i].type.typeCode+'"/>').appendTo(new_row);
+        $('<td/>').html('<input type="text" id="ticket_type_'+i+'" name="ticket_type_'+i+'" class="form-control" value="'+data.tickets[i].type+'"/>').appendTo(new_row);
         new_row.appendTo($('#ticket_table tbody'));
     }
     $('#donation_table tbody').empty();
