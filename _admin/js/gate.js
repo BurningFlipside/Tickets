@@ -172,7 +172,7 @@ function show_history_from_data(data)
         $('#history_sold').prop('disabled', false);
         $('#history_used').prop('disabled', false);
         $('#history_void').prop('disabled', false);
-        $('#history_physical_ticket_id').prop('disabled', true);
+        $('#history_physical_ticket_id').prop('disabled', false);
         $('#history_comments').prop('disabled', false);
         $('#process_history').prop('disabled', false);
     }
