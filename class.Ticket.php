@@ -320,7 +320,7 @@ class Ticket extends SerializableObject
             $ticket = $ticket->get_previous();
             array_push($res->history, $ticket);
         }
-        if($current->hash == $hash)
+        if(strcasecmp($current->hash,$hash) === 0)
         {
             $res->selected = -1;
         }
@@ -329,7 +329,7 @@ class Ticket extends SerializableObject
             $count = count($res->history);
             for($i = 0; $i < $count; $i++)
             {
-                if($res->history[$i]->hash == $hash)
+                if(strcasecmp($res->history[$i]->hash,$hash) === 0)
                 {
                     $res->selected = $i;
                     break;
