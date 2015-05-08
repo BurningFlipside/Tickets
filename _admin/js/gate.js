@@ -441,6 +441,10 @@ function ticket_clicked()
     var table = $('#search_ticket_table').DataTable();
     var tr = $(this).closest('tr');
     var row = table.row(tr);
+    if(tr.children('th').length > 0)
+    {
+        return;
+    }
     found_ticket(row.data());
 }
 
@@ -449,6 +453,10 @@ function history_clicked()
     var table = $('#history_ticket_table').DataTable();
     var tr = $(this).closest('tr');
     var row = table.row(tr);
+    if(tr.children('th').length > 0)
+    {
+        return;
+    }
     get_history(row.data().hash);
 }
 
