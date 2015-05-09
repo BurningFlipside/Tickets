@@ -34,6 +34,14 @@ function process_ticket()
         data.used = 1;
         data.used_dt = new Date();
     }
+    if($('#guardian_first').val().length > 0)
+    {
+        data.guardian_first = $('#guardian_first').val();
+    }
+    if($('#guardian_last').val().length > 0)
+    {
+        data.guardian_first = $('#guardian_last').val();
+    }
     data.physical_ticket_id = $('#physical_ticket_id').val();
     data.comments = $('#comments').val();
     data = JSON.stringify(data);
@@ -73,14 +81,14 @@ function found_ticket(data)
     if((data.guardian_first === null && data.guardian_last === null) ||
        (data.guardian_first === '' && data.guardian_last === ''))
     {
-        $('#guadian_first').val('');
-        $('#guadian_last').val('');
+        $('#guardian_first').val('');
+        $('#guardian_last').val('');
         $('#minor_block').attr('hidden', 'true');
     }
     else
     {
-        $('#guadian_first').val(data.guardian_first);
-        $('#guadian_last').val(data.guardian_last);
+        $('#guardian_first').val(data.guardian_first);
+        $('#guardian_last').val(data.guardian_last);
         $('#minor_block').removeAttr('hidden');
     }
     $('#physical_ticket_id').val(data.physical_ticket_id);
