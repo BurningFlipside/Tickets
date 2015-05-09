@@ -57,10 +57,14 @@ $page->body .= '
                     <h4 class="modal-title" id="modal_title">Process Ticket</h4>
                 </div>
                 <div class="modal-body"><div class="container-fluid">
-                    <div class="form-group">
+                    <div>
                         <label for="hash" class="col-sm-2 control-label">Code:</label>
-                        <div class="col-sm-10">
+                        <div class="col-sm-6">
                             <input class="form-control" type="text" name="hash" id="hash" readonly="">
+                        </div>
+                        <label for"type" class="col-sm-2 control-label">Type:</label>
+                        <div class="col-sm-2">
+                            <input class="form-control" type="text" name="type" id="type" readonly="">
                         </div>
                     </div>
                     <div class="clearfix visible-sm visible-md visible-lg"></div>
@@ -78,7 +82,7 @@ $page->body .= '
                         </div>
                     </div>
                     <div class="clearfix visible-sm visible-md visible-lg"></div>
-                    <div class="well" id="minor_block">
+                    <div id="minor_block">
                         <div class="form-group">
                             <label for="guardian_first" class="col-sm-2 control-label">Guardian First Name:</label>
                             <div class="col-sm-10">
@@ -95,17 +99,17 @@ $page->body .= '
                         <div class="clearfix visible-sm visible-md visible-lg"></div>
                     </div>
                     <div class="clearfix visible-sm visible-md visible-lg"></div>
-                    <div class="form-group">
-                        <label for="void" class="col-sm-2 control-label">Void:</label>
-                        <div class="col-sm-10">
-                            <input class="form-control" type="checkbox" name="void" id="void"/>
+                    <div>
+                        <label for="used" class="col-sm-2 control-label">Used:</label>
+                        <div class="col-sm-2">
+                            <input class="form-control" type="checkbox" name="used" id="used"/>
                         </div>
                     </div>
-                    <div class="clearfix visible-sm visible-md visible-lg"></div>
-                    <div class="form-group">
-                        <label for="used" class="col-sm-2 control-label">Used:</label>
-                        <div class="col-sm-10">
-                            <input class="form-control" type="checkbox" name="used" id="used"/>
+                    <div class="col-sm-2"></div>
+                    <div>
+                        <label for="void" class="col-sm-2 control-label">Void:</label>
+                        <div class="col-sm-2">
+                            <input class="form-control" type="checkbox" name="void" id="void"/>
                         </div>
                     </div>
                     <div class="clearfix visible-sm visible-md visible-lg"></div>
@@ -186,7 +190,7 @@ $page->body .= '
                         </div>
                     </div>
                     <div class="clearfix visible-sm visible-md visible-lg"></div>
-                    <div class="well" id="minor_block">
+                    <div id="minor_block">
                         <div class="form-group">
                             <label for="history_guardian_first" class="col-sm-2 control-label">Guardian First Name:</label>
                             <div class="col-sm-10">
@@ -203,17 +207,17 @@ $page->body .= '
                         <div class="clearfix visible-sm visible-md visible-lg"></div>
                     </div>
                     <div class="clearfix visible-sm visible-md visible-lg"></div>
-                    <div class="form-group">
-                        <label for="history_void" class="col-sm-2 control-label">Void:</label>
-                        <div class="col-sm-10">
-                            <input class="form-control" type="checkbox" name="history_void" id="history_void" value="0"/>
+                    <div>
+                        <label for="history_used" class="col-sm-2 control-label">Used:</label>
+                        <div class="col-sm-2">
+                            <input class="form-control" type="checkbox" name="history_used" id="history_used"/>
                         </div>
                     </div>
-                    <div class="clearfix visible-sm visible-md visible-lg"></div>
-                    <div class="form-group">
-                        <label for="history_used" class="col-sm-2 control-label">Used:</label>
-                        <div class="col-sm-10">
-                            <input class="form-control" type="checkbox" name="history_used" id="history_used" value="0"/>
+                    <div class="col-sm-2"></div>
+                    <div>
+                        <label for="history_void" class="col-sm-2 control-label">Void:</label>
+                        <div class="col-sm-2">
+                            <input class="form-control" type="checkbox" name="history_void" id="history_void"/>
                         </div>
                     </div>
                     <div class="clearfix visible-sm visible-md visible-lg"></div>

@@ -76,6 +76,7 @@ function found_ticket(data)
     }
     $('#used').attr('checked', true);
     $('#hash').val(data.hash);
+    $('#type').val(data.type);
     $('#firstName').val(data.firstName);
     $('#lastName').val(data.lastName);
     if((data.guardian_first === null && data.guardian_last === null) ||
