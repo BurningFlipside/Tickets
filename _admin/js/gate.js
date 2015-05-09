@@ -61,6 +61,7 @@ function found_ticket(data)
     $('#ticket_history_modal').modal('hide');
     $('#search_ticket_modal').modal('hide');
     console.log(data);
+    $('#process_ticket_modal .modal-body .alert').remove();
     if(data.used !== '0')
     {
         add_notification($('#process_ticket_modal .modal-body'), 'Ticket is already used!', NOTIFICATION_FAILED, false);
