@@ -2,10 +2,8 @@
 require_once('class.SecurePage.php');
 require_once('class.FlipSession.php');
 require_once('class.FlipsideTicketDB.php');
-class TicketAdminPage extends FlipPage
+class TicketAdminPage extends FlipAdminPage
 {
-    private $user;
-    private $is_admin;
     private $is_data;
 
     function __construct($title)
