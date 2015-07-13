@@ -27,7 +27,14 @@ class TicketPage extends SecurePage
         $script_dir = dirname(__FILE__);
         $this->ticket_root = substr($script_dir, strlen($root));
         $this->add_tickets_css($this->ticket_root);
-        $this->add_tickets_script($this->ticket_root);
+        if($this->is_admin)
+        {
+            $this->add_link('Admin', $this->ticket_root.'/_admin/');
+        }
+        if($this->is_data)
+        {
+            $this->add_link('Data Entry', $this->ticket_root.'/_admin/data.php');
+        }
         if(FlipsideTicketDB::getTestMode())
         {
              if($this->is_admin)
@@ -46,10 +53,6 @@ class TicketPage extends SecurePage
     function add_tickets_css($root)
     {
         $this->add_css_from_src($root.'/css/tickets.css');
-    }
-
-    function add_tickets_script($root)
-    {
     }
 }
 ?>
