@@ -28,8 +28,6 @@ class TicketPage extends SecurePage
         $this->ticket_root = substr($script_dir, strlen($root));
         $this->add_tickets_css($this->ticket_root);
         $this->add_tickets_script($this->ticket_root);
-        $this->add_sites();
-        $this->add_links();
         if(FlipsideTicketDB::getTestMode())
         {
              if($this->is_admin)
@@ -50,56 +48,8 @@ class TicketPage extends SecurePage
         $this->add_css_from_src($root.'/css/tickets.css');
     }
 
-    function add_sites()
-    {
-        $this->add_site('Profiles', 'http://profiles.burningflipside.com');
-        $this->add_site('WWW', 'http://www.burningflipside.com');
-        $this->add_site('Pyropedia', 'http://wiki.burningflipside.com');
-        $this->add_site('Secure', 'https://secure.burningflipside.com');
-    }
-
-    function add_links()
-    {
-        if(!FlipSession::is_logged_in())
-        {
-            $this->add_link('Login', 'http://profiles.burningflipside.com/login.php?return='.$this->current_url());
-        }
-        else
-        {
-            if($this->is_admin)
-            {
-                $this->add_link('Admin', '_admin/');
-            }
-            else if($this->is_data)
-            {
-                $this->add_link('Data Entry', '_admin/data.php');
-            }
-            $secure_menu = array(
-                'Tickets'=>'/tickets/index.php',
-                'View Registrations'=>'/register/view.php',
-                'Theme Camp Registration'=>'/register/tc_reg.php',
-                'Art Project Registration'=>'/register/art_reg.php',
-                'Art Car Registration'=>'/register/artCar_reg.php',
-                'Event Registration'=>'/register/event_reg.php'
-            );
-            $this->add_link('Secure', 'https://secure.burningflipside.com/', $secure_menu);
-            $this->add_link('Logout', 'http://profiles.burningflipside.com/logout.php');
-        }
-        $about_menu = array(
-            'Burning Flipside'=>'http://www.burningflipside.com/about/event',
-            'AAR, LLC'=>'http://www.burningflipside.com/LLC',
-            'Privacy Policy'=>'http://www.burningflipside.com/about/privacy'
-        );
-        $this->add_link('About', 'http://www.burningflipside.com/about', $about_menu);
-    }
-
     function add_tickets_script($root)
     {
-    }
-
-    function current_url()
-    {
-        return 'http'.(isset($_SERVER['HTTPS'])?'s':'').'://'."{$_SERVER['HTTP_HOST']}/{$_SERVER['REQUEST_URI']}";
     }
 }
 ?>
