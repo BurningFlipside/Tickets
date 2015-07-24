@@ -34,9 +34,32 @@ class TicketSystemSettings extends Singleton
         return $this->datatable->update(new \Data\Filter("name eq '$var_name'"), array('value'=>$value));
     }
 
+    public function createVariable($var_name, $value)
+    {
+        $this->cache[$var_name] = $value;
+        return $this->datatable->create(array('name'=>$var_name, 'value'=>$value));
+    }
+
+    public function deleteVariable($var_name)
+    {
+        unset($this->cache[$var_name]);
+        return $this->datatable->delete(new \Data\Filter("name eq '$var_name'"));
+    }
+
     public function isTestMode()
     {
         return $this->getVariable('test_mode') === '1';
+    }
+
+    public function toArray()
+    {
+        $vars = $this->datatable->read();
+        $count = count($vars);
+        for($i = 0; $i < $count; $i++)
+        {
+            $this->cache[$vars[$i]['name']] = $vars[$i]['value'];
+        }
+        return $this->cache;
     }
 }
 ?>
