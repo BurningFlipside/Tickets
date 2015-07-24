@@ -49,7 +49,7 @@ if($page->user !== false && $page->user !== null && $page->user->isInGroupNamed(
                     <span class="pull-right clickable"><i class="glyphicon glyphicon-chevron-up"></i></span>
                 </div>
                 <div class="panel-body">
-                    <table id="requestList" class="table table-striped">
+                    <table id="requestList" class="table">
                         <thead>
                             <tr>
                                 <th>Request ID</th>
@@ -59,6 +59,7 @@ if($page->user !== false && $page->user !== null && $page->user->isInGroupNamed(
                                 <th></th>
                             </tr>
                         </thead>
+                        <tbody></tbody>
                     </table>
                 </div>
             </div>
