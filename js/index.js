@@ -1,5 +1,6 @@
 var out_of_window = false;
 var test_mode = false;
+var ticket_year = false;
 
 function tableDrawComplete()
 {
@@ -369,24 +370,23 @@ function add_buttons_to_row(row, id, year)
 
 function add_request_to_table(tbody, request)
 {
+    console.log(request);
     var row = $('<tr/>');
-    var cell = $('<td/>');
-    cell.html(request.request_id);
-    cell.appendTo(row);
-    cell = $('<td/>');
-    cell.html(request.year);
-    cell.appendTo(row);
-    cell = $('<td/>');
+    if(request.year != ticket_year)
+    {
+        row.addClass('old_request');
+    }
+    row.append('<td>'+request.request_id+'</td>');
+    row.append('<td>'+request.year+'</td>');
     if(request.tickets !== null)
     {
-        cell.html(request.tickets.length);
+        row.append('<td>'+request.tickets.length+'</td>');
     }
     else
     {
-        cell.html(0);
+        row.append('<td>0</td>');
     }
-    cell.appendTo(row);
-    cell = $('<td/>');
+    var cell = $('<td/>');
     if(!out_of_window || test_mode)
     {
         var total = 0;
@@ -425,48 +425,60 @@ function add_request_to_table(tbody, request)
     }
     else
     {
-        cell = $('<td/>');
-        cell.appendTo(row);
+        row.append('<td></td>');
     }
     row.appendTo(tbody);
     $('[data-original-title]').tooltip();
 }
 
-function get_requests_done(data)
+function process_requests(requests)
 {
-    if(data.length === undefined || data.length === 0)
+    var tbody = $('#requestList tbody');
+    for(var i = 0; i < requests.length; i++)
     {
-        if(out_of_window)
+        add_request_to_table(tbody, requests[i]);
+    }
+    if($('[title]').length > 0)
+    {
+        $('[title]').tooltip();
+    }
+    if($(window).width() < 768)
+    {
+        $('#requestList th:nth-child(1)').hide();
+        $('#requestList td:nth-child(1)').hide();
+    }
+}
+
+function get_requests_done(jqXHR)
+{
+    if(jqXHR.status === 200)
+    {
+        if(jqXHR.responseJSON === undefined || jqXHR.responseJSON.length === 0)
         {
-            $('#requestList').empty();
+            if(out_of_window)
+            {
+                $('#requestList').empty();
+            }
+            else
+            {
+                $('#request_set').empty();
+                $('#request_set').append("You do not currently have a current or previous ticket request.<br/>");
+                $('#request_set').append('<a href="/tickets/request.php">Create a Ticket Request</a>');
+            }
         }
         else
         {
-            $('#request_set').empty();
-            $('#request_set').append("You do not currently have a ticket request.<br/>");
-            $('#request_set').append('<a href="/tickets/request.php">Create a Ticket Request</a>');
+            process_requests(jqXHR.responseJSON);
+        }
+        if($('#request_set').length > 0)
+        {
+            $('#request_set').show();
         }
     }
     else
     {
-        var tbody = $('#requestList tbody');
-        for(var i = 0; i < data.length; i++)
-        {
-            add_request_to_table(tbody, data[i]);
-        }
-        if($('[title]').length > 0)
-        {
-            $('[title]').tooltip();
-        }
-        if($(window).width() < 768)
-        {
-            $('#requestList th:nth-child(1)').hide();
-            $('#requestList td:nth-child(1)').hide();
-        } 
-    }
-    if($('#request_set').length > 0)
-    {
-       $('#request_set').show();
+        console.log(jqXHR);
+        alert('Error obtaining request!');
     }
 }
 
@@ -476,7 +488,7 @@ function init_request()
         url: 'api/v1/request',
         type: 'get',
         dataType: 'json',
-        success: get_requests_done});
+        complete: get_requests_done});
 }
 
 function get_window_done(data)
@@ -497,6 +509,7 @@ function get_window_done(data)
     }
     end.setHours(23);
     end.setMinutes(59);
+    ticket_year = data.year;
     if(server_now < now)
     {
         now = server_now;
@@ -506,7 +519,7 @@ function get_window_done(data)
     {
         alert_div = $('<div/>', {'class': 'alert alert-info', role: 'alert'});
         $('<strong/>').html('Notice: ').appendTo(alert_div);
-        alert_div.append('The request window is currently closed.');
+        alert_div.append('The request window is currently closed. No new ticket requests are accepted at this time.');
         if(my_window.test_mode == '1')
         {
             alert_div.append(' But test mode is enabled. Any requests created will be deleted before ticketing starts!');
