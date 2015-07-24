@@ -60,7 +60,7 @@ class TicketEmail extends FlipsideMail
         $this->pm = $message;
     }
 
-    public function send_HTML()
+    public function send_HTML($mail)
     {
         $this->From     = 'tickets@burningflipside.com';
         $this->FromName = 'Flipside Tickets';
