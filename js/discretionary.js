@@ -87,6 +87,21 @@ function make_d_action(data, type, row, meta)
     return res;
 }
 
+function dTableDrawComplete()
+{
+    if($("#discretionary").DataTable().data().length !== 0)
+    {
+        $("#discretionary_set").show();
+    }
+    if($(window).width() < 768)
+    {
+        $('#discretionary th:nth-child(1)').hide();
+        $('#discretionary td:nth-child(1)').hide();
+        $('#discretionary th:nth-child(2)').hide();
+        $('#discretionary td:nth-child(2)').hide();
+    }
+}
+
 function init_d_table()
 {
     $('#discretionary').dataTable({
@@ -103,7 +118,7 @@ function init_d_table()
         searching: false
     });
 
-    $("#ticketList").on('draw.dt', tableDrawComplete);
+    $("#discretionary").on('draw.dt', dTableDrawComplete);
 }
 
 function init_discretionary()
