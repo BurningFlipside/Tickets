@@ -26,16 +26,17 @@ function add_row_to_table(tbody, name, value)
     row.appendTo(tbody);
 }
 
-function variable_set_done(data)
+function variable_set_done(jqXHR)
 {
-    if(data.error != undefined)
-    {
-        alert(data.error);
-    }
-    else
+    if(jqXHR.status === 200)
     {
         $('#raw tbody').empty();
         init_vars();
+    }
+    else
+    {
+        console.log(jqXHR);
+        alert("Unable to set variable");
     }
 }
 
@@ -44,11 +45,10 @@ function delete_var()
     var button = $(this);
     var var_name = button.attr('id').substr(7);
     $.ajax({
-            url: '/tickets/ajax/vars.php',
-            data: 'delete='+encodeURIComponent(var_name),
-            type: 'post',
+            url: '../api/v1/globals/vars/'+var_name,
+            type: 'delete',
             dataType: 'json',
-            success: variable_set_done});
+            complete: variable_set_done});
 }
 
 function change_var()
@@ -56,6 +56,7 @@ function change_var()
     var button = $(this);
     var var_name = button.attr('id').substr(7);
     var var_value = $('#text_'+var_name).val();
+    var method = 'patch';
     if(var_name == '_blank')
     {
         var_name = $('#name__blank').val();
@@ -64,23 +65,26 @@ function change_var()
             alert('Variable name must be at least one character long');
             return;
         }
+        method = 'post';
     }
     $.ajax({
-            url: '/tickets/ajax/vars.php',
-            data: 'name='+encodeURIComponent(var_name)+'&value='+encodeURIComponent(var_value),
-            type: 'post',
+            url: '../api/v1/globals/vars/'+var_name,
+            data: JSON.stringify(var_value),
+            processData: false,
+            type: method,
             dataType: 'json',
-            success: variable_set_done});
+            complete: variable_set_done});
 }
 
 function unset_test_mode()
 {
     $.ajax({
-            url: '/tickets/ajax/vars.php',
-            data: 'name=test_mode&value=0&confirm=1',
-            type: 'post',
+            url: '../api/v1/globals/vars/test_mode',
+            data: JSON.stringify(0),
+            processData: false,
+            type: 'patch',
             dataType: 'json',
-            success: variable_set_done});
+            complete: variable_set_done});
 }
 
 function known_change(control)
@@ -106,19 +110,20 @@ function known_change(control)
         return;
     }
     $.ajax({
-            url: '/tickets/ajax/vars.php',
-            data: 'name='+encodeURIComponent(var_name)+'&value='+encodeURIComponent(var_value),
-            type: 'post',
+            url: '../api/v1/globals/vars/'+var_name,
+            data: JSON.stringify(var_value),
+            processData: false,
+            type: 'patch',
             dataType: 'json',
-            success: variable_set_done});
+            complete: variable_set_done});
 }
 
 function populate_raw_table(vars)
 {
     var tbody = $('#raw tbody');
-    for(i = 0; i < vars.length; i++)
+    for(var propertyName in vars)
     {
-        add_row_to_table(tbody, vars[i].name, vars[i].value);
+        add_row_to_table(tbody, propertyName, vars[propertyName]);
     }
     //Add empty row for adding
     add_row_to_table(tbody, '_blank', '');
@@ -128,22 +133,27 @@ function populate_raw_table(vars)
 
 function populate_known_form(vars)
 {
-    for(i = 0; i < vars.length; i++)
-    {
-        var control = $('#'+vars[i].name);
-        if(control.length > 0)
-        {
-            control.val(vars[i].value);
-        }
-    }
+   for(var propertyName in vars)
+   {
+       var control = $('#'+propertyName);
+       if(control.length > 0)
+       {
+           control.val(vars[propertyName]);
+       }
+   }
 }
 
-function variables_done(data)
+function variables_done(jqXHR)
 {
-    if(data.vars != undefined)
+    if(jqXHR.status !== 200)
     {
-        populate_raw_table(data.vars);
-        populate_known_form(data.vars);
+        alert('Error obtaining variables!');
+        return;
+    }
+    else
+    {
+        populate_raw_table(jqXHR.responseJSON);
+        populate_known_form(jqXHR.responseJSON);
     }
 }
 
@@ -151,10 +161,10 @@ function init_vars()
 {
     $('#tabs a:first').tab('show');
     $.ajax({
-            url: '/tickets/ajax/vars.php',
+            url: '../api/v1/globals/vars',
             type: 'get',
             dataType: 'json',
-            success: variables_done});
+            complete: variables_done});
 }
 
 $(init_vars)
