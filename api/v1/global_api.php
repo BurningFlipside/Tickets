@@ -1,4 +1,5 @@
 <?php
+require_once('class.TicketSystemSettings.php');
 require_once('class.Ticket.php');
 
 function global_api_group()
@@ -15,28 +16,13 @@ function show_window()
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $db = new FlipsideTicketDB();
-    $vars = $db->getAllVars();
-    if($vars === FALSE)
-    {
-        throw new Exception('Failed to obtain variables!', INTERNAL_ERROR);
-    }
+    $settings = TicketSystemSettings::getInstance();
     $window = array();
-    for($i = 0; $i < count($vars); $i++)
-    {
-            switch($vars[$i]['name'])
-            {
-                case 'request_start_date':
-                case 'request_stop_date':
-                case 'mail_start_date':
-                case 'test_mode':
-                    $window[$vars[$i]['name']] = $vars[$i]['value'];
-                    break;
-            }
-    }
-    unset($vars);
-    date_default_timezone_set('CST');
-    $window['current'] = date("Y-m-d");
+    $window['request_start_date'] = $settings->getVariable('request_start_date');
+    $window['request_stop_date']  = $settings->getVariable('request_stop_date');
+    $window['mail_start_date']    = $settings->getVariable('mail_start_date');
+    $window['test_mode']          = $settings->getVariable('test_mode');
+    $window['current']            = date("Y-m-d");
     echo json_encode($window);
 }
 
@@ -50,17 +36,7 @@ function list_statuses()
     $params = $app->request->params();
     $ticket_data_set = DataSetFactory::get_data_set('tickets');
     $status_data_table = $ticket_data_set['RequestStatus'];
-    $filter = false;
-    $select = false;
-    if(isset($params['select']))
-    {
-        $select = explode(',',$params['select']);
-    }
-    if(isset($params['filter']))
-    {
-        $filter = new \Data\Filter($params['filter']);
-    }
-    $statuses = $status_data_table->read($filter, $select);
+    $statuses = $status_data_table->read($app->odata->filter, $app->odata->select);
     if($statuses === false)
     {
         $statuses = array();
