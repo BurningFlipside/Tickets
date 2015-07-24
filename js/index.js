@@ -554,8 +554,25 @@ function init_window()
         success: get_window_done});
 }
 
+function panel_heading_click(e)
+{
+    if($(this).hasClass('panel-collapsed'))
+    {
+        $(this).parents('.panel').find('.panel-body').slideDown();
+        $(this).removeClass('panel-collapsed');
+        $(this).find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+    }
+    else
+    {
+        $(this).parents('.panel').find('.panel-body').slideUp();
+        $(this).addClass('panel-collapsed');
+        $(this).find('i').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
+    }
+}
+
 function init_index()
 {
+    $('.panel-heading span.clickable').on("click", panel_heading_click);
     init_window();
     init_table();
 }
