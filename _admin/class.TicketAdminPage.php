@@ -1,10 +1,12 @@
 <?php
 require_once('class.SecurePage.php');
 require_once('class.FlipSession.php');
+require_once('class.TicketSystemSettings.php');
 require_once('class.FlipsideTicketDB.php');
 class TicketAdminPage extends FlipAdminPage
 {
     private $is_data;
+    public  $settings;
 
     function __construct($title)
     {
@@ -15,7 +17,8 @@ class TicketAdminPage extends FlipAdminPage
         }
         $this->add_tickets_css();
         $this->add_links();
-        if(FlipsideTicketDB::getTestMode())
+        $this->settings = TicketSystemSettings::getInstance();
+        if($this->settings->isTestMode())
         {
              if($this->is_admin)
              {
