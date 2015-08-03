@@ -68,6 +68,7 @@ class TicketPage extends SecurePage
 <div id="content">
     <h1>You must <a href="https://profiles.burningflipside.com/login.php?return='.$this->current_url().'">log in <span class="glyphicon glyphicon-log-in"></span></a> to access the Burning Flipside Ticket system!</h1>
 </div>';
+            $this->add_login_form();
         }
         parent::print_page($header);
     }
