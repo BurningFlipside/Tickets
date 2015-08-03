@@ -8,6 +8,12 @@ $page->add_js(JS_DATATABLE);
 $page->add_css(CSS_DATATABLE);
 $page->add_js_from_src('js/request.js');
 
+$email = '';
+if($page->user)
+{
+    $email = $page->user->getEmail();
+}
+
     $page->body .= '
 <div id="content">
     <form id="request" role="form">
@@ -37,7 +43,7 @@ $page->add_js_from_src('js/request.js');
             <div class="form-group">
                 <label for="mail" class="col-sm-2 control-label">Email:</label>
                 <div class="col-sm-10">
-                    <input class="form-control" type="text" name="mail" id="mail" readonly data-toggle="tooltip" data-placement="top" title="This is the email address used for futher communications. This email address has been set and confirmed by your profile. If you need to use a different email address please edit your profile." value="'.$page->user->getEmail().'"/>
+                    <input class="form-control" type="text" name="mail" id="mail" readonly data-toggle="tooltip" data-placement="top" title="This is the email address used for futher communications. This email address has been set and confirmed by your profile. If you need to use a different email address please edit your profile." value="'.$email.'"/>
                 </div>
             </div>
             <div class="form-group">

@@ -583,6 +583,7 @@ function get_window_done(data)
         $('#request_set').prepend(alert_div);
     }
     init_request();
+    init_table();
 }
 
 function init_window()
@@ -614,7 +615,6 @@ function init_index()
 {
     $('.panel-heading span.clickable').on("click", panel_heading_click);
     init_window();
-    init_table();
 }
 
 $(init_index);

@@ -1,7 +1,7 @@
 <?php
 require_once('class.SecurePage.php');
 require_once('class.FlipSession.php');
-require_once('class.TicketSystemSettings.php');
+require_once('app/TicketAutoload.php');
 class TicketPage extends SecurePage
 {
     private $is_admin;
@@ -26,7 +26,7 @@ class TicketPage extends SecurePage
             $this->is_data  = false;
         }
         $this->add_tickets_css();
-        $this->settings = TicketSystemSettings::getInstance();
+        $this->settings = \Tickets\DB\TicketSystemSettings::getInstance();
         if($this->settings->isTestMode())
         {
              if($this->is_admin)
@@ -64,7 +64,7 @@ class TicketPage extends SecurePage
     {
         if($this->user === false || $this->user === null)
         {
-            $page->body = '
+            $this->body = '
 <div id="content">
     <h1>You must <a href="https://profiles.burningflipside.com/login.php?return='.$this->current_url().'">log in <span class="glyphicon glyphicon-log-in"></span></a> to access the Burning Flipside Ticket system!</h1>
 </div>';
