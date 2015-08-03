@@ -8,16 +8,6 @@ $page->add_js(JS_DATATABLE);
 $page->add_css(CSS_DATATABLE);
 $page->add_js_from_src('js/request.js');
 
-if(!FlipSession::is_logged_in())
-{
-    $page->body .= '
-<div id="content">
-    <h1>You must log in to access the Burning Flipside Ticket system!</h1>
-</div>';
-}
-else
-{
-    $user = FlipSession::get_user();
     $page->body .= '
 <div id="content">
     <form id="request" role="form">
@@ -47,7 +37,7 @@ else
             <div class="form-group">
                 <label for="mail" class="col-sm-2 control-label">Email:</label>
                 <div class="col-sm-10">
-                    <input class="form-control" type="text" name="mail" id="mail" readonly data-toggle="tooltip" data-placement="top" title="This is the email address used for futher communications. This email address has been set and confirmed by your profile. If you need to use a different email address please edit your profile." value="'.$user->mail[0].'"/>
+                    <input class="form-control" type="text" name="mail" id="mail" readonly data-toggle="tooltip" data-placement="top" title="This is the email address used for futher communications. This email address has been set and confirmed by your profile. If you need to use a different email address please edit your profile." value="'.$page->user->getEmail().'"/>
                 </div>
             </div>
             <div class="form-group">
@@ -169,7 +159,6 @@ else
 </div>
 ';
 
-}
 $page->print_page();
 // vim: set tabstop=4 shiftwidth=4 expandtab:
 ?>
