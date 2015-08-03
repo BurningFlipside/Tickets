@@ -368,14 +368,56 @@ function add_buttons_to_row(row, id, year)
     cell.appendTo(row);
 }
 
+function toggle_hidden_requests(e)
+{
+    var rows = $('tr.old_request');
+    if(rows.is(':visible'))
+    {
+        rows.hide();
+    }
+    else
+    {
+        rows.show();
+    }
+}
+
+function copy_request(e)
+{
+    var request = $(e.currentTarget).data('request');
+    location = 'copy_request.php?id='+request.request_id+'&year='+request.year;
+}
+
+function add_old_request_to_table(tbody, request)
+{
+    var container = tbody.find('tr#old_requests');
+    if(container.length === 0)
+    {
+        tbody.prepend('<tr id="old_requests" style="cursor: pointer;"><td colspan="5"><span class="glyphicon glyphicon-chevron-right"></span> Old Requests</td></tr>');
+        container = tbody.find('tr#old_requests');
+        container.on('click', toggle_hidden_requests);
+    }
+    var row = $('<tr class="old_request" style="display: none;">');
+    row.append('<td/>');
+    row.append('<td>'+request.year+'</td>');
+    row.append('<td>'+request.tickets.length+'</td>');
+    row.append('<td>$'+request.total_due+'</td>');
+    var cell = $('<td>');
+    var button = $('<button class="btn btn-link btn-sm" data-toggle="tooltip" data-placement="top" title="Copy Old Request"><span class="glyphicon glyphicon-copy"></span></button>');
+    button.data('request', request);
+    button.on('click', copy_request);
+    cell.append(button);
+    row.append(cell);
+    container.after(row);
+}
+
 function add_request_to_table(tbody, request)
 {
-    console.log(request);
-    var row = $('<tr/>');
     if(request.year != ticket_year)
     {
-        row.addClass('old_request');
+        add_old_request_to_table(tbody, request);
+        return;
     }
+    var row = $('<tr/>');
     row.append('<td>'+request.request_id+'</td>');
     row.append('<td>'+request.year+'</td>');
     if(request.tickets !== null)
@@ -386,39 +428,20 @@ function add_request_to_table(tbody, request)
     {
         row.append('<td>0</td>');
     }
-    var cell = $('<td/>');
     if(!out_of_window || test_mode)
     {
-        var total = 0;
-        var i;
-        if(request.tickets !== null)
-        {
-            for(i = 0; i < request.tickets.length; i++)
-            {
-                total += (request.tickets[i].type.cost)*1;
-            }
-        }
-        if(request.donations !== null)
-        {
-            for(i = 0; i < request.donations.length; i++)
-            {
-                if(request.donations[i].amount !== undefined)
-                {
-                    total += (request.donations[i].amount)*1;
-                }
-            }
-        }
-        cell.html('$'+total);
+        row.append('<td>$'+request.total_due+'</td>');
     }
     else
     {
+        var cell = $('<td/>');
         cell.attr('data-original-title', request.status.description);
         cell.attr('data-container', 'body');
         cell.attr('data-toggle', 'tooltip');
         cell.attr('data-placement', 'top');
         cell.html(request.status.name);
+        cell.appendTo(row);
     }
-    cell.appendTo(row);
     if(!out_of_window || test_mode)
     {
         add_buttons_to_row(row, request.request_id, request.year);
@@ -437,6 +460,10 @@ function process_requests(requests)
     for(var i = 0; i < requests.length; i++)
     {
         add_request_to_table(tbody, requests[i]);
+    }
+    if($('#requestList tbody tr:visible:not("#old_requests")').length === 0)
+    {
+        tbody.append('<tr><td colspan="5" style="text-align: center;"><a href="request.php"><span class="glyphicon glyphicon-new-window"></span> Create a new request</a></td></tr>');
     }
     if($('[title]').length > 0)
     {
