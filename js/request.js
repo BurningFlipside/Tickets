@@ -476,15 +476,16 @@ function request_data_submitted()
     for(var i = 0; i < a.length; i++)
     {
         var name = a[i].name;
-        if(name.startsWith('list_'))
+        var split = name.split('_');
+        if(split[0] == 'list')
         {
-            if(obj['list'] === undefined)
+            if(obj['lists'] === undefined)
             {
-                obj['list'] = {};
+                obj['lists'] = {};
             }
-            obj['list'][name.substring(5)] = a[i].value;
+            obj['lists'][name.substring(5)] = a[i].value;
         }
-        else if(name.startsWith('ticket_'))
+        else if(split[0] == 'ticket')
         {
             var child_name = name.substring(7);
             if(obj['tickets'] === undefined)
@@ -497,13 +498,18 @@ function request_data_submitted()
             }
             obj['tickets'][obj['tickets'].length-1][child_name] = a[i].value;
         }
-        else if(name.startsWith('donation_'))
+        else if(split[0] == 'donation')
         {
+            console.log(split);
             if(obj['donations'] === undefined)
             {
                 obj['donations'] = {};
             }
-            obj['donations'][name.substring(16)] = a[i].value;
+            if(obj['donations'][split[2]] === undefined)
+            {
+                obj['donations'][split[2]] = {};
+            }
+            obj['donations'][split[2]][split[1]] = a[i].value;
         }
         else
         {
