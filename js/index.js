@@ -289,24 +289,10 @@ function email_request(control)
     var tmp = jq.attr('for');
     var ids = tmp.split('_');
     $.ajax({
-        url: '/tickets/ajax/request.php',
+        url: 'api/v1/request/'+ids[0]+'/'+ids[1]+'/Actions/Requests.SendEmail',
         type: 'post',
-        data: 'request_id='+ids[0]+'&year='+ids[1]+'&email=1',
         dataType: 'json',
-        success: email_request_done});
-}
-
-function download_request_done(data)
-{
-    if(data.pdf !== undefined)
-    {
-        var win = window.open(data.pdf, '_blank');
-        if(win === undefined)
-        {
-            alert('Popups are blocked! Please enable popups.');
-        }
-    }
-    console.log(data);
+        complete: email_request_done});
 }
 
 function download_request(control)
@@ -314,12 +300,7 @@ function download_request(control)
     var jq = $(control);
     var tmp = jq.attr('for');
     var ids = tmp.split('_');
-    $.ajax({
-        url: '/tickets/ajax/request.php',
-        type: 'post',
-        data: 'request_id='+ids[0]+'&year='+ids[1]+'&pdf=1',
-        dataType: 'json',
-        success: download_request_done});
+    location = 'api/v1/request/'+ids[0]+'/'+ids[1]+'/pdf';
 }
 
 function add_buttons_to_row(row, id, year)
@@ -410,13 +391,14 @@ function add_old_request_to_table(tbody, request)
     container.after(row);
 }
 
-function add_request_to_table(tbody, request)
+function add_request_to_table(tbody, request, old_request_only)
 {
     if(request.year != ticket_year)
     {
         add_old_request_to_table(tbody, request);
         return;
     }
+    old_request_only.value = false;
     var row = $('<tr/>');
     row.append('<td>'+request.request_id+'</td>');
     row.append('<td>'+request.year+'</td>');
@@ -457,11 +439,13 @@ function add_request_to_table(tbody, request)
 function process_requests(requests)
 {
     var tbody = $('#requestList tbody');
+    var old_request_only = {};
+    old_request_only.value = true;
     for(var i = 0; i < requests.length; i++)
     {
-        add_request_to_table(tbody, requests[i]);
+        add_request_to_table(tbody, requests[i], old_request_only);
     }
-    if($('#requestList tbody tr:visible:not("#old_requests")').length === 0)
+    if(old_request_only.value)
     {
         tbody.append('<tr><td colspan="5" style="text-align: center;"><a href="request.php"><span class="glyphicon glyphicon-new-window"></span> Create a new request</a></td></tr>');
     }

@@ -441,8 +441,15 @@ function request_submit_done(jqXHR)
     }
     else
     {
-        alert('Unable to submit request!');
-        console.log(jqXHR);
+        if(jqXHR.responseJSON !== undefined)
+        {
+            alert(jqXHR.responseJSON.message);
+        }
+        else
+        {
+            alert('Unable to submit request!');
+            console.log(jqXHR);
+        }
     }
 }
 
@@ -555,6 +562,24 @@ function current_request_done(jqXHR)
     }
     else
     {
+        request = request[0];
+        var tbody = $('#ticket_table tbody');
+        for(var propertyName in request)
+        {
+            switch(propertyName)
+            {
+                case 'tickets':
+                    for(var i = 0; i < request[propertyName].length; i++)
+                    {
+                        addRowToTable(tbody, request.tickets[i].first, request.tickets[i].last, request.tickets[i].type, table_row++);
+                    }
+                    break;
+                default:
+                    $('#'+propertyName).val(request[propertyName]);
+                    break;
+            }
+        }
+        console.log(request);
     }
 }
 
@@ -595,14 +620,6 @@ function init_request()
     $('#add_new_ticket').on('click', add_new_ticket);
     if(request != undefined)
     {
-        $('#givenName').val(request.givenName);
-        $('#sn').val(request.sn);
-        $('#mail').val(request.mail);
-        $('#street').val(request.street);
-        $('#zip').val(request.zip);
-        $('#l').val(request.l);
-        $('#st').val(request.st);
-        $('#mobile').val(request.mobile);
         var tbody = $('#ticket_table tbody');
         for(var i = 0; i < request.tickets.length; i++)
         {
