@@ -1,4 +1,6 @@
 <IfModule mod_php5.c>
   php_value include_path ".:..:../..:/var/www/common"
-  php_value session.cookie_domain ".burningflipside.com"
+</IfModule>
+<IfModule mod_php7.c>
+  php_value include_path ".:..:../..:/var/www/common"
 </IfModule>
