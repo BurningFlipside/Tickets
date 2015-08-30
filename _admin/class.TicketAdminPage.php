@@ -1,7 +1,7 @@
 <?php
 require_once('class.SecurePage.php');
 require_once('class.FlipSession.php');
-require_once('class.TicketSystemSettings.php');
+require_once('app/TicketAutoload.php');
 require_once('class.FlipsideTicketDB.php');
 class TicketAdminPage extends FlipAdminPage
 {
@@ -17,7 +17,7 @@ class TicketAdminPage extends FlipAdminPage
         }
         $this->add_tickets_css();
         $this->add_links();
-        $this->settings = TicketSystemSettings::getInstance();
+        $this->settings = \Tickets\DB\TicketSystemSettings::getInstance();
         if($this->settings->isTestMode())
         {
              if($this->is_admin)
