@@ -190,7 +190,7 @@ function make_request()
     $typeCounts = array();
     for($i = 0; $i < $ticket_count; $i++)
     {
-        if(\Tickets\TicketType::typeIsMinor($obj->tickets[$i]->type))
+        if(!isset($obj->minor_confirm) && \Tickets\TicketType::typeIsMinor($obj->tickets[$i]->type))
         {
             echo json_encode(array('need_minor_confirm'=>true));
             return;
@@ -219,6 +219,10 @@ function make_request()
     }
     $obj->modifiedBy = $app->user->getUid();
     $obj->modifiedByIP = $_SERVER['REMOTE_ADDR'];
+    if(isset($obj->minor_confirm))
+    {
+        unset($obj->minor_confirm);
+    }
     \Tickets\Flipside\FlipsideTicketRequest::createTicketRequest($obj);
     echo 'true';
 }
