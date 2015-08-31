@@ -1,6 +1,6 @@
 <?php
 require_once('Autoload.php');
-require_once('class.Ticket.php');
+require_once('app/TicketAutoload.php');
 
 function ticket_api_group()
 {
@@ -11,6 +11,7 @@ function ticket_api_group()
     $app->get('/:hash', 'show_ticket');
     $app->get('/:hash/pdf', 'get_pdf');
     $app->patch('/:hash', 'update_ticket');
+    $app->post('/:hash/Actions/Ticket.SendEmail', 'send_email');
     $app->post('/pos/sell', 'sell_multiple_tickets');
 }
 
@@ -21,24 +22,17 @@ function list_tickets()
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $params = $app->request->params();
     $filter = false;
-    $select = false;
-    if(isset($params['select']))
+    if($app->user->isInGroupNamed('TicketAdmins') && $app->odata->filter !== false)
     {
-        $select = explode(',',$params['select']);
-    }
-    if($app->user->isInGroupNamed('TicketAdmins') && isset($params['filter']))
-    {
-        $filter = new \Data\Filter($params['filter']);
+        $filter = $app->odata->filter;
     }
     else
     {
-        $filter = new \Data\Filter('email eq \''.$app->user->getEmail().'\' and discretionary eq 0');
+        $filter = new \Tickets\DB\TicketDefaultFilter($app->user->getEmail());
     }
-    $ticket_data_set = DataSetFactory::get_data_set('tickets');
-    $ticket_data_table = $ticket_data_set['Tickets'];
-    $tickets = $ticket_data_table->read($filter, $select);
+    $ticket_data_table = \Tickets\DB\TicketsDataTable::getInstance();
+    $tickets = $ticket_data_table->read($filter, $app->odata->select, $app->odata->top, $app->odata->skip, $app->odata->orderby);
     if($tickets === false)
     {
         $tickets = array();
@@ -58,24 +52,19 @@ function show_ticket($hash)
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
     $params = $app->request->params();
-    $select = false;
-    if(isset($params['select']))
-    {
-        $select = explode(',',$params['select']);
-    }
     if(isset($params['with_history']) && $params['with_history'] === '1')
     {
         $ticket = Ticket::get_ticket_history_by_hash($hash);
     }
     else
     {
-        $ticket = Ticket::get_ticket_by_hash($hash, $select);
+        $ticket = Ticket::get_ticket_by_hash($hash, $app->odata->select);
     }
     if($ticket === false)
     {
-        throw new Exception('Unknown ticket', INVALID_PARAM);
+        $app->notFound();
     }
-    echo $ticket->serializeObject($app->fmt, $select);
+    echo $ticket->serializeObject($app->fmt, $app->odata->select);
 }
 
 function get_pdf($hash)
@@ -86,28 +75,11 @@ function get_pdf($hash)
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
     $ticket = Ticket::get_ticket_by_hash($hash);
-    $pdf = new TicketPDF($ticket);
+    $pdf = new \Tickets\TicketPDF($ticket);
     $app->fmt = 'passthru';
     $app->response->headers->set('Content-Type', 'application/pdf');
-    $pdf->generatePDF(true);
+    echo $pdf->toPDFBuffer();
 }
-
-function typecast($old_object, $new_classname) {
-  if(class_exists($new_classname)) {
-    // Example serialized object segment
-    // O:5:"field":9:{s:5:...   <--- Class: Field
-    $old_serialized_prefix  = "O:".strlen(get_class($old_object));
-    $old_serialized_prefix .= ":\"".get_class($old_object)."\":";
-
-    $old_serialized_object = serialize($old_object);
-    $new_serialized_object = 'O:'.strlen($new_classname).':"'.$new_classname . '":';
-    $new_serialized_object .= substr($old_serialized_object,strlen($old_serialized_prefix));
-   return unserialize($new_serialized_object);
-  }
-  else
-   return false;
-}
-
 
 function update_ticket($id)
 {
@@ -116,12 +88,9 @@ function update_ticket($id)
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $params = $app->request->params();
-    $ticket_data_set = DataSetFactory::get_data_set('tickets');
-    $ticket_data_table = $ticket_data_set['Tickets'];
-    $filter = new \Data\Filter('hash eq \''.$id.'\'');    
-    $body = $app->request->getBody();
-    $array = json_decode($body, true);
+    $ticket_data_table = \Tickets\DB\TicketsDataTable::getInstance();
+    $filter = new \Tickets\DB\TicketHashFilter($id);
+    $array = $app->get_json_body(true);
     $copy = $array;
     unset($copy['firstName']);
     unset($copy['lastName']);
@@ -169,16 +138,9 @@ function list_discretionary_tickets()
     {
         throw new Exception('Must be member of AAR group', ACCESS_DENIED);
     }
-    $params = $app->request->params();
-    $ticket_data_set = DataSetFactory::get_data_set('tickets');
-    $ticket_data_table = $ticket_data_set['Tickets'];
-    $select = false;
-    if(isset($params['select']))
-    {
-        $select = explode(',',$params['select']);
-    }
-    $filter = new \Data\Filter('email eq \''.$app->user->getEmail().'\' and discretionary eq 1 and used eq 0');
-    $tickets = $ticket_data_table->search($filter, $select);
+    $ticket_data_table = \Tickets\DB\TicketsDataTable::getInstance();
+    $filter = new \Tickets\DB\TicketDefaultFilter($app->user->getEmail(), true);
+    $tickets = $ticket_data_table->read($filter, $app->odata->select, $app->odata->top, $app->odata->skip, $app->odata->orderby);
     if($tickets === false)
     {
         $tickets = array();
@@ -197,20 +159,9 @@ function list_ticket_types()
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $params = $app->request->params();
     $ticket_data_set = DataSetFactory::get_data_set('tickets');
     $ticket_type_data_table = $ticket_data_set['TicketTypes'];
-    $filter = false;
-    $select = false;
-    if(isset($params['select']))
-    {
-        $select = explode(',',$params['select']);
-    }
-    if(isset($params['filter']))
-    {
-        $filter = new \Data\Filter($params['filter']);
-    }
-    $ticket_types = $ticket_type_data_table->search($filter, $select);
+    $ticket_types = $ticket_type_data_table->search($app->odata->filter, $app->odata->select, $app->odata->top, $app->odata->skip, $app->odata->orderby);
     if($ticket_types === false)
     {
         $ticket_types = array();
@@ -222,6 +173,23 @@ function list_ticket_types()
     echo json_encode($ticket_types);
 }
 
+function send_email($hash)
+{
+    global $app;
+    if(!$app->user)
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    $ticket = Ticket::get_ticket_by_hash($hash);
+    $email_msg = new \Tickets\TicketEmail($ticket);
+    $email_provider = EmailProvider::getInstance();
+    if($email_provider->sendEmail(false, $email_msg) === false)
+    {
+        throw new \Exception('Unable to send password reset email!');
+    }
+    echo 'true';
+}
+
 function sell_multiple_tickets()
 {
     global $app;
@@ -229,8 +197,7 @@ function sell_multiple_tickets()
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $body = $app->request->getBody();
-    $obj  = json_decode($body, true);
+    $obj = $app->get_json_body(true);
     foreach($obj['tickets'] as $type=>$qty)
     {
         if($qty > 0)
@@ -241,7 +208,7 @@ function sell_multiple_tickets()
             unset($obj['tickets'][$type]);
         }
     }
-    $message = FALSE;
+    $message = false;
     if(isset($obj['message']))
     {
         $message = $obj['message'];
