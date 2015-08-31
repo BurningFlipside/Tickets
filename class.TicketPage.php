@@ -40,6 +40,7 @@ class TicketPage extends SecurePage
                                          self::NOTIFICATION_WARNING);
              }
         }
+        $this->add_js_from_src($this->ticket_root.'/js/tickets.js', false);
     }
 
     function add_links()
