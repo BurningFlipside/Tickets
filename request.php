@@ -153,8 +153,8 @@ if($page->user)
                     <li>Present the affidavit to the Gate staff with the minor\'s ticket and your legal ID. Gate will keep the affidavit for Flipside\'s records.</li>
                 </ol>
                 <center>
-                <a href="MinorAffidavit03222010.doc" target="_blank"><img src="/images/MS_word_DOC_icon.svg" style="width: 40px; height: 40px;" alt="Word Doc"/></a>
-                <a href="MinorAffidavit03222010.pdf" target="_blank"><img src="/images/Adobe_PDF_Icon.svg" style="width: 40px; height: 40px;" alt="PDF"/></a>
+                <a href="static/MinorAffidavit03222010.doc" target="_blank"><img src="/images/MS_word_DOC_icon.svg" style="width: 40px; height: 40px;" alt="Word Doc"/></a>
+                <a href="static/MinorAffidavit03222010.pdf" target="_blank"><img src="/images/Adobe_PDF_Icon.svg" style="width: 40px; height: 40px;" alt="PDF"/></a>
                 </center>
                 <input type="checkbox" id="minor_affirm" onchange="minor_affirm_clicked()">&nbsp;<label for="minor_affirm">I have read and understand the above policies.</label>
             </div>
