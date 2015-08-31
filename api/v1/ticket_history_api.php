@@ -1,6 +1,6 @@
 <?php
 require_once('Autoload.php');
-require_once('class.Ticket.php');
+require_once('app/TicketAutoload.php');
 
 function ticket_history_api_group()
 {
