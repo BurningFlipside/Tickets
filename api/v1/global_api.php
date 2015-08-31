@@ -1,10 +1,12 @@
 <?php
-require_once('class.TicketSystemSettings.php');
-require_once('class.Ticket.php');
+require_once('app/TicketAutoload.php');
 
 function global_api_group()
 {
     global $app;
+    $app->get('/constraints', 'show_constraints');
+    $app->get('/donation_types', 'show_donation_types');
+    $app->get('/lists', 'show_lists');
     $app->get('/window', 'show_window');
     $app->get('/statuses', 'list_statuses');
     $app->get('/vars', 'get_vars');
@@ -14,6 +16,68 @@ function global_api_group()
     $app->delete('/vars/:name', 'del_var');
 }
 
+function show_constraints()
+{
+    global $app;
+    if(!$app->user)
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+    $constraints = array();
+    $constraints['max_tickets_per_request'] = $settings['max_tickets_per_request'];
+    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $ticket_type_data_table = $ticket_data_set['TicketTypes'];
+    $ticket_types = $ticket_type_data_table->search();
+    if($ticket_types === false)
+    {
+        $ticket_types = array();
+    }
+    else if(!is_array($ticket_types))
+    {
+        $ticket_types = array($ticket_types);
+    }
+    $constraints['ticket_types'] = $ticket_types;
+    echo json_encode($constraints);
+}
+
+function show_donation_types()
+{
+    global $app;
+    if(!$app->user)
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $donation_type_data_table = $ticket_data_set['DonationTypes'];
+    $donation_types = $donation_type_data_table->read();
+    echo json_encode($donation_types);
+}
+
+function show_lists()
+{
+    global $app;
+    if(!$app->user)
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    $ret = array();
+    $list = new stdClass();
+    $list->short_name = 'austin-announce';
+    $list->name = 'Austin Announce';
+    $list->description = "This is the most important list to be on. It is a low traffic email list (10-20 emails per year) and covers only the most important Flipside announcements. Stuff like when Tickets are going on sale, new important policies, announcements important to you even if you're not going this year, etc.";
+    $list->request_condition = '1';
+    array_push($ret, $list);
+
+    $list = new stdClass();
+    $list->short_name = 'flipside-parents';
+    $list->name = 'Flipside Parents';
+    $list->description = "This is a list for parents of minor children who are attending Flipside. important announcements relavent to parents will be posted to this list. Any parents of minor children attending the event should subscribe to this list.";
+    $list->request_condition = 'C > 0 || K > 0 || T > 0';
+    array_push($ret, $list);
+    echo json_encode($ret);
+}
+
 function show_window()
 {
     global $app;
@@ -21,13 +85,13 @@ function show_window()
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $settings = TicketSystemSettings::getInstance();
+    $settings = \Tickets\DB\TicketSystemSettings::getInstance();
     $window = array();
-    $window['request_start_date'] = $settings->getVariable('request_start_date');
-    $window['request_stop_date']  = $settings->getVariable('request_stop_date');
-    $window['mail_start_date']    = $settings->getVariable('mail_start_date');
-    $window['test_mode']          = $settings->getVariable('test_mode');
-    $window['year']               = $settings->getVariable('year');
+    $window['request_start_date'] = $settings['request_start_date'];
+    $window['request_stop_date']  = $settings['request_stop_date'];
+    $window['mail_start_date']    = $settings['mail_start_date'];
+    $window['test_mode']          = $settings['test_mode'];
+    $window['year']               = $settings['year'];
     $window['current']            = date("Y-m-d");
     echo json_encode($window);
 }
@@ -61,7 +125,7 @@ function get_vars()
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $settings = TicketSystemSettings::getInstance();
+    $settings = \Tickets\DB\TicketSystemSettings::getInstance();
     $vars = $settings->toArray();
     echo json_encode($vars);
 }
@@ -73,8 +137,8 @@ function get_var($name)
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $settings = TicketSystemSettings::getInstance();
-    echo json_encode($settings->getVariable($name));
+    $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+    echo json_encode($settings[$name]);
 }
 
 function set_var($name)
@@ -84,9 +148,9 @@ function set_var($name)
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $settings = TicketSystemSettings::getInstance();
+    $settings = Tickets\DB\TicketSystemSettings::getInstance();
     $val = $app->get_json_body();
-    $ret = $settings->setVariable($name, $val);
+    $ret = $settings[$name] = $val;
     echo json_encode($ret);
 }
 
@@ -97,9 +161,9 @@ function create_var($name)
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $settings = TicketSystemSettings::getInstance();
+    $settings = \Tickets\DB\TicketSystemSettings::getInstance();
     $val = $app->get_json_body();
-    $ret = $settings->createVariable($name, $val);
+    $ret = $settings[$name] = $val;
     echo json_encode($ret);
 }
 
@@ -110,9 +174,9 @@ function del_var($name)
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $settings = TicketSystemSettings::getInstance();
-    $ret = $settings->deleteVariable($name);
-    echo json_encode($ret);
+    $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+    unset($settings[$name]);
+    echo 'true';
 }
 
 ?>
