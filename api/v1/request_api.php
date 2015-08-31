@@ -1,5 +1,6 @@
 <?php
-require_once('class.FlipsideTicketRequest.php');
+require_once('Autoload.php');
+require_once('app/TicketAutoload.php');
 
 function request_api_group()
 {
@@ -7,6 +8,12 @@ function request_api_group()
     $app->get('', 'list_requests');
     $app->get('/crit_vols', 'get_crit_vols');
     $app->get('/:request_id(/:year)', 'get_request');
+    $app->get('/me/:year', 'get_request');
+    $app->get('/:request_id/:year/pdf', 'get_request_pdf');
+    $app->post('(/)', 'make_request');
+    $app->post('/Actions/Requests.GetRequestID', 'get_request_id');
+    $app->post('/:request_id/:year/Actions/Requests.GetPDF', 'get_request_pdf');
+    $app->post('/:request_id/:year/Actions/Requests.SendEmail', 'send_request_email');
 }
 
 function list_requests()
@@ -20,33 +27,10 @@ function list_requests()
     $ticket_data_set = DataSetFactory::get_data_set('tickets');
     $request_data_table = $ticket_data_set['TicketRequest'];
     $filter = false;
-    $select = false;
-    $count  = false;
-    $skip   = false;
     $show_children = false;
-    if(isset($params['select']))
+    if($app->user->isInGroupNamed('TicketAdmins') && $app->odata->filter !== false)
     {
-        $select = explode(',',$params['select']);
-    }
-    if(isset($params['top']))
-    {
-        $count = $params['top'];
-    }
-    else if(isset($params['length']))
-    {
-        $count = $params['length'];
-    }
-    if(isset($params['skip']))
-    {
-        $skip = $params['skip'];
-    }
-    else if(isset($params['start']))
-    {
-        $skip = $params['start'];
-    }
-    if($app->user->isInGroupNamed('TicketAdmins') && isset($params['filter']))
-    {
-        $filter = new \Data\Filter($params['filter']);
+        $filter = $app->odata->filter;
         if(isset($params['with_children']))
         {
             $show_children = $params['with_children'];
@@ -57,7 +41,7 @@ function list_requests()
         $filter = new \Data\Filter('mail eq \''.$app->user->getEmail().'\'');
         $show_children = true;
     }
-    $requests = $request_data_table->read($filter, $select, $count, $skip);
+    $requests = $request_data_table->read($filter, $app->odata->select, $app->odata->top, $app->odata->skip, $app->odata->orderby);
     if($requests === false)
     {
         $requests = array();
@@ -71,15 +55,13 @@ function list_requests()
         $ticket_data_table   = $ticket_data_set['RequestedTickets'];
         $donation_data_table = $ticket_data_set['RequestDonation'];
         $status_data_table   = $ticket_data_set['RequestStatus'];
-        $ticket_data_table->prefetch_all('request_id');
-        $donation_data_table->prefetch_all('request_id');
         $status_data_table->prefetch_all();
         $request_count = count($requests);
         for($i = 0; $i < $request_count; $i++)
         {
             $filter = new \Data\Filter('request_id eq \''.$requests[$i]['request_id'].'\' and year eq '.$requests[$i]['year']);
-            $requests[$i]['tickets']   = $ticket_data_table[$requests[$i]['request_id']];
-            $requests[$i]['donations'] = $donation_data_table[$requests[$i]['request_id']];
+            $requests[$i]['tickets']   = $ticket_data_table->read($filter);
+            $requests[$i]['donations'] = $donation_data_table->read($filter);
             $requests[$i]['status'] = $status_data_table[$requests[$i]['status']];
         }
     }
@@ -98,34 +80,214 @@ function get_crit_vols()
     echo json_encode($types);
 }
 
-function get_request($request_id, $year = FALSE)
+function get_request($request_id, $year = false)
 {
     global $app;
     if(!$app->user)
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $params = $app->request->params();
-    if(isset($params['fmt']))
+    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $request_data_table = $ticket_data_set['TicketRequest'];
+    $filter = false;
+    if($request_id === 'me')
     {
-       unset($params['fmt']);
+        $email = $app->user->getEmail();
+        if($year === false)
+        {
+            $filter = new \Data\Filter("mail eq '$email'");
+        }
+        else
+        {
+            if($year === 'current')
+            {
+                $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+                $year = $settings['year'];
+            }
+            $filter = new \Data\Filter("mail eq '$email' and year eq $year");
+        }
     }
-    $db = new FlipsideTicketDB();
-    $requests = array();
-    if(count($params) > 0 && $app->user->isInGroupNamed('TicketAdmins'))
+    else if($app->user->isInGroupNamed('TicketAdmins'))
     {
-        process_params($params);
-        $requests = FlipsideTicketRequest::select_from_db_multi_conditions($db, $params);
+        if($year === false)
+        {
+            $filter = new \Data\Filter("(request_id eq '$request_id' or mail eq '$request_id')");
+        }
+        else
+        {
+            $filter = new \Data\Filter("(request_id eq '$request_id' or mail eq '$request_id') and year eq $year");
+        }
     }
     else
     {
-        $request = $db->getRequestForUser($app->user);
-        if($request !== FALSE)
+        if($year === false)
         {
-            $requests[0] = $request;
+            $filter = new \Data\Filter('mail eq \''.$app->user->getEmail().'\' and request_id eq \''.$request_id.'\'');
+        }
+        else
+        {
+            $filter = new \Data\Filter('mail eq \''.$app->user->getEmail().'\' and request_id eq \''.$request_id.'\' and year eq '.$year);
         }
     }
+    $requests = $request_data_table->read($filter, $app->odata->select, $app->odata->top, $app->odata->skip, $app->odata->orderby);
+    if($requests === false)
+    {
+        $requests = array();
+    }
+    else if(!is_array($requests))
+    {
+        $requests = array($requests);
+    }
+    $ticket_data_table   = $ticket_data_set['RequestedTickets'];
+    $donation_data_table = $ticket_data_set['RequestDonation'];
+    $status_data_table   = $ticket_data_set['RequestStatus'];
+    $status_data_table->prefetch_all();
+    $request_count = count($requests);
+    for($i = 0; $i < $request_count; $i++)
+    {
+        $filter = new \Data\Filter('request_id eq \''.$requests[$i]['request_id'].'\' and year eq '.$requests[$i]['year']);
+        $requests[$i]['tickets']   = $ticket_data_table->read($filter);
+        $requests[$i]['donations'] = $donation_data_table->read($filter);
+        $requests[$i]['status'] = $status_data_table[$requests[$i]['status']];
+    }
     echo json_encode($requests);
+}
+
+function make_request()
+{
+    global $app;
+    if(!$app->user)
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    $obj = $app->get_json_body();
+    if(!isset($obj->request_id))
+    {
+        throw new Exception('Required Parameter request_id is missing', INVALID_PARAM);
+    }
+    if(!isset($obj->tickets))
+    {
+        throw new Exception('Required Parameter tickets is missing', INVALID_PARAM);
+    }
+    $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+    $ticket_count = count($obj->tickets);
+    if($ticket_count > $settings['max_tickets_per_request'])
+    {
+        throw new Exception('Too many tickets for request', INVALID_PARAM);
+    }
+    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $request_id_table = $ticket_data_set['RequestIDs'];
+    $filter = new \Data\Filter('mail eq \''.$app->user->getEmail().'\'');
+    $request_ids = $request_id_table->read($filter);
+    if($request_ids === false && !isset($request_ids[0]) && !isset($request_ids[0]['request_id']))
+    {
+        throw new Exception('Request ID not retrievable! Call GetRequestID first.', INVALID_PARAM);
+    }
+    else if($request_ids[0]['request_id'] !== $obj->request_id)
+    {
+        throw new Exception('Request ID not correct!', INVALID_PARAM);
+    }
+    $typeCounts = array();
+    for($i = 0; $i < $ticket_count; $i++)
+    {
+        if(\Tickets\TicketType::typeIsMinor($obj->tickets[$i]->type))
+        {
+            echo json_encode(array('need_minor_confirm'=>true));
+            return;
+        }
+        if(isset($typeCounts[$obj->tickets[$i]->type]))
+        {
+            $typeCounts[$obj->tickets[$i]->type]++;
+        }
+        else
+        {
+            $typeCounts[$obj->tickets[$i]->type] = 1;
+        }
+    }
+    $count = count($typeCounts);
+    $keys = array_keys($typeCounts);
+    for($i = 0; $i < $count; $i++)
+    {
+        if($typeCounts[$keys[$i]] > 1)
+        {
+            $type = \Tickets\TicketType::getTicketType($keys[$i]);
+            if($type->maxPerRequest < $typeCounts[$keys[$i]])
+            {
+                 throw new Exception('Too many tickets of type '.$keys[$i].' for request', INVALID_PARAM);
+            }
+        }
+    }
+    $obj->modifiedBy = $app->user->getUid();
+    $obj->modifiedByIP = $_SERVER['REMOTE_ADDR'];
+    \Tickets\Flipside\FlipsideTicketRequest::createTicketRequest($obj);
+    echo 'true';
+}
+
+function get_request_id()
+{
+    global $app;
+    if(!$app->user)
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $request_id_table = $ticket_data_set['RequestIDs'];
+    $filter = new \Data\Filter('mail eq \''.$app->user->getEmail().'\'');
+    $request_ids = $request_id_table->read($filter);
+    if($request_ids !== false && isset($request_ids[0]) && isset($request_ids[0]['request_id']))
+    {
+        echo json_encode($request_ids[0]['request_id']);
+        return;
+    }
+    $request_ids = $request_id_table->read(false, array('MAX(request_id)'));
+    $id = 'A00000001';
+    if($request_ids !== false && isset($request_ids[0]) && isset($request_ids[0]['MAX(request_id)']))
+    {
+        $id = $request_ids[0]['MAX(request_id)'];
+        $id++;
+    }
+    $data = array('mail'=>$app->user->getEmail(), 'request_id'=>$id);
+    $request_id_table->create($data);
+    echo json_encode($id);
+}
+
+function get_request_pdf($request_id, $year)
+{
+    global $app;
+    if(!$app->user)
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    $request = \Tickets\Flipside\FlipsideTicketRequest::getByIDAndYear($request_id, $year);
+    $pdf = new \Tickets\Flipside\RequestPDF($request);
+    $app->fmt = 'passthru';
+    if($app->request->isPost())
+    {
+        $app->response->headers->set('Content-Type', 'text/plain');
+        echo base64_encode($pdf->toPDFBuffer());
+    }
+    else
+    {
+        $app->response->headers->set('Content-Type', 'application/pdf');
+        echo $pdf->toPDFBuffer();
+    }
+}
+
+function send_request_email($request_id, $year)
+{
+    global $app;
+    if(!$app->user)
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    $request = \Tickets\Flipside\FlipsideTicketRequest::getByIDAndYear($request_id, $year);
+    $email_msg = new \Tickets\Flipside\FlipsideTicketRequestEmail($request);
+    $email_provider = \EmailProvider::getInstance();
+    if($email_provider->sendEmail(false, $email_msg) === false)
+    {
+        throw new \Exception('Unable to send email!');
+    }
+    echo 'true';
 }
 
 ?>
