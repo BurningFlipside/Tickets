@@ -22,16 +22,15 @@ class FlipsideTicketRequest extends \SerializableObject
               $request->year = $settings['year'];
          }
          $request->test = $settings['test_mode'];
-         $filter = new FlipsideRequestDefaultFilter($request->request_id, $request->year);
-         $dataSet = \DataSetFactory::get_data_set('tickets');
-         $requestDataTable = $dataSet['TicketRequest'];
-         $donationDataTable = $dataSet['RequestDonation'];
-         $requestedTicketDataTable = $dataSet['RequestedTickets'];
-         $requests = $requestDataTable->read($filter);
-         if($requests !== false && isset($requests[0]))
+         try
          {
-             return static::updateRequest($request, $requests[0]);
+             $old_request = static::getByIDAndYear($request->request_id, $request->year);
+             if($old_request !== false)
+             {
+                  return static::updateRequest($request, $old_request);
+             }
          }
+         catch(\Exception $e) {var_dump($e); die();}
          $request->total_due = 0;
          if(isset($request->donations) && count((array)$request->donations) > 0)
          {
@@ -87,9 +86,114 @@ class FlipsideTicketRequest extends \SerializableObject
 
     static function updateRequest($new_request, $old_request)
     {
-        print_r($new_request);
-        print_r($old_request);
-        die();
+        $new_request->total_due = 0;
+        $dataSet = \DataSetFactory::get_data_set('tickets');
+        if(isset($new_request->donations) && count((array)$new_request->donations) > 0)
+        {
+            //TODO lookup any old donations and edit
+        }
+        else
+        {
+            //TODO lookup any old donations and delete
+        }
+        if(isset($new_request->donations))
+        {
+            unset($new_request->donations);
+        }
+        if(isset($new_request->tickets))
+        {
+             $old_count = count($old_request->tickets);
+             $new_count = count($new_request->tickets);
+             for($i = 0; $i < $old_count; $i++)
+             {
+                 for($j = 0; $j < $new_count; $j++)
+                 {
+                     if($new_request->tickets[$j] === null) continue;
+                     if($old_request->tickets[$i]['type'] === $new_request->tickets[$j]->type &&
+                        $old_request->tickets[$i]['last'] === $new_request->tickets[$j]->last &&
+                        $old_request->tickets[$i]['first'] === $new_request->tickets[$j]->first)
+                     {
+                         $new_request->total_due += \Tickets\TicketType::getCostForType($new_request->tickets[$j]->type);
+                         $old_request->tickets[$i] = null;
+                         $new_request->tickets[$j] = null;
+                     }
+                 }
+             }
+             for($i = 0; $i < $old_count; $i++)
+             {
+                 if($old_request->tickets[$i] === null)
+                 {
+                     unset($old_request->tickets[$i]);
+                 }
+             }
+             for($i = 0; $i < $new_count; $i++)
+             {
+                 if($new_request->tickets[$i] === null)
+                 {
+                     unset($new_request->tickets[$i]);
+                 }
+             }
+             $old_count = count($old_request->tickets);
+             $new_count = count($new_request->tickets);
+             if($old_count > 0) $old_request->tickets = array_values($old_request->tickets);
+             if($new_count > 0) $new_request->tickets = array_values($new_request->tickets);
+             if($old_count !== 0 || $new_count !== 0)
+             {
+                 $requestedTicketDataTable = $dataSet['RequestedTickets'];
+                 if($old_count > 0 && $new_count > 0)
+                 {
+                     //Replace any old tickets with the values from the new tickets
+                     $count = min($old_count, $new_count);
+                     for($i = 0; $i < $count; $i++)
+                     {
+                          //TODO replace old ticket with new and unset both
+                          $filter = new \Data\Filter('requested_ticket_id eq '.$old_request->tickets[$i]['requested_ticket_id']);
+                          $array = array();
+                          $array['first']      = $new_request->tickets[$i]->first;
+                          $array['last']       = $new_request->tickets[$i]->last;
+                          $array['type']       = $new_request->tickets[$i]->type;
+                          $requestedTicketDataTable->update($filter, $array);
+                          $new_request->total_due += \Tickets\TicketType::getCostForType($new_request->tickets[$i]->type);
+                     }
+                     $old_count = count($old_request->tickets);
+                     $new_count = count($new_request->tickets);
+                     if($old_count > 0) $old_request->tickets = array_values($old_request->tickets);
+                     if($new_count > 0) $new_request->tickets = array_values($new_request->tickets);
+                 }
+                 if($new_count > 0)
+                 {
+                     for($i = 0; $i < $new_count; $i++)
+                     {
+                         $array = array();
+                         $array['request_id'] = $new_request->request_id;
+                         $array['year']       = $new_request->year;
+                         $array['first']      = $new_request->tickets[$i]->first;
+                         $array['last']       = $new_request->tickets[$i]->last;
+                         $array['type']       = $new_request->tickets[$i]->type;
+                         $array['test']       = $new_request->test;
+                         $requestedTicketDataTable->create($array);
+                         $new_request->total_due += \Tickets\TicketType::getCostForType($new_request->tickets[$i]->type);
+                     }
+                 }
+                 if($old_count > 0)
+                 {
+                     for($i = 0; $i < $old_count; $i++)
+                     {
+                         $filter = new \Data\Filter('requested_ticket_id eq '.$old_request->tickets[$i]['requested_ticket_id']);
+                         $requestedTicketDataTable->delete($filter);
+                     }
+                 }
+             }
+             unset($new_request->tickets);
+        }
+        if(isset($new_request->lists) && count((array)$new_request->lists) > 0)
+        {
+             //TODO Email lists
+             unset($new_request->lists);
+        }
+        $requestDataTable = $dataSet['TicketRequest'];
+        $filter = new FlipsideRequestDefaultFilter($new_request->request_id, $new_request->year);
+        return $requestDataTable->update($filter, (array)$new_request);
     }
 
     static function getByIDAndYear($request_id, $year)
