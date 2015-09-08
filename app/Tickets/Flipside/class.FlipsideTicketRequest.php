@@ -98,6 +98,10 @@ class FlipsideTicketRequest extends \SerializableObject
         $dataSet = \DataSetFactory::get_data_set('tickets');
         if(isset($new_request->donations) && count((array)$new_request->donations) > 0)
         {
+            if(!isset($old_request->donations) || $old_request->donations === false)
+            {
+                $old_request->donations = array();
+            }
             $donationDataTable = $dataSet['RequestDonation'];
             //TODO lookup any old donations and edit
             $old_count = count((array)$old_request->donations);
@@ -138,10 +142,44 @@ class FlipsideTicketRequest extends \SerializableObject
             $new_count = count((array)$new_request->donations);
             if($old_count !== 0 || $new_count !== 0)
             {
-                if($old_count > 0) $old_request->tickets = array_values($old_request->tickets);
-                print_r($old_request->donations);
-                print_r($new_request->donations);
-                die();
+                if($old_count > 0) $old_request->tickets = array_values($old_request->donations);
+                if($old_count > 0 && $new_count > 0)
+                {
+                    //TODO - Will handle when we actually need multiple donation types
+                }
+                if($new_count > 0)
+                {
+                     foreach((array)$new_request->donations as $donation=>$value)
+                     {
+                         if($value->amount > 0)
+                         {
+                              $array = array();
+                              $array['request_id'] = $new_request->request_id;
+                              $array['year']       = $new_request->year;
+                              $array['type']       = $donation;
+                              $array['amount']     = $value->amount;
+                              if(isset($value->disclose))
+                              {
+                                  $array['disclose'] = 1;
+                              }
+                              else
+                              {
+                                  $array['disclose'] = 0;
+                              }
+                              $array['test']       = $new_request->test;
+                              $donationDataTable->create($array);
+                              $new_request->total_due += $value->amount;
+                         }
+                     }
+                }
+                if($old_count > 0)
+                {
+                     for($i = 0; $i < $old_count; $i++)
+                     {
+                         $filter = new \Data\Filter('donation_id eq '.$old_request->donations[$i]['donation_id']);
+                         $donationDataTable->delete($filter);
+                     }
+                }
             }
         }
         else
@@ -266,6 +304,10 @@ class FlipsideTicketRequest extends \SerializableObject
          {
              $requests[0]['tickets']   = $requestedTicketDataTable->read($filter);
              $requests[0]['donations'] = $donationDataTable->read($filter);
+             if($requests[0]['donations'] === false)
+             {
+                 unset($requests[0]['donations']);
+             }
              return new static($requests[0]);
          }
          throw new \Exception('Not found');
