@@ -10,6 +10,8 @@ function request_api_group()
     $app->get('/:request_id(/:year)', 'get_request');
     $app->get('/me/:year', 'get_request');
     $app->get('/:request_id/:year/pdf', 'get_request_pdf');
+    $app->get('/:request_id/:year/donations', 'get_request_donations');
+    $app->get('/:request_id/:year/tickets', 'get_request_tickets');
     $app->post('(/)', 'make_request');
     $app->post('/Actions/Requests.GetRequestID', 'get_request_id');
     $app->post('/:request_id/:year/Actions/Requests.GetPDF', 'get_request_pdf');
@@ -227,7 +229,7 @@ function make_request()
     echo 'true';
 }
 
-function get_request_id()
+function return_request_id()
 {
     global $app;
     if(!$app->user)
@@ -240,8 +242,7 @@ function get_request_id()
     $request_ids = $request_id_table->read($filter);
     if($request_ids !== false && isset($request_ids[0]) && isset($request_ids[0]['request_id']))
     {
-        echo json_encode($request_ids[0]['request_id']);
-        return;
+        return $request_ids[0]['request_id'];
     }
     $request_ids = $request_id_table->read(false, array('MAX(request_id)'));
     $id = 'A00000001';
@@ -252,6 +253,12 @@ function get_request_id()
     }
     $data = array('mail'=>$app->user->getEmail(), 'request_id'=>$id);
     $request_id_table->create($data);
+    return $id;
+}
+
+function get_request_id()
+{
+    $id = return_request_id();
     echo json_encode($id);
 }
 
@@ -275,6 +282,74 @@ function get_request_pdf($request_id, $year)
         $app->response->headers->set('Content-Type', 'application/pdf');
         echo $pdf->toPDFBuffer();
     }
+}
+
+function get_request_donations($request_id, $year)
+{
+    global $app;
+    if(!$app->user)
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $donation_data_table = $ticket_data_set['RequestDonation'];
+    $filter = false;
+    if($request_id === 'me')
+    {
+        $request_id = return_request_id();
+        if($year === 'current')
+        {
+            $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+            $year = $settings['year'];
+        }
+    }
+    else if($app->user->isInGroupNamed('TicketAdmins') || $app->user->isInGroupNamed('TicketTeam'))
+    {
+    }
+    else
+    {
+        if($request_id !== return_request_id())
+        {
+            throw new Exception('Cannot view another person\'s donations!', ACCESS_DENIED);
+        }
+    }
+    $filter = new \Data\Filter("request_id eq '$request_id' and year eq $year");
+    $donations = $donation_data_table->read($filter, $app->odata->select, $app->odata->top, $app->odata->skip, $app->odata->orderby);
+    echo json_encode($donations);
+}
+
+function get_request_tickets($request_id, $year)
+{
+    global $app;
+    if(!$app->user)
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $tickets_data_table = $ticket_data_set['RequestedTickets'];
+    $filter = false;
+    if($request_id === 'me')
+    {
+        $request_id = return_request_id();
+        if($year === 'current')
+        {
+            $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+            $year = $settings['year'];
+        }
+    }
+    else if($app->user->isInGroupNamed('TicketAdmins') || $app->user->isInGroupNamed('TicketTeam'))
+    {
+    }
+    else
+    {
+        if($request_id !== return_request_id())
+        {
+            throw new Exception('Cannot view another person\'s tickets!', ACCESS_DENIED);
+        }
+    }
+    $filter = new \Data\Filter("request_id eq '$request_id' and year eq $year");
+    $tickets = $tickets_data_table->read($filter, $app->odata->select, $app->odata->top, $app->odata->skip, $app->odata->orderby);
+    echo json_encode($tickets);
 }
 
 function send_request_email($request_id, $year)
