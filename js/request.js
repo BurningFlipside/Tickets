@@ -507,7 +507,6 @@ function request_data_submitted()
         }
         else if(split[0] == 'donation')
         {
-            console.log(split);
             if(obj['donations'] === undefined)
             {
                 obj['donations'] = {};
@@ -521,6 +520,20 @@ function request_data_submitted()
         else
         {
             obj[name] = a[i].value;
+        }
+    }
+    if(obj.donations !== undefined)
+    {
+        for(var donationType in obj.donations)
+        {
+            if(obj.donations[donationType].amount == 0)
+            {
+                delete obj.donations[donationType];
+            }
+        }
+        if($.isEmptyObject(obj.donations))
+        {
+            delete obj.donations;
         }
     }
 
