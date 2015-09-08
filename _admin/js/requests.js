@@ -38,6 +38,19 @@ function request_loaded(data)
     this.tickets = data;
 }
 
+function request_tickets_loaded(data)
+{
+    for(var i = 0; i < data.length; i++)
+    {
+        var new_row = $('<tr/>');
+        $('<td/>').html('<input type="text" id="ticket_first_'+i+'" name="ticket_first_'+i+'" class="form-control" value="'+data[i].first+'"/>').appendTo(new_row);
+        $('<td/>').html('<input type="text" id="ticket_last_'+i+'" name="ticket_last_'+i+'" class="form-control" value="'+data[i].last+'"/>').appendTo(new_row);
+        $('<td/>').html('<input type="text" id="ticket_type_'+i+'" name="ticket_type_'+i+'" class="form-control" value="'+data[i].type+'"/>').appendTo(new_row);
+        new_row.appendTo($('#ticket_table tbody'));
+    }
+    this.tickets = data;
+}
+
 function show_tickets(data)
 {
     var ret = '<table class="table">';
@@ -129,13 +142,25 @@ function row_clicked()
     $('#l').val(data.l);
     $('#st').val(data.st);
     $('#ticket_table tbody').empty();
-    for(i = 0; i < data.tickets.length; i++)
+    if(data.tickets === undefined || data.tickets === null)
     {
-        var new_row = $('<tr/>');
-        $('<td/>').html('<input type="text" id="ticket_first_'+i+'" name="ticket_first_'+i+'" class="form-control" value="'+data.tickets[i].first+'"/>').appendTo(new_row);
-        $('<td/>').html('<input type="text" id="ticket_last_'+i+'" name="ticket_last_'+i+'" class="form-control" value="'+data.tickets[i].last+'"/>').appendTo(new_row);
-        $('<td/>').html('<input type="text" id="ticket_type_'+i+'" name="ticket_type_'+i+'" class="form-control" value="'+data.tickets[i].type+'"/>').appendTo(new_row);
-        new_row.appendTo($('#ticket_table tbody'));
+        $.ajax({
+            url: '../api/v1/requests_w_tickets?filter=request_id eq '+data.request_id+' and year eq '+data.year,
+            dataType: 'json',
+            success: request_tickets_loaded,
+            context: data
+        });
+    }
+    else
+    {
+        for(i = 0; i < data.tickets.length; i++)
+        {
+            var new_row = $('<tr/>');
+            $('<td/>').html('<input type="text" id="ticket_first_'+i+'" name="ticket_first_'+i+'" class="form-control" value="'+data.tickets[i].first+'"/>').appendTo(new_row);
+            $('<td/>').html('<input type="text" id="ticket_last_'+i+'" name="ticket_last_'+i+'" class="form-control" value="'+data.tickets[i].last+'"/>').appendTo(new_row);
+            $('<td/>').html('<input type="text" id="ticket_type_'+i+'" name="ticket_type_'+i+'" class="form-control" value="'+data.tickets[i].type+'"/>').appendTo(new_row);
+            new_row.appendTo($('#ticket_table tbody'));
+        }
     }
     $('#donation_table tbody').empty();
     if(data.donations !== undefined)
