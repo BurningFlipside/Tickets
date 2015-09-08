@@ -18,6 +18,45 @@ function request_api_group()
     $app->post('/:request_id/:year/Actions/Requests.SendEmail', 'send_request_email');
 }
 
+function safe_json_encode($value)
+{
+    $encoded = json_encode($value);
+    switch(json_last_error())
+    {
+        case JSON_ERROR_NONE:
+            return $encoded;
+        case JSON_ERROR_DEPTH:
+            return 'Maximum stack depth exceeded'; // or trigger_error() or throw new Exception()
+        case JSON_ERROR_STATE_MISMATCH:
+            return 'Underflow or the modes mismatch'; // or trigger_error() or throw new Exception()
+        case JSON_ERROR_CTRL_CHAR:
+            return 'Unexpected control character found';
+        case JSON_ERROR_SYNTAX:
+            return 'Syntax error, malformed JSON'; // or trigger_error() or throw new Exception()
+        case JSON_ERROR_UTF8:
+            $clean = utf8ize($value);
+            return safe_json_encode($clean);
+        default:
+            return 'Unknown error'; // or trigger_error() or throw new Exception()
+    }
+}
+
+function utf8ize($mixed)
+{
+    if(is_array($mixed))
+    {
+        foreach($mixed as $key => $value)
+        {
+            $mixed[$key] = utf8ize($value);
+        }
+    }
+    else if(is_string ($mixed))
+    {
+        return utf8_encode($mixed);
+    }
+    return $mixed;
+}
+
 function list_requests()
 {
     global $app;
@@ -67,7 +106,7 @@ function list_requests()
             $requests[$i]['status'] = $status_data_table[$requests[$i]['status']];
         }
     }
-    echo @json_encode($requests);
+    echo safe_json_encode($requests);
 }
 
 function get_crit_vols()
