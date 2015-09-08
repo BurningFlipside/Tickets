@@ -138,7 +138,13 @@ class FlipsideTicketRequest extends \SerializableObject
         }
         else
         {
-            //TODO lookup any old donations and delete
+            $donationDataTable = $dataSet['RequestDonation'];
+            $old_count = count((array)$old_request->donations);
+            for($i = 0; $i < $old_count; $i++)
+            {
+                $filter = new \Data\Filter('donation_id eq '.$old_request->donations[$i]['donation_id']);
+                $donationDataTable->delete($filter);
+            }
         }
         if(isset($new_request->donations))
         {
