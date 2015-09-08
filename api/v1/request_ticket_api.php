@@ -89,8 +89,10 @@ function get_requested_types()
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
+    $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+    $year = $settings['year'];
     $ticket_data_set = DataSetFactory::get_data_set('tickets');
-    $types = $ticket_data_set->raw_query('SELECT tblTicketTypes.description,COUNT(*) as count FROM tickets.vRequestWTickets INNER JOIN tblTicketTypes ON tblTicketTypes.typeCode=vRequestWTickets.type GROUP BY type;');
+    $types = $ticket_data_set->raw_query('SELECT tblTicketTypes.description,COUNT(*) as count FROM tickets.vRequestWTickets INNER JOIN tblTicketTypes ON tblTicketTypes.typeCode=vRequestWTickets.type  WHERE vRequestWTickets.year='.$year.' GROUP BY type;');
     echo json_encode($types);
 }
 
