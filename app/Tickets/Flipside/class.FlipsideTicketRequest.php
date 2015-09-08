@@ -86,6 +86,14 @@ class FlipsideTicketRequest extends \SerializableObject
 
     static function updateRequest($new_request, $old_request)
     {
+        $old_json = json_decode($old_request->revisions);
+        unset($old_request->revisions);
+        if($old_json === null)
+        {
+            $old_json = array();
+        }
+        array_unshift($old_json, $old_request);
+        $new_request->revisions = json_encode($old_json);
         $new_request->total_due = 0;
         $dataSet = \DataSetFactory::get_data_set('tickets');
         if(isset($new_request->donations) && count((array)$new_request->donations) > 0)
