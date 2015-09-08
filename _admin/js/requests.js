@@ -51,6 +51,19 @@ function request_tickets_loaded(data)
     this.tickets = data;
 }
 
+function request_donations_loaded(data)
+{
+    var tbody = $('#donation_table tbody');
+    for(var i = 0; i < data.length; i++)
+    {
+        var new_row = $('<tr/>');
+        $('<td/>').html(data[i].type).appendTo(new_row);
+        $('<td/>').html('<input type="text" id="ticket_type_'+data[i].type+'" name="ticket_type_'+data[i].type+'" class="form-control" value="'+data[i].amount+'"/>').appendTo(new_row);
+        new_row.appendTo(tbody);
+    }
+    this.donations = data;
+}
+
 function show_tickets(data)
 {
     var ret = '<table class="table">';
@@ -145,7 +158,7 @@ function row_clicked()
     if(data.tickets === undefined || data.tickets === null)
     {
         $.ajax({
-            url: '../api/v1/requests_w_tickets?filter=request_id eq '+data.request_id+' and year eq '+data.year,
+            url: '../api/v1/requests/'+data.request_id+'/'+data.year+'/tickets',
             dataType: 'json',
             success: request_tickets_loaded,
             context: data
@@ -163,7 +176,16 @@ function row_clicked()
         }
     }
     $('#donation_table tbody').empty();
-    if(data.donations !== undefined)
+    if(data.donations === undefined)
+    {
+        $.ajax({
+            url: '../api/v1/requests/'+data.request_id+'/'+data.year+'/donations',
+            dataType: 'json',
+            success: request_donations_loaded,
+            context: data
+        });
+    }
+    else if(data.donations !== null)
     {
         for(i = 0; i < data.donations.length; i++)
         {
