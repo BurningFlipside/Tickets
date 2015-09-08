@@ -90,7 +90,51 @@ class FlipsideTicketRequest extends \SerializableObject
         $dataSet = \DataSetFactory::get_data_set('tickets');
         if(isset($new_request->donations) && count((array)$new_request->donations) > 0)
         {
+            $donationDataTable = $dataSet['RequestDonation'];
             //TODO lookup any old donations and edit
+            $old_count = count((array)$old_request->donations);
+            for($i = 0; $i < $old_count; $i++)
+            {
+                foreach((array)$new_request->donations as $donation=>$data)
+                {
+                    if($old_request->donations[$i]['type'] === $donation)
+                    {
+                        $new_request->total_due += $data->amount;
+                        if($old_request->donations[$i]['amount'] != $data->amount)
+                        {
+                            $old_request->donations[$i]['amount'] = $data->amount;
+                            if(isset($data->disclose))
+                            {
+                                $old_request->donations[$i]['disclose'] = 1;
+                            }
+                            else
+                            {
+                                $old_request->donations[$i]['disclose'] = 0;
+                            }
+                            $filter = new \Data\Filter('donation_id eq '.$old_request->donations[$i]['donation_id']);
+                            $donationDataTable->update($filter, $old_request->donations[$i]);
+                        }
+                        $old_request->donations[$i] = null;
+                        unset($new_request->donations->$donation);
+                    }
+                }
+            }
+            for($i = 0; $i < $old_count; $i++)
+            {
+                 if($old_request->donations[$i] === null)
+                 {
+                     unset($old_request->donations[$i]);
+                 }
+            }
+            $old_count = count($old_request->donations);
+            $new_count = count((array)$new_request->donations);
+            if($old_count !== 0 || $new_count !== 0)
+            {
+                if($old_count > 0) $old_request->tickets = array_values($old_request->tickets);
+                print_r($old_request->donations);
+                print_r($new_request->donations);
+                die();
+            }
         }
         else
         {
