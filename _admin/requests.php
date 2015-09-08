@@ -5,8 +5,10 @@ require_once('class.TicketAdminPage.php');
 require_once('class.FlipsideTicketDB.php');
 $page = new TicketAdminPage('Burning Flipside - Tickets');
 
-$page->add_js(JS_DATATABLE);
+$page->add_js(JS_DATATABLE, false);
+$page->add_js(JS_BOOTSTRAP_FH);
 $page->add_css(CSS_DATATABLE);
+$page->add_css(CSS_BOOTSTRAP_FH);
 $page->add_js_from_src('js/requests.js');
 
 $db = new FlipsideTicketDB();
