@@ -1,6 +1,6 @@
 <?php
 require_once('class.FlipsideTicketRequest.php');
-require_once('mpdf/mpdf.php');
+require_once('/var/www/common/libs/mpdf/mpdf.php');
 
 class FlipsideTicketRequestPDF
 {
