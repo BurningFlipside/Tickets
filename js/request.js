@@ -574,6 +574,24 @@ function current_request_done(jqXHR)
                         addRowToTable(tbody, request.tickets[i].first, request.tickets[i].last, request.tickets[i].type, table_row++);
                     }
                     break;
+                case 'donations':
+                    for(var i = 0; i < request[propertyName].length; i++)
+                    {
+                        var id = 'donation_amount_'+request.donations[i].type;
+                        var dropdown = $('#'+id);
+                        dropdown.val(request.donations[i].amount);
+                        if(dropdown.val() == null)
+                        {
+                            dropdown.val('other');
+                            var box = $('<input/>', {name: id, id: id+'_text', type: 'text', value: request.donations[i].amount});
+                            box.appendTo(dropdown.parent());
+                        }
+                        if(request.donations[i].disclose !== undefined && request.donations[i].disclose == '1')
+                        {
+                            $('#donation_disclose_'+request.donations[i].type).prop('checked', true);
+                        }
+                    }
+                    break;
                 default:
                     $('#'+propertyName).val(request[propertyName]);
                     break;
@@ -627,7 +645,7 @@ function init_request()
         }
         for(var i = 0; i < request.donations.length; i++)
         {
-            var id = 'donation_amount_'+request.donations[i].type.entityName;
+            var id = 'donation_amount_'+request.donations[i].type;
             var dropdown = $('#'+id);
             dropdown.val(request.donations[i].amount);
             if(dropdown.val() == null)
