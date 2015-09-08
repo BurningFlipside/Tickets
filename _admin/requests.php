@@ -50,7 +50,7 @@ for($i = 0; $i < count($years); $i++)
             </table>
         </div>
         <div class="modal fade in" aria-hidden="false" id="modal">
-            <div class="modal-dialog">
+            <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
