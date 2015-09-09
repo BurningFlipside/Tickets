@@ -6,8 +6,8 @@ if(!isset($_FILES['file']) && !isset($_REQUEST['auto']))
 }
 require_once('class.FlipSession.php');
 require_once('class.FlipsideTicketRequest.php');
-$user = FlipSession::get_user(TRUE);
-if($user == FALSE)
+$user = FlipSession::getUser();
+if($user === false || $user === null)
 {
     echo json_encode(array('error' => "Not Logged In!"));
     die();

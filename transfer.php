@@ -24,7 +24,7 @@ function ticket_id_entry_form()
             </div>';
 }
 
-if(!FlipSession::is_logged_in())
+if(!FlipSession::isLoggedIn())
 {
     $page->body .= '
 <div id="content">
@@ -56,7 +56,7 @@ else
         }
         else
         {
-            if(Ticket::user_has_ticket($hash, FlipSession::get_user(TRUE)))
+            if(Ticket::user_has_ticket($hash, FlipSession::getUser()))
             {
                 /*This user already owns the ticket. Let them send it to someone else or just change the name*/
                 $page->body .= '<div id="content">

@@ -6,7 +6,7 @@ if(!isset($_FILES['file']) && !isset($_REQUEST['data']))
 }
 require_once('class.FlipSession.php');
 require_once('class.FlipsideLDAPServer.php');
-$user = FlipSession::get_user(TRUE);
+$user = FlipSession::getUser();
 if($user == FALSE)
 {
     echo json_encode(array('error' => "Not Logged In!"));

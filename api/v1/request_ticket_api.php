@@ -41,7 +41,7 @@ function list_request_w_tickets()
     {
         $requests = array($requests);
     }
-    echo @json_encode($requests);
+    echo safe_json_encode($requests);
 }
 
 function get_request_w_tickets($request_id, $year = false)

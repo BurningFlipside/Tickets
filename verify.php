@@ -7,7 +7,7 @@ $page = new TicketPage('Burning Flipside - Tickets');
 
 $page->add_js_from_src('js/verify.js');
 
-if(!FlipSession::is_logged_in())
+if(!FlipSession::isLoggedIn())
 {
     $page->body .= '
 <div id="content">

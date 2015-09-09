@@ -6,17 +6,6 @@ $page = new TicketAdminPage('Burning Flipside - Tickets');
 
 $page->add_js_from_src('js/ticket_type.js');
 
-$user = FlipSession::get_user(TRUE);
-$is_admin = $user->isInGroupNamed("TicketAdmins");
-if(!$is_admin)
-{
-    $page->body .= '
-<div id="content">
-    <h1>You must log in to access the Burning Flipside Ticket system!</h1>
-</div>';
-}
-else
-{
     $page->body .= '
 <div id="content">
     <ul id="ticket_type_nav" class="nav nav-tabs" role="tablist">
@@ -27,7 +16,6 @@ else
 </div>
 ';
 
-}
 $page->print_page();
 // vim: set tabstop=4 shiftwidth=4 expandtab:
 ?>
