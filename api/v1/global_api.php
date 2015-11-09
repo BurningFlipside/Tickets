@@ -8,6 +8,9 @@ function global_api_group()
     $app->get('/donation_types', 'show_donation_types');
     $app->post('/donation_types', 'createDonationType');
     $app->delete('/donation_types/:id', 'deleteDonationType');
+    $app->get('/ticket_types', 'showTicketTypes');
+    $app->post('/ticket_types', 'createTicketType');
+    $app->delete('/ticket_types/:id', 'deleteTicketType');
     $app->get('/lists', 'show_lists');
     $app->get('/window', 'show_window');
     $app->get('/statuses', 'list_statuses');
@@ -86,6 +89,60 @@ function deleteDonationType($id)
     $donation_type_data_table = $ticket_data_set['DonationTypes'];
     $filter = new \Data\Filter("entityName eq '$id'");
     $res = $donation_type_data_table->delete($filter);
+    echo json_encode($res);
+}
+
+function showTicketTypes()
+{
+    global $app;
+    if(!$app->user)
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $ticket_type_data_table = $ticket_data_set['TicketTypes'];
+    $ticket_types = $ticket_type_data_table->search();
+    if($ticket_types === false)
+    {
+        $ticket_types = array();
+    }
+    else if(!is_array($ticket_types))
+    {
+        $ticket_types = array($ticket_types);
+    }
+    echo json_encode($ticket_types);
+}
+
+function createTicketType()
+{
+    global $app;
+    if(!$app->user || !$app->user->isInGroupNamed('TicketAdmins'))
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    $data = $app->getJsonBody();
+    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $ticket_type_data_table = $ticket_data_set['TicketTypes'];
+    $res = $ticket_type_data_table->create($data);
+    if($res === false)
+    {
+        $filter = new \Data\Filter("typeCode eq '{$data->typeCode}'");
+        $res = $ticket_type_data_table->update($filter, $data);
+    }
+    echo json_encode($res);
+}
+
+function deleteTicketType($id)
+{
+    global $app;
+    if(!$app->user || !$app->user->isInGroupNamed('TicketAdmins'))
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $ticket_type_data_table = $ticket_data_set['TicketTypes'];
+    $filter = new \Data\Filter("typeCode eq '$id'");
+    $res = $ticket_type_data_table->delete($filter);
     echo json_encode($res);
 }
 

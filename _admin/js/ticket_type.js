@@ -1,4 +1,4 @@
-function add_ticket_type(ticket_type)
+function addTicketType(ticket_type)
 {
     var nav = $('#ticket_type_nav');
     var nav_item = $('<li/>');
@@ -47,11 +47,13 @@ function add_ticket_type(ticket_type)
     inner_div.appendTo(div);
    
     label = $('<label/>', {'for': 'max_per_'+ticket_type.typeCode, 'class': 'col-sm-2 control-label'}).html('Max of this type per request');
-    input = $('<input/>', {'type': 'text', 'class': 'form-control', 'id': 'max_per_'+ticket_type.typeCode, 'value': ticket_type.max_per_request, 'required': 'true'});
+    input = $('<input/>', {'type': 'number', 'class': 'form-control', 'id': 'max_per_'+ticket_type.typeCode, 'value': ticket_type.max_per_request, 'required': 'true'});
     label.appendTo(div);
     inner_div = $('<div/>', {'class': 'col-sm-10'}).appendTo(div);
     input.appendTo(inner_div);
     inner_div.appendTo(div);
+
+    div.append('<div class="clearfix visible-sm visible-md visible-lg"></div>');
 
     label = $('<label/>', {'for': 'minor_'+ticket_type.typeCode, 'class': 'col-sm-2 control-label'}).html('Is this request type a minor?');
     input = $('<input/>', {'type': 'checkbox', 'class': 'form-control', 'id': 'minor_'+ticket_type.typeCode, 'data-on-text': 'Yes', 'data-off-text': 'No'});
@@ -74,8 +76,6 @@ function add_ticket_type(ticket_type)
 
     form.appendTo(content_item);
     content_item.appendTo(content);
-
-    $('#minor_'+ticket_type.typeCode).bootstrapSwitch();
 }
 
 function tab_shown(e)
@@ -93,26 +93,31 @@ function tab_shown(e)
     tab.find('[id^=delete_]').show();
 }
 
-function really_delete(e)
+function actionFailed(jqXHR)
+{
+    console.log(jqXHR);
+}
+
+function reallyDelete(e)
 {
     var button = $(e.currentTarget);
     var id = button.data('data');
     $.ajax({
-        url: '/tickets/ajax/constraints.php',
-        data: 'delete='+id,
-        type: 'post',
+        url: '../api/v1/globals/ticket_types/'+id,
+        type: 'DELETE',
         dataType: 'json',
-        success: init_ticket_type});
+        success: initTicketType,
+        error: actionFailed});
 }
 
-function delete_ticket_type(e)
+function deleteTicketType(e)
 {
     var button = $(e.currentTarget);
     var id = button.attr('id').split('_');
     var type = id[1];
     var desc = $('#desc_'+type).val();
 
-    var yes = {'close': true, 'text': 'Yes', 'method': really_delete, 'data': type};
+    var yes = {'close': true, 'text': 'Yes', 'method': reallyDelete, 'data': type};
     var no = {'close': true, 'text': 'No'};
     var buttons = [yes, no];
     var modal = create_modal('Are you sure?', 'Are you sure you want to delete the '+desc+' ticket type? This operation cannot be undone.', buttons);
@@ -121,42 +126,50 @@ function delete_ticket_type(e)
     e.preventDefault();
 }
 
-function commit_ticket_type(e)
+function commitTicketType(e)
 {
     var button = $(e.currentTarget);
     var id = button.attr('id').split('_');
     var type = id[1];
     var controls = $('[id$=_'+type+'].form-control');
-    var data = '';
+    var data = {};
     for(i = 0; i < controls.length; i++)
     {
         var control = $(controls[i]);
         var control_name = control.attr('id');
         control_name = control_name.substring(0, control_name.lastIndexOf('_'));
-        data+=control_name;
-        data+='='+control.val();
-        if(i < controls.length - 1)
+        if(control[0].type === 'checkbox')
         {
-            data+='&';
+            data[control_name] = control[0].checked;
+        }
+        else
+        {
+            data[control_name] = control.val();
         }
     }
     e.preventDefault();
     $.ajax({
-        url: '/tickets/ajax/constraints.php',
-        data: data,
-        type: 'post',
+        url: '../api/v1/globals/ticket_types',
+        data: JSON.stringify(data),
+        type: 'POST',
+        processData: false,
         dataType: 'json',
-        success: init_ticket_type});
+        success: initTicketType,
+        error: actionFailed});
 }
 
-function constraints_done(data)
+function ticketTypesDone(jqXHR)
 {
-    if(data.constraints !== undefined)
+    if(jqXHR.status !== 200)
     {
-        for(i = 0; i < data.constraints.ticket_types.length; i++)
-        {
-            add_ticket_type(data.constraints.ticket_types[i]);
-        }
+        alert('Error reading ticket types!');
+        console.log(jqXHR);
+        return;
+    }
+    var data = jqXHR.responseJSON;
+    for(var i = 0; i < data.length; i++)
+    {
+        addTicketType(data[i]);
     }
     var new_type = new Object();
     new_type.typeCode = 'NEW';
@@ -164,23 +177,23 @@ function constraints_done(data)
     new_type.cost = '';
     new_type.max_per_request = '';
     new_type.is_minor = '';
-    add_ticket_type(new_type);
+    addTicketType(new_type);
     $('#ticket_type_nav a:first').tab('show');
     $('#ticket_type_nav a').on('shown.bs.tab', tab_shown);
     $('[title]').tooltip();
     tab_shown();
-    $('[id^=delete_]').on('click', delete_ticket_type);
-    $('[id^=commit_]').on('click', commit_ticket_type);
+    $('[id^=delete_]').on('click', deleteTicketType);
+    $('[id^=commit_]').on('click', commitTicketType);
 }
 
-function init_ticket_type()
+function initTicketType()
 {
     $('#ticket_type_nav').empty();
     $.ajax({
-        url: '/tickets/ajax/constraints.php',
+        url: '../api/v1/globals/ticket_types',
         type: 'get',
         dataType: 'json',
-        success: constraints_done});
+        complete: ticketTypesDone});
 }
 
-$(init_ticket_type);
+$(initTicketType);
