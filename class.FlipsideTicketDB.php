@@ -2,7 +2,7 @@
 require_once("class.FlipsideDB.php");
 require_once('class.FlipsideTicketConstraints.php');
 require_once('class.FlipsideDonationType.php');
-require_once('class.FlipsideTicketRequest.php');
+//require_once('class.FlipsideTicketRequest.php');
 class FlipsideTicketDB
 {
     protected $data_set = null;
