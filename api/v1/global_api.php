@@ -6,6 +6,8 @@ function global_api_group()
     global $app;
     $app->get('/constraints', 'show_constraints');
     $app->get('/donation_types', 'show_donation_types');
+    $app->post('/donation_types', 'createDonationType');
+    $app->delete('/donation_types/:id', 'deleteDonationType');
     $app->get('/lists', 'show_lists');
     $app->get('/window', 'show_window');
     $app->get('/statuses', 'list_statuses');
@@ -52,6 +54,39 @@ function show_donation_types()
     $donation_type_data_table = $ticket_data_set['DonationTypes'];
     $donation_types = $donation_type_data_table->read();
     echo json_encode($donation_types);
+}
+
+function createDonationType()
+{
+    global $app;
+    if(!$app->user || !$app->user->isInGroupNamed('TicketAdmins'))
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    $data = $app->getJsonBody();
+    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $donation_type_data_table = $ticket_data_set['DonationTypes'];
+    $res = $donation_type_data_table->create($data);
+    if($res === false)
+    {
+        $filter = new \Data\Filter("entityName eq '{$data->entityName}'");
+        $res = $donation_type_data_table->update($filter, $data);
+    }
+    echo json_encode($res);
+}
+
+function deleteDonationType($id)
+{
+    global $app;
+    if(!$app->user || !$app->user->isInGroupNamed('TicketAdmins'))
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $donation_type_data_table = $ticket_data_set['DonationTypes'];
+    $filter = new \Data\Filter("entityName eq '$id'");
+    $res = $donation_type_data_table->delete($filter);
+    echo json_encode($res);
 }
 
 function show_lists()
