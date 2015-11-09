@@ -19,6 +19,10 @@ function global_api_group()
     $app->patch('/vars/:name', 'set_var');
     $app->post('/vars/:name', 'create_var');
     $app->delete('/vars/:name', 'del_var');
+    $app->get('/long_text', 'getAllLongText');
+    $app->get('/long_text/:name', 'getLongText');
+    $app->patch('/long_text/:name', 'setLongText');
+    $app->post('/Actions/generatePreview/:class+', 'previewPDF');
 }
 
 function show_constraints()
@@ -269,6 +273,71 @@ function del_var($name)
     $settings = \Tickets\DB\TicketSystemSettings::getInstance();
     unset($settings[$name]);
     echo 'true';
+}
+
+function getAllLongText()
+{
+    global $app;
+    if(!$app->user || !$app->user->isInGroupNamed('TicketAdmins'))
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $table = $ticket_data_set['LongText'];
+    $longText = $table->read();
+    echo json_encode($longText);    
+}
+
+function getLongText($name)
+{
+    global $app;
+    if(!$app->user || !$app->user->isInGroupNamed('TicketAdmins'))
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $table = $ticket_data_set['LongText'];
+    $longText = $table->read(new \Data\Filter("name eq '$name'"));
+    if(isset($longText[0]) && isset($longText[0]['value']))
+    {
+        echo $longText[0]['value'];
+    }
+    else
+    {
+        $app->notFound();
+    }
+}
+
+function setLongText($name)
+{
+    global $app;
+    if(!$app->user || !$app->user->isInGroupNamed('TicketAdmins'))
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $table = $ticket_data_set['LongText'];
+    $filter = new \Data\Filter("name eq '$name'");
+    $body = $app->request->getBody();
+    $obj = new stdClass();
+    $obj->value = $body;
+    $res = $table->update($filter, $obj);
+    echo json_encode($res);
+}
+
+function previewPDF($class)
+{
+    global $app;
+    if(!$app->user || !$app->user->isInGroupNamed('TicketAdmins'))
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    $type = '\\'.implode('\\', $class);
+    $body = $app->request->getBody();
+    $pdf = new $type(false, $body);
+    $app->fmt = 'passthru';
+    $app->response->headers->set('Content-Type', 'text/plain');
+    echo base64_encode($pdf->toPDFBuffer());
 }
 
 ?>

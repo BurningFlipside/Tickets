@@ -312,5 +312,31 @@ class FlipsideTicketRequest extends \SerializableObject
          }
          throw new \Exception('Not found');
     }
+
+    static function testRequest()
+    {
+        $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+        $request = new static();
+        $request->request_id   = '00000000';
+        $request->year         = $settings['year'];
+        $request->givenName    = 'Test';
+        $request->sn           = 'User';
+        $request->mail         = 'test@test.org';
+        $request->mobile       = '+1 (234) 567-8901';
+        $request->c            = 'US';
+        $request->street       = '123 Fake Street';
+        $request->zip          = '12345';
+        $request->l            = 'Fake Town';
+        $request->st           = 'TX';
+        $request->modifiedBy   = 'noone';
+        $request->modifiedByIP = '127.0.0.1';
+        $request->modifiedOn   = 'today';
+        $request->tickets      = array();
+        $request->donations    = array();
+
+        array_push($request->tickets, array('first'=>'Test', 'last'=>'User', 'type'=>'A'));
+        array_push($request->tickets, array('first'=>'Test', 'last'=>'Kid', 'type'=>'K'));
+        return $request;
+    }
 }
 ?>
