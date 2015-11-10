@@ -95,13 +95,18 @@ function doc_drop_in(event)
     event.preventDefault();
 }
 
+function renderName(data, type, row)
+{
+    return row['givenName']+' '+row['sn'];
+}
+
 function init_page()
 {
     $('#users').dataTable({
-        "ajax": 'ajax/users.php',
+        "ajax": '../api/v1/globals/users?fmt=data-table',
         'columns': [
-            {'data': 'name'},
-            {'data': 'email'},
+            {'render': renderName},
+            {'data': 'mail'},
             {'data': 'uid'},
             {'data': 'admin'}
         ]

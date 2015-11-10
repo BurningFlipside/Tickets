@@ -2,10 +2,9 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 require_once('class.TicketAdminPage.php');
-require_once('class.FlipsideTicketDB.php');
 $page = new TicketAdminPage('Burning Flipside - Tickets');
 
-$page->add_js(JS_DATATABLE);
+$page->add_js(JS_DATATABLE, false);
 $page->add_css(CSS_DATATABLE);
 $page->add_js_from_src('js/users.js');
 

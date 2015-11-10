@@ -22,6 +22,7 @@ function global_api_group()
     $app->get('/long_text', 'getAllLongText');
     $app->get('/long_text/:name', 'getLongText');
     $app->patch('/long_text/:name', 'setLongText');
+    $app->get('/users', 'getTicketUsers');
     $app->post('/Actions/generatePreview/:class+', 'previewPDF');
 }
 
@@ -338,6 +339,57 @@ function previewPDF($class)
     $app->fmt = 'passthru';
     $app->response->headers->set('Content-Type', 'text/plain');
     echo base64_encode($pdf->toPDFBuffer());
+}
+
+function getTicketUsers()
+{
+    global $app;
+    if(!$app->user || !$app->user->isInGroupNamed('TicketAdmins'))
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    $context = [ 'http' => [ 'method' => 'GET' ], 'ssl' => [ 'verify_peer' => false, 'allow_self_signed'=> true, 'verify_peer_name'=>false] ];
+    $context = stream_context_create($context);
+    $full = array();
+    $res = file_get_contents('https://profiles.test.burningflipside.com/api/v1/groups/TicketAdmins?$expand=member&$select=member.givenName,member.sn,member.mail,member.uid,cn', false, $context);
+    $full[0] = json_decode($res, true);
+    $res = file_get_contents('https://profiles.test.burningflipside.com/api/v1/groups/TicketTeam?$expand=member&$select=member.givenName,member.sn,member.mail,member.uid,cn', false, $context);
+    $full[1] = json_decode($res, true);
+    $res = array();
+    foreach($full[0]['member'] as $member)
+    {
+        $found = false;
+        foreach($res as $existing)
+        {
+            if($member['uid'] === $existing['uid'])
+            {
+               $found = true;
+               break;
+            }
+        }
+        if(!$found)
+        {
+            $member['admin'] = true;
+            array_push($res, $member);
+        }
+    }
+    foreach($full[1]['member'] as $member)
+    {
+        $found = false;
+        foreach($res as $existing)
+        {
+            if($member['uid'] === $existing['uid'])
+            {
+               $found = true;
+               break;
+            }
+        }
+        if(!$found)
+        {
+            array_push($res, $member);
+        }
+    }
+    echo json_encode($res);
 }
 
 ?>
