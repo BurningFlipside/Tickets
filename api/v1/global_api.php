@@ -23,6 +23,7 @@ function global_api_group()
     $app->get('/long_text/:name', 'getLongText');
     $app->patch('/long_text/:name', 'setLongText');
     $app->get('/users', 'getTicketUsers');
+    $app->get('/years', 'getYears');
     $app->post('/Actions/generatePreview/:class+', 'previewPDF');
 }
 
@@ -388,6 +389,30 @@ function getTicketUsers()
         {
             array_push($res, $member);
         }
+    }
+    echo json_encode($res);
+}
+
+function getYears()
+{
+    global $app;
+    if(!$app->user || !$app->user->isInGroupNamed('TicketAdmins'))
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $table = $ticket_data_set['TicketRequest'];
+    $res = $table->raw_query('SELECT DISTINCT(year) from tblTicketRequest');
+    $count = count($res);
+    for($i = 0; $i < $count; $i++)
+    {
+       $res[$i] = array_values($res[$i])[0];
+    }
+    $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+    $current = $settings['year'];
+    if(!in_array($current, $res))
+    {
+        array_push($res, $current);
     }
     echo json_encode($res);
 }
