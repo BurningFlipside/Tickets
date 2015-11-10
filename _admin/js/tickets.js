@@ -243,7 +243,7 @@ function table_searched()
     if(dt_api.rows({'search':'applied'})[0].length == 0)
     {
         $.ajax({
-            url: '/tickets/api/v1/ticket/search/'+dt_api.search(),
+            url: '../api/v1/tickets/search/'+dt_api.search(),
             type: 'get',
             dataType: 'json',
             success: backend_search_done
@@ -251,10 +251,34 @@ function table_searched()
     }
 }
 
+function yearChanged(e)
+{
+    $('#tickets').DataTable().ajax.url('../api/v1/tickets?filter=year eq '+e.currentTarget.value+'&fmt=data-table').load();
+}
+
+function gotTicketYears(jqXHR)
+{
+    if(jqXHR.status !== 200)
+    {
+        alert('Unable to obtain valid ticket years!');
+        console.log(jqXHR);
+        return;
+    }
+    jqXHR.responseJSON.sort().reverse();
+    for(var i = 0; i < jqXHR.responseJSON.length; i++)
+    {
+        $('#ticket_year').append($('<option/>').attr('value', jqXHR.responseJSON[i]).text(jqXHR.responseJSON[i]));
+    }
+    $('#ticket_year').on('change', yearChanged);
+    var e = {};
+    e.currentTarget = {};
+    e.currentTarget.value = $('#ticket_year').val();
+    yearChanged(e);
+}
+
 function init_page()
 {
     $('#tickets').dataTable({
-        "ajax": '../api/v1/tickets?filter=year eq 2015&fmt=data-table',
         columns: [
             {'data': 'hash', 'render':short_hash},
             {'data': 'firstName'},
@@ -263,6 +287,11 @@ function init_page()
             {'data': 'type'}
         ]
     });
+    $.ajax({
+        url: '../api/v1/globals/years',
+        type: 'get',
+        dataType: 'json',
+        complete: gotTicketYears});
 
     $('#tickets').on('search.dt', table_searched);
 }
