@@ -2,14 +2,11 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 require_once('class.TicketAdminPage.php');
-require_once('class.TicketPDF.php');
 $page = new TicketAdminPage('Burning Flipside - Tickets');
 
-$page->add_js_from_src('//cdn.ckeditor.com/4.4.5/full/ckeditor.js');
-$page->add_js_from_src('//cdn.ckeditor.com/4.4.5/full/adapters/jquery.js');
+$page->add_js_from_src('//cdn.ckeditor.com/4.4.5/full/ckeditor.js', false);
+$page->add_js_from_src('//cdn.ckeditor.com/4.4.5/full/adapters/jquery.js', false);
 $page->add_js_from_src('js/ticket_pdf.js');
-
-$pdf = new TicketPDF(FALSE);
 
     $page->body .= '
 <div class="row">
@@ -18,7 +15,7 @@ $pdf = new TicketPDF(FALSE);
     </div>
 </div>
 <div class="row">
-    <textarea id="pdf-source" style="width: 100%">'.$pdf->source.'</textarea>
+    <textarea id="pdf-source" style="width: 100%"></textarea>
 </div>
 <div class="row">
     <button onclick="gen_preview()">Preview</button><button onclick="save()">Save</button>

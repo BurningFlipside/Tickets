@@ -1,28 +1,41 @@
-function save_done(data)
+function saveDone(jqXHR)
 {
-    if(data.success !== undefined)
+    if(jqXHR.status === 200)
     {
         location.reload();
     }
     else
     {
-        alert(data.error);
+        alert('Unable to save data!');
+        console.log(jqXHR);
     }
 }
 
 function save()
 {
     $.ajax({
-        url: '/tickets/_admin/ajax/emails.php',
-        type: 'post',
-        data: 'type='+$('#ticket_text_name').val()+'&save='+encodeURIComponent($('#pdf-source').val()),
-        dataType: 'json',
-        success: save_done});
+        url: '../api/v1/globals/long_text/'+$('#ticket_text_name').val(),
+        type: 'PATCH',
+        data: $('#pdf-source').val(),
+        processData: false,
+        complete: saveDone});
+}
+
+function gotEmailSource(jqXHR)
+{
+    if(jqXHR.status !== 200)
+    {
+         alert('Unable to obtain PDF source!');
+    }
+    $('#pdf-source').val(jqXHR.responseText);
 }
 
 function ticket_text_changed()
 {
-    window.location = '/tickets/_admin/emails.php?type='+$('#ticket_text_name').val();
+    $.ajax({
+        url: '../api/v1/globals/long_text/'+$('#ticket_text_name').val(),
+        type: 'get',
+        complete: gotEmailSource});
 }
 
 function page_init()
@@ -35,6 +48,7 @@ function page_init()
     {
         $('#ticket_text_name').val(type);
     }
+    ticket_text_changed();
 }
 
 $(page_init);

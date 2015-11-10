@@ -12,7 +12,7 @@ class TicketPDF extends \PDF\PDF
         parent::__construct();
         if($ticket === false)
         {
-            $this->ticket = \Ticket::test_ticket();
+            $this->ticket = \Tickets\Ticket::test_ticket();
         }
         else
         {
@@ -32,7 +32,14 @@ class TicketPDF extends \PDF\PDF
 
     private function createPDFBody()
     {
-        $barcode        = '<barcode code="'.$this->ticket->hash.'" type="C93"/>';
+        //$barcode_hash   = $this->ticket->getBarcodeHash();
+        $remainder    = gmp_init(substr($this->ticket->hash, 0), 16);
+        $barcode_hash = gmp_strval($remainder);
+        if((strlen($barcode_hash) % 2) === 1)
+        {
+             $barcode_hash = '0'.$barcode_hash;
+        }
+        $barcode        = '<barcode code="'.$barcode_hash.'" type="C128C"/>';
         $transfer_qr    = '<barcode code="https://secure.burningflipside.com/tickets/transfer.php?id='.$this->ticket->hash.'" type="QR" class="barcode" size="1" error="M" />';
         $year           = $this->ticket->year;
         $ticket_id      = $this->ticket->hash;
