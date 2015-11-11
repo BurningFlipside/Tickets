@@ -1,8 +1,6 @@
 <?php
 require_once("class.FlipsideDB.php");
 require_once('class.FlipsideTicketConstraints.php');
-require_once('class.FlipsideDonationType.php');
-//require_once('class.FlipsideTicketRequest.php');
 class FlipsideTicketDB
 {
     protected $data_set = null;
@@ -201,11 +199,6 @@ class FlipsideTicketDB
         $ret->max_total_tickets = $this->getVariable('max_tickets_per_request');
         $ret->ticket_types = FlipsideTicketType::get_all_of_type($this);
         return $ret; 
-    }
-
-    function getFlipsideDonationTypes()
-    {
-        return FlipsideDonationType::get_all_of_type($this);
     }
 
     function getVariable($name)
