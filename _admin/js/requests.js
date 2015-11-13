@@ -227,22 +227,39 @@ function status_ajax_done(data)
     }
 }
 
+function gotTicketYears(jqXHR)
+{
+    if(jqXHR.status !== 200)
+    {
+        alert('Unable to obtain valid ticket years!');
+        console.log(jqXHR);
+        return;
+    }
+    jqXHR.responseJSON.sort().reverse();
+    for(var i = 0; i < jqXHR.responseJSON.length; i++)
+    {
+        $('#year').append($('<option/>').attr('value', jqXHR.responseJSON[i]).text(jqXHR.responseJSON[i]));
+    }
+    change_year($('#year'));
+}
+
 function init_page()
 {
-    data = 'filter=year eq '+$('#year').val()+'&fmt=data-table';
+    $.ajax({
+        url: '../api/v1/globals/years',
+        type: 'get',
+        dataType: 'json',
+        complete: gotTicketYears});
+    $('#requests').on('draw.dt', draw_done);
     $('#requests').dataTable({
-        columns: [
-            {'class': 'details-control', 'orderable': false, 'data': null, 'defaultContent': ''},
+        'columns': [ 
+            {'className':'details-control','data':null,'defaultContent':'','orderable':false},
             {'data': 'request_id'},
             {'data': 'givenName'},
             {'data': 'sn'},
-            {'data': total_due},
-            {'data': child_data, 'visible': false}
-        ],
-        'order': [[1, 'asc']],
-        'ajax': '../api/v1/requests?'+data
+            {'data': 'total_due'}
+        ]
     });
-    $('#requests').on('draw.dt', draw_done);
     $('#requests tbody').on('click', 'td.details-control', details_clicked);
     $('#requests tbody').on('click', 'td:not(.details-control)', row_clicked);
     $.ajax({
