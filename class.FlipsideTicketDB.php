@@ -113,39 +113,6 @@ class FlipsideTicketDB
         return $values[0]['value'];
     }
 
-    function getAllYears()
-    {
-        $table  = $this->data_set['TicketRequest'];
-        $values = $table->search(false, array('DISTINCT(year)'));
-        if($values === false || !isset($values[0]))
-        {
-            return array(self::getTicketYear());
-        }
-        $count = count($values);
-        $ret = array();
-        for($i = 0; $i < $count; $i++)
-        {
-            $ret[$i] = $values[$i]['year'];
-        }
-        if(!in_array(self::getTicketYear(), $ret))
-        {
-            array_push($ret, self::getTicketYear());
-        }
-        return $ret;
-    }
-
-    function clearTestMode()
-    {
-        $res = TRUE;
-        $rc = $this->delete('tblTicketRequest', array('test'=>'=\'1\''));
-        if($rc === FALSE) $res = FALSE;
-        $rc = $this->delete('tblRequestDonation', array('test'=>'=\'1\''));
-        if($rc === FALSE) $res = FALSE;
-        $rc = $this->delete('tblRequestedTickets', array('test'=>'=\'1\''));
-        if($rc === FALSE) $res = FALSE;
-        return $res;
-    }
-
     static function getTicketTypeByType($type)
     {
         $db = new static();
