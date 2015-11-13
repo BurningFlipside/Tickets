@@ -15,24 +15,18 @@ function list_request_w_tickets()
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $params = $app->request->params();
     $ticket_data_set = DataSetFactory::get_data_set('tickets');
     $request_data_table = $ticket_data_set['RequestWTickets'];
     $filter = false;
-    $select = false;
-    if(isset($params['select']))
+    if($app->user->isInGroupNamed('TicketAdmins') && $app->odata->filter != false)
     {
-        $select = explode(',',$params['select']);
-    }
-    if($app->user->isInGroupNamed('TicketAdmins') && isset($params['filter']))
-    {
-        $filter = new \Data\Filter($params['filter']);
+        $filter = $app->odata->filter;
     }
     else
     {
         $filter = new \Data\Filter('mail eq \''.$app->user->getEmail().'\'');
     }
-    $requests = $request_data_table->search($filter, $select);
+    $requests = $request_data_table->search($filter, $app->odata->select);
     if($requests === false)
     {
         $requests = array();
@@ -40,6 +34,10 @@ function list_request_w_tickets()
     else if(!is_array($requests))
     {
         $requests = array($requests);
+    }
+    if($app->odata->count)
+    {
+        $requests = array('@odata.count'=>count($requests), 'value'=>$requests);
     }
     echo safe_json_encode($requests);
 }
