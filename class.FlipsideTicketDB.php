@@ -3,25 +3,11 @@ require_once("class.FlipsideDB.php");
 class FlipsideTicketDB
 {
     protected $data_set = null;
-    protected static $test_mode = null;
     protected static $year = null;
-    protected static $max_buckets = null;
 
     function __construct()
     {
         $this->data_set = DataSetFactory::get_data_set('tickets');
-    }
-
-    function getRequestCount($conds = false)
-    {
-        if($conds !== FALSE)
-        {
-            throw new \Exception('Unknown conditions!');
-        }
-        $table  = $this->data_set['TicketRequest'];
-        $filter = new \Data\Filter("year eq '".self::getTicketYear()."'");
-        $values = $table->search($filter, array('COUNT(*)'));
-        return $values[0]['COUNT(*)'];
     }
 
     function getProblemRequestCount($conds = FALSE)
@@ -34,30 +20,6 @@ class FlipsideTicketDB
         $filter = new \Data\Filter("year eq '".self::getTicketYear()."'");
         $values = $table->search($filter, array('COUNT(*)'));
         return $values[0]['COUNT(*)'];
-    }
-
-    function getRequestedTickets()
-    {
-        $ret = array();
-        $table  = $this->data_set['TicketTypes'];
-        $types  = $table->search();
-        for($i = 0; $i < count($types); $i++)
-        {
-            $ret[$i]['typeCode']    = $types[$i]['typeCode'];
-            $ret[$i]['description'] = $types[$i]['description'];
-            $reqs   = $this->data_set['RequestedTickets'];
-            $filter = new \Data\Filter('year eq \''.self::getTicketYear().'\' and type = \''.$types[$i]['typeCode'].'\'');
-            $data   = $reqs->search($filter, array('COUNT(*)'));
-            if($data === false || !isset($data[0]) || !isset($data[0]['COUNT(*)']))
-            {
-                 $ret[$i]['count'] = 0;
-            }
-            else
-            {
-                $ret[$i]['count'] = $data[0]['COUNT(*)'];;
-            }
-        }
-        return $ret;
     }
 
     function getTicketCount($filter_str = false)
@@ -81,11 +43,6 @@ class FlipsideTicketDB
         return $data[0]['COUNT(*)'];
     }
 
-    function getTicketSoldCount()
-    {
-        return $this->getTicketCount('sold eq 1');
-    }
-
     function getTicketCountByType($type)
     {
         $conds = array('type'=>'=\''.$type.'\'');
@@ -105,9 +62,6 @@ class FlipsideTicketDB
         {
             case 'year':
                 self::$year = $values[0]['value'];
-                break;
-            case 'test_mode':
-                self::$test_mode = $values[0]['value'];
                 break;
         }
         return $values[0]['value'];
