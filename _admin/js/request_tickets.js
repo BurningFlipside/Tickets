@@ -5,8 +5,29 @@ function change_year(control)
     table.ajax.url('../api/v1/requests_w_tickets?'+data).load();
 }
 
+function gotTicketYears(jqXHR)
+{
+    if(jqXHR.status !== 200)
+    {
+        alert('Unable to obtain valid ticket years!');
+        console.log(jqXHR);
+        return;
+    }
+    jqXHR.responseJSON.sort().reverse();
+    for(var i = 0; i < jqXHR.responseJSON.length; i++)
+    {
+        $('#year').append($('<option/>').attr('value', jqXHR.responseJSON[i]).text(jqXHR.responseJSON[i]));
+    }
+    change_year($('#year'));
+}
+
 function init_page()
 {
+    $.ajax({
+        url: '../api/v1/globals/years',
+        type: 'get',
+        dataType: 'json',
+        complete: gotTicketYears});
     $('#tickets').dataTable({
         columns: [
             {'data': 'request_id'},
@@ -15,7 +36,6 @@ function init_page()
             {'data': 'type'}
         ]
     });
-    change_year($('#year'));
 }
 
 $(init_page);
