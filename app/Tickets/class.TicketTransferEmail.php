@@ -74,34 +74,5 @@ class TicketTransferEmail extends TicketEmail
         }
         return $body;
     }
-
-    public function send_HTML($mail)
-    {
-        if($this->email == $this->ticket->email)
-        {
-            $this->addAddress($this->email, $this->ticket->firstName.' '.$this->ticket->lastName);
-            $this->Subject = 'Burning Flipside '.$this->ticket->year.' Will Call Ticket Form';
-            $this->Body   .= strtr(FlipsideTicketDB::get_long_text('ticket_email_source'), $vars);
-            $this->AltBody.= strtr(strip_tags(FlipsideTicketDB::get_long_text('ticket_email_source')), $vars);
-        }
-        else
-        {
-            $this->Body   .= strtr(FlipsideTicketDB::get_long_text('ticket_transfer_email_source'), $vars);
-            $this->AltBody.= strtr(strip_tags(FlipsideTicketDB::get_long_text('ticket_transfer_email_source')), $vars);
-        }
-        $this->isHTML(true);
-        if($this->attach_pdf)
-        {
-            $pdf_file_name = $this->ticket->generatePDF();
-            $this->addAttachment($pdf_file_name, 'Flipside '.$this->ticket->year.' Will Call Ticket Form.pdf');
-        }
-        $ret = $this->send();
-        if($this->attach_pdf)
-        {
-            unlink($pdf_file_name);
-        }
-        return $ret;
-    }
-
 }
 ?>
