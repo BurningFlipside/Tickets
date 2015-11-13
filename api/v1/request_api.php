@@ -106,6 +106,10 @@ function list_requests()
             $requests[$i]['status'] = $status_data_table[$requests[$i]['status']];
         }
     }
+    if($app->odata->count)
+    {
+        $requests = array('@odata.count'=>count($requests), 'value'=>$requests);
+    }
     echo safe_json_encode($requests);
 }
 
