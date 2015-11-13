@@ -8,12 +8,6 @@ $page = new TicketAdminPage('Burning Flipside - Tickets');
 $page->add_js_from_src('js/index.js');
 
 $db = new FlipsideTicketDB();
-$tickets = $db->getRequestedTickets();
-$requested_ticket_count = 0;
-for($i = 0; $i < count($tickets); $i++)
-{
-    $requested_ticket_count += $tickets[$i]['count'];
-}
 
 $page->body .= '
 <div class="row">
@@ -26,7 +20,7 @@ $page->body .= '
 $page->add_card('fa-file', '<div id="requestCount">?</div>', 'Ticket Requests', 'requests.php');
 $page->add_card('fa-tag',  '<div id="requestedTicketCount">?</div>', 'Requested Tickets', 'request_tickets.php', $page::CARD_GREEN);
 $page->add_card('fa-fire', $db->getProblemRequestCount(), 'Problem Requests', 'problems.php', $page::CARD_RED);
-$page->add_card('fa-usd',  $db->getTicketSoldCount(), 'Sold Tickets', 'sold_tickets.php', $page::CARD_YELLOW);
+$page->add_card('fa-usd',  '<div id="soldTicketCount">?</div>', 'Sold Tickets', 'sold_tickets.php', $page::CARD_YELLOW);
 $page->body.='</div>';
 
 $page->print_page();

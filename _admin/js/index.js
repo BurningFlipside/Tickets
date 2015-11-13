@@ -14,6 +14,14 @@ function gotRequestedTicketCount(jqXHR)
     }
 }
 
+function gotSoldTicketCount(jqXHR)
+{
+    if(jqXHR.status === 200)
+    {
+        $('#soldTicketCount').html(jqXHR.responseJSON['@odata.count']);
+    }
+}
+
 function init_index()
 {
     $.ajax({
@@ -26,6 +34,11 @@ function init_index()
         type: 'get',
         dataType: 'json',
         complete: gotRequestedTicketCount});
+    $.ajax({
+        url: '../api/v1/tickets?$filter=year eq 2016 and sold eq 1&$count=true&$select=@odata.count',
+        type: 'get',
+        dataType: 'json',
+        complete: gotSoldTicketCount});
 }
 
 $(init_index);

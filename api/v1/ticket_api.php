@@ -41,6 +41,10 @@ function list_tickets()
     {
         $tickets = array($tickets);
     }
+    if($app->odata->count)
+    {
+        $tickets = array('@odata.count'=>count($tickets), 'value'=>$tickets);
+    }
     echo json_encode($tickets);
 }
 
