@@ -2,7 +2,6 @@
 require_once('class.SecurePage.php');
 require_once('class.FlipSession.php');
 require_once('app/TicketAutoload.php');
-require_once('class.FlipsideTicketDB.php');
 class TicketAdminPage extends FlipAdminPage
 {
     private $is_data;
