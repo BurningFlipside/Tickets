@@ -235,7 +235,7 @@ class Ticket extends \SerializableObject
         $res = false;
         if($criteria !== false)
         {
-            $res = $data_table->raw_query('SELECT * FROM tblTickets WHERE pool_id IN ('.$pools.') AND '.$criteria->to_sql_string());
+            $res = $data_table->raw_query('SELECT * FROM tblTickets WHERE pool_id IN ('.$pools.') AND year='.$settings['year'].' AND '.$criteria->to_sql_string());
         }
         else
         {

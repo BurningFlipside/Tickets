@@ -138,7 +138,7 @@ function get_ticket_types_done(data)
     if(id === null)
     {
         $.ajax({
-            url: '/tickets/api/v1/ticket?with_pool=true&sold=0',
+            url: '/tickets/api/v1/tickets/pos?$filter=sold eq 0',
             type: 'GET',
             dataType: 'json',
             success: get_tickets_done
