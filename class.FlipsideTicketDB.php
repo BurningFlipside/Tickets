@@ -10,18 +10,6 @@ class FlipsideTicketDB
         $this->data_set = DataSetFactory::get_data_set('tickets');
     }
 
-    function getProblemRequestCount($conds = FALSE)
-    {
-        if($conds !== FALSE)
-        {
-            throw new \Exception('Unknown conditions!');
-        }
-        $table  = $this->data_set['Problems'];
-        $filter = new \Data\Filter("year eq '".self::getTicketYear()."'");
-        $values = $table->search($filter, array('COUNT(*)'));
-        return $values[0]['COUNT(*)'];
-    }
-
     function getTicketCount($filter_str = false)
     {
         $year   = self::getTicketYear();
