@@ -48,10 +48,13 @@ class TicketAdminPage extends FlipAdminPage
             return;
         }
         $probs = '';
-        $db = new FlipsideTicketDB();
-        if($db->getProblemRequestCount() > 0)
+        $data_set = DataSetFactory::get_data_set('tickets');
+        $data_table = $data_set['Problems'];
+        $year = $this->settings['year'];
+        $count = $data_table->count(new \Data\Filter('year eq '.$year));
+        if($count > 0)
         {
-            $probs = '<span class="badge">'.$db->getProblemRequestCount().'</span>';
+            $probs = '<span class="badge">'.$count.'</span>';
         }
         $charts_menu = array(
             'Request Graphs' => 'chart_requests.php',
