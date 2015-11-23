@@ -14,6 +14,7 @@ function ticket_api_group()
     $app->patch('/:hash', 'update_ticket');
     $app->post('/:hash/Actions/Ticket.SendEmail', 'send_email');
     $app->post('/pos/sell', 'sell_multiple_tickets');
+    $app->post('/Actions/VerifyShortCode/:code', 'verifyShortCode');
 }
 
 function list_tickets()
@@ -231,6 +232,27 @@ function sell_multiple_tickets()
     }
     $res = \Tickets\Ticket::do_sale($app->user, $obj['email'], $obj['tickets'], $message);
     echo json_encode($res); 
+}
+
+function verifyShortCode($code)
+{
+    global $app;
+    if(!$app->user)
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    $count = FlipSession::getVar('TicketVerifyCount', 0);
+    if($count > 20)
+    {
+        throw new \Exception('Exceeded Ticket Verify Count for this session!');
+    }
+    $count++;
+    FlipSession::setVar('TicketVerifyCount', $count);
+    $filter = new \Data\Filter('substring(hash, "'.$code.'"');
+    $ticket_data_table = \Tickets\DB\TicketsDataTable::getInstance();
+    $res = $ticket_data_table->read($filter);
+    if($res === false) echo 'false';
+    else echo 'true';
 }
 
 ?>
