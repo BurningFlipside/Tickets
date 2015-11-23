@@ -14,6 +14,7 @@ function request_api_group()
     $app->get('/:request_id/:year/tickets', 'get_request_tickets');
     $app->post('(/)', 'make_request');
     $app->post('/Actions/Requests.GetRequestID', 'get_request_id');
+    $app->post('/Actions/SetCritVols', 'setCritVols');
     $app->post('/:request_id/:year/Actions/Requests.GetPDF', 'get_request_pdf');
     $app->post('/:request_id/:year/Actions/Requests.SendEmail', 'send_request_email');
 }
@@ -303,6 +304,72 @@ function get_request_id()
 {
     $id = return_request_id();
     echo json_encode($id);
+}
+
+function setCritVols()
+{
+    global $app;
+    if(!$app->user || !$app->user->isInGroupNamed('AAR'))
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    $unprocessed = array();
+    $processed = array();
+    $list = $app->request->getBody();
+    $list = str_getcsv($list, "\n");
+    $count = count($list);
+    for($i = 0; $i < $count; $i++)
+    {
+        $list[$i] = str_getcsv($list[$i]);
+    }
+    $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+    $year = $settings['year'];
+    $data_set = DataSetFactory::get_data_set('tickets');
+    $data_table = $data_set['TicketRequest'];
+    for($i = 0; $i < $count; $i++)
+    {
+        $request = false;
+        try{
+        $request = \Tickets\Flipside\FlipsideTicketRequest::getByIDAndYear($list[$i][0], $year);
+        } catch(Exception $e) {}
+        if($request === false)
+        {
+            if(isset($list[$i][1]))
+            {
+                try{
+                $request = \Tickets\Flipside\FlipsideTicketRequest::getByIDAndYear($list[$i][1], $year);
+                } catch(Exception $e) {}
+            }
+            if($request === false)
+            {
+                $filter = new \Data\Filter("mail eq '{$list[$i][0]}' and year eq $year");
+                $requests = $data_table->read($filter);
+                if($requests !== false && isset($requests[0]))
+                {
+                    $request = new \Tickets\Flipside\FlipsideTicketRequest($requests[0]);
+                }
+                else if(isset($list[$i][1]))
+                {
+                    $filter = new \Data\Filter("mail eq '{$list[$i][1]}' and year eq $year");
+                    $requests = $data_table->read($filter);
+                    if($requests !== false && isset($requests[0]))
+                    {
+                        $request = new \Tickets\Flipside\FlipsideTicketRequest($requests[0]);
+                    }
+                }
+                if($request === false)
+                {
+                    array_push($unprocessed, $list[$i]);
+                    continue;
+                }
+            }
+        }
+        $request->crit_vol = 1;
+        $filter = new \Data\Filter("request_id eq '{$request->request_id}' and year eq $year");
+        $data_table->update($filter, $request);
+        array_push($processed, $list[$i]);
+    }
+    echo json_encode(array('processed'=>$processed, 'unprocessed'=>$unprocessed));
 }
 
 function get_request_pdf($request_id, $year)

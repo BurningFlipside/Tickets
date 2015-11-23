@@ -100,7 +100,7 @@ function search(event)
     return false;
 }
 
-function upload_done(data)
+function uploadDone(data)
 {
     var json = eval('('+data+')');
     console.log(json);
@@ -145,13 +145,23 @@ function auto_critvol()
         success: upload_done});
 }
 
+function fileRead(e)
+{
+    $.ajax({
+        url: '../api/v1/requests/Actions/SetCritVols',
+        type: 'POST',
+        data: e.target.result,
+        processData: false,
+        complete: uploadDone});
+}
+
 function handleFileUpload(files, obj)
 {
    for (var i = 0; i < files.length; i++) 
    {
-        var fd = new FormData();
-        fd.append('file', files[i]);
-        sendFileToServer(fd);
+       var reader = new FileReader();
+       reader.onload = fileRead;
+       reader.readAsText(files[i]);
    }
 }
 
