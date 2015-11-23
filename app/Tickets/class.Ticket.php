@@ -1,8 +1,8 @@
 <?php
-require_once('Autoload.php');
+namespace Tickets;
 require_once('app/TicketAutoload.php');
 
-class Ticket extends SerializableObject
+class Ticket extends \SerializableObject
 {
     private static $data_set = false;
     private static $data_tables = array();
@@ -11,7 +11,7 @@ class Ticket extends SerializableObject
     {
         if(static::$data_set === false)
         {
-            static::$data_set = DataSetFactory::get_data_set('tickets');
+            static::$data_set = \DataSetFactory::get_data_set('tickets');
         }
         return static::$data_set;
     }
@@ -79,9 +79,9 @@ class Ticket extends SerializableObject
         return $datatable->update($this->jsonSerialize());
     }
 
-    function send_email($email = FALSE, $attachment = TRUE, $message = FALSE)
+    function sendEmail($email = false, $attachment = true, $message = false)
     {
-        if($email == FALSE)
+        if($email === false)
         {
             $email = $this->email;
         }
@@ -90,18 +90,8 @@ class Ticket extends SerializableObject
         {
             $mail->set_private_message($message);
         }
-        $ret = $mail->send_HTML();
-        return $ret;
-    }
-
-    function queue_email($mesage = FALSE)
-    {
-        $mail = new TicketEmail($this, $this->email, TRUE);
-        if($message)
-        {
-            $mail->set_private_message($message);
-        }
-        return $mail->queue_email();
+        $email_provider = EmailProvider::getInstance();
+        return $email_provider->sendEmail(false, $mail);
     }
 
     function has_previous()
@@ -121,25 +111,23 @@ class Ticket extends SerializableObject
         return new Ticket($ticket_data[0]);
     }
 
-    function sell_to($email, $send_now = TRUE, $message = FALSE, $db = FALSE)
+    function sellTo($email, $message = false, $db = false)
     {
         $this->email = $email;
         $this->sold  = 1;
         $this->discretionary = 0;
-        if($this->insert_to_db($db) === FALSE)
+        if($this->insert_to_db($db) === false)
         {
             return FALSE;
         }
-        $res = FALSE;
-        if($send_now)
-        {
-            $res = $this->send_email($this->email, TRUE, $message);
-        }
-        else
-        {
-            $res = $this->queue_email($message);
-        }
+        $res = $this->sendEmail($this->email, true, $message);
         return $res;
+    }
+
+    function getBarcodeHash()
+    {
+        $hash = substr($this->hash, 0, 8).substr($this->hash, 23, 31);
+        return $hash;
     }
 
     static function get_tickets($filter=false, $select=false)
@@ -215,27 +203,6 @@ class Ticket extends SerializableObject
         return $current[0];
     }
 
-    static function create_new($count, $type='', $db=FALSE, $flush = TRUE)
-    {
-        if($db == FALSE)
-        {
-            $db = new FlipsideTicketDB();
-        }
-        $res = array();
-        for($i = 0; $i < $count; $i++)
-        {
-            $ticket = new Ticket();
-            $ticket->year = TicketSystemSettings::getInstance()['year'];
-            $ticket->type = $type;
-            if($flush)
-            {
-                $ticket->insert_to_db($db);
-            }
-            array_push($res, $ticket);
-        }
-        return $res;
-    }
-
     static function hash_exists($hash, $data_table)
     {
         $filter = new \Tickets\DB\TicketHashFilter($hash);
@@ -247,33 +214,36 @@ class Ticket extends SerializableObject
         return true;
     }
 
-    static function get_tickets_for_user_and_pool($user, $criteria = FALSE)
+    static function get_tickets_for_user_and_pool($user, $criteria = false)
     {
+        $settings = \Tickets\DB\TicketSystemSettings::getInstance();
         $groups = $user->getGroups();
         $count = count($groups);
         for($i = 0; $i < $count; $i++)
         {
-            $groups[$i] = '\''.$groups[$i]->cn[0].'\'';
+            $groups[$i] = '\''.$groups[$i]->getGroupName().'\'';
         }
         $groups = implode(',', $groups);
-        $db = new FlipsideTicketDB();
-        $conds = array('group_name' => ' IN ('.$groups.')');
-        $pools = $db->select('tblPoolMap', 'pool_id', $conds);
+        $data_table = self::getDataTableByName('PoolMap');
+        $pools = $data_table->raw_query('SELECT * FROM tblPoolMap WHERE group_name IN ('.$groups.')');
         $count = count($pools);
         for($i = 0; $i < $count; $i++)
         {
             $pools[$i] = $pools[$i]['pool_id'];
         }
         $pools = implode(',', $pools);
-        $conds = array('pool_id' => ' IN ('.$pools.')');
-        if($criteria != FALSE)
+        $res = false;
+        if($criteria !== false)
         {
-            $conds = array_merge($conds, $criteria);
+            $res = $data_table->raw_query('SELECT * FROM tblTickets WHERE pool_id IN ('.$pools.') AND '.$criteria->to_sql_string());
         }
-        $res = self::select_from_db_multi_conditions($db, $conds);
-        if($res === FALSE)
+        else
         {
-            return FALSE;
+            $res = $data_table->raw_query('SELECT * FROM tblTickets WHERE pool_id IN ('.$pools.') AND year='.$settings['year']);
+        }
+        if($res === false || !isset($res[0]))
+        {
+            return false;
         }
         else if(!is_array($res))
         {
@@ -315,40 +285,6 @@ class Ticket extends SerializableObject
             }
         }
         return $res;
-    }
-
-    static function get_by_short_code($hash)
-    {
-        $db = new FlipsideTicketDB();
-        $res = self::select_from_db_multi_conditions($db, array('hash' => ' LIKE \''.$hash.'%\''));
-        if($res === FALSE)
-        {
-            return FALSE;
-        }
-        else if(!is_array($res))
-        {
-            $res = array($res);
-        }
-        return $res;
-    }
-
-    static function getAll($year = FALSE)
-    {
-        $db = new FlipsideTicketDB();
-        if($year === FALSE)
-        {
-            $year = $db->getVariable('year');
-        }
-        $type = self::select_from_db($db, 'year', $year);
-        if($type == FALSE)
-        {
-            return FALSE;
-        }
-        if(!is_array($type))
-        {
-            $type = array($type);
-        }
-        return $type;
     }
 
     static function hash_to_words($hash)
@@ -395,8 +331,9 @@ class Ticket extends SerializableObject
 
     static function test_ticket()
     {
+         $settings = \Tickets\DB\TicketSystemSettings::getInstance();
          $type = new static();
-         $type->year           = TicketSystemSettings::getInstance()['year'];
+         $type->year           = $settings['year'];
          $type->firstName      = 'Test';
          $type->lastName       = 'User';
          $type->email          = 'test@test.org';
@@ -434,7 +371,7 @@ class Ticket extends SerializableObject
 
     static function do_sale($user, $email, $types, $message = FALSE)
     {
-        $db = new FlipsideTicketDB();
+        $datatable = self::get_data_table();
         foreach($types as $type=>$qty)
         {
             $tickets = self::get_tickets_for_user_and_pool($user, array('sold'=>'=0', 'type'=>'=\''.$type.'\''));
@@ -443,7 +380,7 @@ class Ticket extends SerializableObject
             for($i = 0; $sold < $qty; $i++)
             {
                 if($i > $count) return FALSE;
-                if($tickets[$i]->sell_to($email, TRUE, $message, $db))
+                if($tickets[$i]->sellTo($email, $message, $datatable))
                 {
                     $sold++;
                 }
@@ -451,50 +388,5 @@ class Ticket extends SerializableObject
         }
         return TRUE;
     }
-
-    static function searchForTickets($type, $value, $include_history=FALSE)
-    {
-        $cond = array();
-        switch($type)
-        {
-            default:
-            case '*':
-                $cond['hash'] = ' LIKE \'%'.$value.'%\'';
-                $cond['firstName'] = ' LIKE \''.$value.'\'';
-                $cond['email'] = ' LIKE \''.$value.'\'';
-                $cond['lastName'] = ' LIKE \''.$value.'\'';
-                break;
-            case 'hash':
-                $cond['hash'] = ' LIKE \'%'.$value.'%\'';
-                break;
-            case 'email':
-                $cond['email'] = ' LIKE \''.$value.'\'';
-                break;
-            case 'first':
-                $cond['firstName'] = ' LIKE \''.$value.'\'';
-                break;
-            case 'last':
-                $cond['lastName'] = ' LIKE \''.$value.'\'';
-                break;
-        }
-        $db = new FlipsideTicketDB();
-        $type = self::select_from_db_multi_conditions($db, $cond, 'OR');
-        if($type === false && $include_history === true)
-        {
-            $ticket_data = $db->select('tblTicketsHistory', '*', $cond, 'OR');
-            if($ticket_data === false) return false;
-            $type = array('history'=>1);
-            $count = count($ticket_data);
-            for($i = 0; $i < $count; $i++)
-            {
-                $ticket = new static();
-                $ticket->set_object_vars($ticket_data[$i]);
-                array_push($type, $ticket);
-            }
-            return $type;
-        }
-        return $type;
-    }
-
 }
 ?>

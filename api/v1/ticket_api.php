@@ -8,6 +8,7 @@ function ticket_api_group()
     $app->get('', 'list_tickets');
     $app->get('/types', 'list_ticket_types');
     $app->get('/discretionary', 'list_discretionary_tickets');
+    $app->get('/pos(/)', 'getSellableTickets');
     $app->get('/:hash', 'show_ticket');
     $app->get('/:hash/pdf', 'get_pdf');
     $app->patch('/:hash', 'update_ticket');
@@ -58,11 +59,11 @@ function show_ticket($hash)
     $params = $app->request->params();
     if(isset($params['with_history']) && $params['with_history'] === '1')
     {
-        $ticket = Ticket::get_ticket_history_by_hash($hash);
+        $ticket = \Tickets\Ticket::get_ticket_history_by_hash($hash);
     }
     else
     {
-        $ticket = Ticket::get_ticket_by_hash($hash, $app->odata->select);
+        $ticket = \Tickets\Ticket::get_ticket_by_hash($hash, $app->odata->select);
     }
     if($ticket === false)
     {
@@ -78,11 +79,22 @@ function get_pdf($hash)
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $ticket = Ticket::get_ticket_by_hash($hash);
+    $ticket = \Tickets\Ticket::get_ticket_by_hash($hash);
     $pdf = new \Tickets\TicketPDF($ticket);
     $app->fmt = 'passthru';
     $app->response->headers->set('Content-Type', 'application/pdf');
     echo $pdf->toPDFBuffer();
+}
+
+function getSellableTickets()
+{
+    global $app;
+    if(!$app->user || !$app->user->isInGroupNamed('TicketAdmins'))
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    $tickets = \Tickets\Ticket::get_tickets_for_user_and_pool($app->user, $app->odata->filter);
+    echo json_encode($tickets);
 }
 
 function update_ticket($id)
@@ -184,7 +196,7 @@ function send_email($hash)
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $ticket = Ticket::get_ticket_by_hash($hash);
+    $ticket = \Tickets\Ticket::get_ticket_by_hash($hash);
     $email_msg = new \Tickets\TicketEmail($ticket);
     $email_provider = EmailProvider::getInstance();
     if($email_provider->sendEmail(false, $email_msg) === false)
@@ -217,7 +229,7 @@ function sell_multiple_tickets()
     {
         $message = $obj['message'];
     }
-    $res = Ticket::do_sale($app->user, $obj['email'], $obj['tickets'], $message);
+    $res = \Tickets\Ticket::do_sale($app->user, $obj['email'], $obj['tickets'], $message);
     echo json_encode($res); 
 }
 
