@@ -207,7 +207,7 @@ function save_ticket()
     if(Object.keys(obj).length > 0)
     {
         $.ajax({
-            url: '/tickets/api/v1/ticket/'+ticket.hash,
+            url: '../api/v1/tickets/'+ticket.hash,
             contentType: 'application/json',
             data: JSON.stringify(obj),
             type: 'patch',
@@ -229,12 +229,7 @@ function backend_search_done(data)
         tickets = data.old_tickets;
         history = true;
     }
-    $.ajax({
-        url: '/tickets/ajax/tickets.php',
-        data: 'hash='+tickets[0].hash+'&with_history=1',
-        type: 'get',
-        dataType: 'json',
-        success: ticket_data_done});
+    view_ticket(tickets[0].hash);
 }
 
 function table_searched()
