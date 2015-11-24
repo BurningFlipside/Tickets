@@ -59,7 +59,7 @@ class TicketsDataTable extends SingletonDataTable
             $count = count($res);
             for($i = 0; $i < $count; $i++)
             {
-                $res[$i]['hash_words'] = \Ticket::hash_to_words($res[$i]['hash']);
+                $res[$i]['hash_words'] = \Tickets\Ticket::hash_to_words($res[$i]['hash']);
                 if($select !== false && !in_array('hash', $select))
                 {
                     unset($res[$i]['hash']);
