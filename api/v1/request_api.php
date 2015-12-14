@@ -17,6 +17,7 @@ function request_api_group()
     $app->post('/Actions/SetCritVols', 'setCritVols');
     $app->post('/:request_id/:year/Actions/Requests.GetPDF', 'get_request_pdf');
     $app->post('/:request_id/:year/Actions/Requests.SendEmail', 'send_request_email');
+    $app->patch('/:request_id(/:year)', 'editRequest');
 }
 
 function safe_json_encode($value)
@@ -475,6 +476,88 @@ function send_request_email($request_id, $year)
     if($email_provider->sendEmail(false, $email_msg) === false)
     {
         throw new \Exception('Unable to send email!');
+    }
+    echo 'true';
+}
+
+function editRequest($request_id, $year=false)
+{
+    global $app;
+    if(!$app->user)
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    $obj = $app->get_json_body();
+    $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+    if(!$app->user->isInGroupNamed('TicketAdmins') && !$app->user->isInGroupNamed('TicketTeam'))
+    {
+        if(!isset($obj->tickets))
+        {
+            throw new Exception('Required Parameter tickets is missing', INVALID_PARAM);
+        }
+        $ticket_count = count($obj->tickets);
+        if($ticket_count > $settings['max_tickets_per_request'])
+        {
+            throw new Exception('Too many tickets for request', INVALID_PARAM);
+        }
+        $ticket_data_set = DataSetFactory::get_data_set('tickets');
+        $request_id_table = $ticket_data_set['RequestIDs'];
+        $filter = new \Data\Filter('mail eq \''.$app->user->getEmail().'\'');
+        $request_ids = $request_id_table->read($filter);
+        if($request_ids === false && !isset($request_ids[0]) && !isset($request_ids[0]['request_id']))
+        {
+            throw new Exception('Request ID not retrievable! Call GetRequestID first.', INVALID_PARAM);
+        }
+        else if($request_ids[0]['request_id'] !== $obj->request_id)
+        {
+            throw new Exception('Request ID not correct!', INVALID_PARAM);
+        }
+    }
+    $ticket_count = 0;
+    if(isset($obj->tickets))
+    {
+        $ticket_count = count($obj->tickets);
+    }
+    $typeCounts = array();
+    for($i = 0; $i < $ticket_count; $i++)
+    {
+        if(!isset($obj->minor_confirm) && \Tickets\TicketType::typeIsMinor($obj->tickets[$i]->type))
+        {
+            echo json_encode(array('need_minor_confirm'=>true));
+            return;
+        }
+        if(isset($typeCounts[$obj->tickets[$i]->type]))
+        {
+            $typeCounts[$obj->tickets[$i]->type]++;
+        }
+        else
+        {
+            $typeCounts[$obj->tickets[$i]->type] = 1;
+        }
+    }
+    $count = count($typeCounts);
+    $keys = array_keys($typeCounts);
+    for($i = 0; $i < $count; $i++)
+    {
+        if($typeCounts[$keys[$i]] > 1)
+        {
+            $type = \Tickets\TicketType::getTicketType($keys[$i]);
+            if($type->maxPerRequest < $typeCounts[$keys[$i]])
+            {
+                 throw new Exception('Too many tickets of type '.$keys[$i].' for request', INVALID_PARAM);
+            }
+        }
+    }
+    $obj->modifiedBy = $app->user->getUid();
+    $obj->modifiedByIP = $_SERVER['REMOTE_ADDR'];
+    if(isset($obj->minor_confirm))
+    {
+        unset($obj->minor_confirm);
+    }
+    $old_request = \Tickets\Flipside\FlipsideTicketRequest::getByIDAndYear($request_id, $year);
+    if($old_request !== false)
+    {
+        \Tickets\Flipside\FlipsideTicketRequest::updateRequest($obj, $old_request);
     }
     echo 'true';
 }

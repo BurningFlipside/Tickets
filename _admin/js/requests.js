@@ -129,11 +129,14 @@ function save_request_done(data)
 
 function save_request(control)
 {
+    var obj = $('#request_edit_form').serializeObject();
+    obj.minor_confirm = true;
     $.ajax({
-        url: '/tickets/ajax/request.php',
-        data: $('#request_edit_form').serialize()+"&dataentry=1",
+        url: '../api/v1/requests/'+$('#request_id').val(),
+        data: JSON.stringify(obj),
+        processData: false,
         dataType: 'json',
-        type: 'post',
+        type: 'patch',
         success: save_request_done});
 }
 

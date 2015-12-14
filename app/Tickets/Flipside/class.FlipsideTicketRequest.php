@@ -95,6 +95,12 @@ class FlipsideTicketRequest extends \SerializableObject
         array_unshift($old_json, $old_request);
         $new_request->revisions = json_encode($old_json);
         $new_request->total_due = 0;
+        $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+        if(!isset($new_request->year))
+        {
+            $new_request->year = $settings['year'];
+        }
+        $new_request->test = $settings['test_mode'];
         $dataSet = \DataSetFactory::get_data_set('tickets');
         if(isset($new_request->donations) && count((array)$new_request->donations) > 0)
         {
@@ -182,7 +188,7 @@ class FlipsideTicketRequest extends \SerializableObject
                 }
             }
         }
-        else
+        else if(isset($old_request->donations))
         {
             $donationDataTable = $dataSet['RequestDonation'];
             $old_count = count((array)$old_request->donations);
@@ -289,7 +295,8 @@ class FlipsideTicketRequest extends \SerializableObject
         }
         $requestDataTable = $dataSet['TicketRequest'];
         $filter = new FlipsideRequestDefaultFilter($new_request->request_id, $new_request->year);
-        return $requestDataTable->update($filter, (array)$new_request);
+        $res = $requestDataTable->update($filter, (array)$new_request);
+        return $res;
     }
 
     static function getByIDAndYear($request_id, $year)
