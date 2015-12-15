@@ -2,32 +2,13 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 require_once('class.TicketAdminPage.php');
-require_once('class.FlipsideTicketDB.php');
 $page = new TicketAdminPage('Burning Flipside - Tickets');
 
 $page->add_js_from_src('js/ticket_gen.js');
 
-$db = new FlipsideTicketDB();
-$types = FlipsideTicketType::get_all_of_type($db);
+$type_table = '<table class="table" id="current"><thead><th colspan="2">Current Counts</th></thead><tbody></tbody></table>';
 
-$type_table = '<table><thead><th colspan="2">Current Counts</th></thead>';
-foreach($types as $type)
-{
-    $count = $db->getTicketCountByType($type->typeCode);
-    if($count === FALSE)
-    {
-        $count = 0;
-    }
-    $type_table .= "<tr><td>$type->description</td><td>$count</td></tr>";
-}
-$type_table .= '</table>';
-
-$new_table = '<table><thead><th colspan="2">Additional Counts</th></thead>';
-foreach($types as $type)
-{
-    $new_table .= "<tr><td>$type->description</td><td><input type='text' id='$type->typeCode' name='$type->typeCode'/></td></tr>";
-}
-$new_table .= '</table>';
+$new_table = '<table class="table" id="additional"><thead><th colspan="2">Additional Counts</th></thead><tbody></tbody></table>';
 
 $page->body .= '
         <div class="row">

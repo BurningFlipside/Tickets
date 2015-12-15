@@ -4,83 +4,106 @@ error_reporting(E_ALL);
 require_once('class.TicketPage.php');
 $page = new TicketPage('Burning Flipside - Tickets');
 
-$script_start_tag = $page->create_open_tag('script', array('src'=>'/js/jquery.dataTables.js'));
-$script_close_tag = $page->create_close_tag('script');
-$page->add_head_tag($script_start_tag.$script_close_tag);
+$page->add_js(JS_DATATABLE, false);
+$page->add_css(CSS_DATATABLE);
+$page->add_js_from_src('js/index.js', false);
 
-$script_start_tag = $page->create_open_tag('script', array('src'=>'js/index.js'));
-$page->add_head_tag($script_start_tag.$script_close_tag);
-
-$css_tag = $page->create_open_tag('link', array('rel'=>'stylesheet', 'href'=>'/css/jquery.dataTables.css', 'type'=>'text/css'), true);
-$page->add_head_tag($css_tag);
-
-if(!FlipSession::is_logged_in())
+$discretionary = '';
+if($page->user !== false && $page->user !== null && $page->user->isInGroupNamed('AAR'))
 {
-    $page->body .= '
-<div id="content">
-    <h1>You must <a href="https://profiles.burningflipside.com/login.php?return='.$page->current_url().'">log in <span class="glyphicon glyphicon-log-in"></span></a> to access the Burning Flipside Ticket system!</h1>
-</div>';
+    $page->add_js_from_src('js/discretionary.js');
+    $discretionary = '
+        <div class="row" id="discretionary_set" style="display: none;">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-10">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Discretionary Tickets</h3>
+                        <span class="pull-right clickable"><i class="glyphicon glyphicon-chevron-up"></i></span>
+                    </div>
+                    <div class="panel-body">
+                        <table id="discretionary" class="table">
+                            <thead>
+                                <tr>
+                                    <th>First Name</th>
+                                    <th>Last Name</th>
+                                    <th>Type</th>
+                                    <th>Short Ticket Code</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>';
 }
-else
-{
-    $discretionary = '';
-    $user = FlipSession::get_user(TRUE);
-    if($user !== false && $user->isInGroupNamed("AAR"))
-    {
-        $page->add_js_from_src('js/discretionary.js');
-        $discretionary = '
-        <fieldset id="discretionary_set">
-            <legend>Discretionary Tickets</legend>
-            <table id="discretionary" class="table">
-                <thead>
-                <tr>
-                    <th>First Name</th>
-                    <th>Last Name</th>
-                    <th>Type</th>
-                    <th>Short Ticket Code</th>
-                    <th></th>
-                </tr>
-                </thead>
-             </table>
-        </fieldset>';
-    }
     $page->body .= '
 <div id="content">
-    <fieldset id="request_set" style="display: none;">
-        <legend>Ticket Request</legend>
-        <table id="requestList" class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Request ID</th>
-                    <th>Request Year</th>
-                    <th>Number of Tickets</th>
-                    <th>Amount Due</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-    </fieldset>
-    <fieldset id="ticket_set" style="display: none;">
-        <legend>Tickets</legend>
-        <table id="ticketList">
-            <thead>
-                <tr>
-                    <th>First Name</th>
-                    <th>Last Name</th>
-                    <th>Type</th>
-                    <th>Short Ticket Code</th>
-                    <th></th>
-                </tr>
-             </thead>
-        </table>
-    </fieldset>
-    <a href="transfer.php">Transfer Tickets</a> | <a href="verify.php">Verify Tickets</a>
+    <div class="row" id="request_set" style="display: none;">
+        <div class="col-sm-1"></div>
+        <div class="col-sm-10">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Ticket Request</h3>
+                    <span class="pull-right clickable"><i class="glyphicon glyphicon-chevron-up"></i></span>
+                </div>
+                <div class="panel-body">
+                    <table id="requestList" class="table">
+                        <thead>
+                            <tr>
+                                <th>Request ID</th>
+                                <th>Request Year</th>
+                                <th>Number of Tickets</th>
+                                <th>Amount Due</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row" id="ticket_set" style="display: none;">
+        <div class="col-sm-1"></div>
+        <div class="col-sm-10">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Tickets</h3>
+                    <span class="pull-right clickable"><i class="glyphicon glyphicon-chevron-up"></i></span>
+                </div>
+                <div class="panel-body">
+                    <table id="ticketList">
+                        <thead>
+                            <tr>
+                                <th>First Name</th>
+                                <th>Last Name</th>
+                                <th>Type</th>
+                                <th>Short Ticket Code</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+            <a href="transfer.php">Transfer Tickets</a> | <a href="verify.php">Verify Tickets</a>
+        </div>
+    </div>
     '.$discretionary.'
-    <fieldset>
-        <legend>FAQ</legend>
-        <a href="http://www.burningflipside.com/event/tickets/faq">Ticket FAQ</a>
-    </fieldset>
+    <div class="row">
+        <div class="col-sm-1"></div>
+        <div class="col-sm-10">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">FAQ</h3>
+                </div>
+                <div class="panel-body">
+                    <a href="http://www.burningflipside.com/event/tickets/faq">Ticket FAQ</a>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="modal fade in" aria-hidden="false" id="ticket_id_modal">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -154,7 +177,6 @@ else
 </div>
 ';
 
-}
 $page->print_page();
 // vim: set tabstop=4 shiftwidth=4 expandtab:
 ?>

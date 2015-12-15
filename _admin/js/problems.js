@@ -1,7 +1,7 @@
 function init_table()
 {
     $(this).dataTable({
-        'ajax': 'ajax/problems.php?v='+$(this).attr('id'),
+        'ajax': '../api/v1/requests/problems/'+$(this).attr('id')+'?fmt=data-table',
         'columns': [
             {'data': 'request_id'},
             {'data': 'private_status'},

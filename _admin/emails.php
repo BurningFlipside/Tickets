@@ -2,33 +2,23 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 require_once('class.TicketAdminPage.php');
-require_once('class.FlipsideTicketDB.php');
 $page = new TicketAdminPage('Burning Flipside - Tickets');
 
-$page->add_js_from_src('//cdn.ckeditor.com/4.4.5/full/ckeditor.js');
-$page->add_js_from_src('//cdn.ckeditor.com/4.4.5/full/adapters/jquery.js');
+$page->add_js_from_src('//cdn.ckeditor.com/4.4.5/full/ckeditor.js', false);
+$page->add_js_from_src('//cdn.ckeditor.com/4.4.5/full/adapters/jquery.js', false);
 $page->add_js_from_src('js/emails.js');
-
-if(!isset($_GET['type']))
-{
-    $src = FlipsideTicketDB::get_long_text('ticket_email_source');
-}
-else
-{
-    $src = FlipsideTicketDB::get_long_text($_GET['type']);
-}
 
     $page->body .= '
 <div class="row">
     <div class="col-lg-12">
         <select id="ticket_text_name" name="ticket_text_name" class="form-control" onchange="ticket_text_changed()">
-            <option value="ticket_email_source">Ticket Email</option>
+            <option value="ticket_email_source" selected>Ticket Email</option>
             <option value="ticket_transfer_email_source">Transfer Email</option>
         </select>
     </div>
 </div>
 <div class="row">
-    <textarea id="pdf-source" style="width: 100%">'.$src.'</textarea>
+    <textarea id="pdf-source" style="width: 100%"></textarea>
 </div>
 <div class="row">
     <button onclick="save()">Save</button>

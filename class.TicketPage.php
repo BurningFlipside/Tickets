@@ -1,32 +1,33 @@
 <?php
 require_once('class.SecurePage.php');
 require_once('class.FlipSession.php');
-require_once('class.FlipsideTicketDB.php');
+require_once('app/TicketAutoload.php');
 class TicketPage extends SecurePage
 {
-    private $user;
     private $is_admin;
     private $is_data;
+    public  $ticket_root;
+    public  $settings;
 
     function __construct($title)
     {
-        $this->user = FlipSession::get_user(TRUE);
-        if($this->user != FALSE)
+        parent::__construct($title);
+        $root = $_SERVER['DOCUMENT_ROOT'];
+        $script_dir = dirname(__FILE__);
+        $this->ticket_root = substr($script_dir, strlen($root));
+        if($this->user !== false && $this->user !== null)
         {
-            $this->is_admin = $this->user->isInGroupNamed("TicketAdmins");
-            $this->is_data  = $this->user->isInGroupNamed("TicketTeam");
+            $this->is_admin = $this->user->isInGroupNamed('TicketAdmins');
+            $this->is_data  = $this->user->isInGroupNamed('TicketTeam');
         }
         else
         {
-            $this->is_admin = FALSE;
-            $this->is_data  = FALSE;
+            $this->is_admin = false;
+            $this->is_data  = false;
         }
-        parent::__construct($title);
         $this->add_tickets_css();
-        $this->add_tickets_script();
-        $this->add_sites();
-        $this->add_links();
-        if(FlipsideTicketDB::getTestMode())
+        $this->settings = \Tickets\DB\TicketSystemSettings::getInstance();
+        if($this->settings->isTestMode())
         {
              if($this->is_admin)
              {
@@ -39,64 +40,38 @@ class TicketPage extends SecurePage
                                          self::NOTIFICATION_WARNING);
              }
         }
-    }
-
-    function add_tickets_css()
-    {
-        $css_tag = $this->create_open_tag('link', array('rel'=>'stylesheet', 'href'=>'/tickets/css/tickets.css', 'type'=>'text/css'), true);
-        $this->add_head_tag($css_tag);
-    }
-
-    function add_sites()
-    {
-        $this->add_site('Profiles', 'http://profiles.burningflipside.com');
-        $this->add_site('WWW', 'http://www.burningflipside.com');
-        $this->add_site('Pyropedia', 'http://wiki.burningflipside.com');
-        $this->add_site('Secure', 'https://secure.burningflipside.com');
+        $this->add_js_from_src($this->ticket_root.'/js/tickets.js', false);
     }
 
     function add_links()
     {
-        if(!FlipSession::is_logged_in())
+        if($this->is_admin)
         {
-            $this->add_link('Login', 'http://profiles.burningflipside.com/login.php?return='.$this->current_url());
+            $this->add_link('Admin', $this->ticket_root.'/_admin/');
         }
-        else
+        if($this->is_data)
         {
-            if($this->is_admin)
-            {
-                $this->add_link('Admin', 'https://secure.burningflipside.com/tickets/_admin/');
-            }
-            if($this->is_data)
-            {
-                $this->add_link('Data Entry', 'https://secure.burningflipside.com/tickets/_admin/data.php');
-            }
-            $secure_menu = array(
-                'Tickets'=>'/tickets/index.php',
-                'View Registrations'=>'/register/view.php',
-                //'Theme Camp Registration'=>'/register/tc_reg.php',
-                'Art Project Registration'=>'/register/art_reg.php',
-                'Art Car Registration'=>'/register/artCar_reg.php',
-                'Event Registration'=>'/register/event_reg.php'
-            );
-            $this->add_link('Secure', 'https://secure.burningflipside.com/', $secure_menu);
-            $this->add_link('Logout', 'http://profiles.burningflipside.com/logout.php');
+            $this->add_link('Data Entry', $this->ticket_root.'/_admin/data.php');
         }
-        $about_menu = array(
-            'Burning Flipside'=>'http://www.burningflipside.com/about/event',
-            'AAR, LLC'=>'http://www.burningflipside.com/LLC',
-            'Privacy Policy'=>'http://www.burningflipside.com/about/privacy'
-        );
-        $this->add_link('About', 'http://www.burningflipside.com/about', $about_menu);
+        parent::add_links();
     }
 
-    function add_tickets_script()
+    function add_tickets_css()
     {
+        $this->add_css_from_src($this->ticket_root.'/css/tickets.css');
     }
 
-    function current_url()
+    function print_page($header=true)
     {
-        return 'http'.(isset($_SERVER['HTTPS'])?'s':'').'://'."{$_SERVER['HTTP_HOST']}/{$_SERVER['REQUEST_URI']}";
+        if($this->user === false || $this->user === null)
+        {
+            $this->body = '
+<div id="content">
+    <h1>You must <a href="https://profiles.burningflipside.com/login.php?return='.$this->current_url().'">log in <span class="glyphicon glyphicon-log-in"></span></a> to access the Burning Flipside Ticket system!</h1>
+</div>';
+            $this->add_login_form();
+        }
+        parent::print_page($header);
     }
 }
 ?>

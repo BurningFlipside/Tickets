@@ -31,7 +31,14 @@ function make_d_action(data, type, row, meta)
         button = $('<button/>', pdf_options);
         glyph = $('<span/>', {class: 'glyphicon glyphicon-cloud-download'});
         glyph.appendTo(button);
-        res += button.prop('outerHTML');
+        if(button.prop('outerHTML') === undefined)
+        {
+            res += new XMLSerializer().serializeToString(button[0]);
+        }
+        else
+        {
+            res += button.prop('outerHTML');
+        }
 
         var rand = Math.floor(Math.random() * 3);
 
@@ -50,7 +57,14 @@ function make_d_action(data, type, row, meta)
                 break;
         }
         glyph.appendTo(button);
-        res += button.prop('outerHTML');
+        if(button.prop('outerHTML') === undefined)
+        {
+            res += new XMLSerializer().serializeToString(button[0]);
+        }
+        else
+        {
+            res += button.prop('outerHTML');
+        }
     }
     else
     {
@@ -73,10 +87,25 @@ function make_d_action(data, type, row, meta)
     return res;
 }
 
+function dTableDrawComplete()
+{
+    if($("#discretionary").DataTable().data().length !== 0)
+    {
+        $("#discretionary_set").show();
+    }
+    if($(window).width() < 768)
+    {
+        $('#discretionary th:nth-child(1)').hide();
+        $('#discretionary td:nth-child(1)').hide();
+        $('#discretionary th:nth-child(2)').hide();
+        $('#discretionary td:nth-child(2)').hide();
+    }
+}
+
 function init_d_table()
 {
     $('#discretionary').dataTable({
-        "ajax": '/tickets/api/v1/ticket/discretionary?fmt=data-table',
+        "ajax": 'api/v1/ticket/discretionary?fmt=data-table',
         columns: [
             {'data': 'firstName'},
             {'data': 'lastName'},
@@ -89,7 +118,7 @@ function init_d_table()
         searching: false
     });
 
-    $("#ticketList").on('draw.dt', tableDrawComplete);
+    $("#discretionary").on('draw.dt', dTableDrawComplete);
 }
 
 function init_discretionary()

@@ -1,9 +1,9 @@
 var ticket_constraints = null;
 var table_row = 0;
 
-function constraints_ajax_done(data)
+function constraints_ajax_done(jqXHR)
 {
-    ticket_constraints = data.constraints;
+    ticket_constraints = jqXHR.responseJSON;
     if(table_row > 0)
     {
         var types = $('[id^=ticket_type_]');
@@ -55,7 +55,7 @@ function float_value(i)
 function calculate_ticket_subtotal()
 {
     var total = 0;
-    var costs = $('[name^=ticket_cost_]');
+    var costs = $('[name=ticket_cost]');
     for(i = 0; i < costs.length; i++)
     {
         total += float_value(costs[i].value);
@@ -75,17 +75,17 @@ function addRowToTable(tbody, first, last, type, row_id)
     }
     cell.appendTo(row);
     cell = $('<td/>');
-    var first = $('<input/>', {type: "text", id: 'ticket_first_'+row_id, name: 'ticket_first_'+row_id, required: true, value: first, class: 'form-control'});
+    var first = $('<input/>', {type: "text", id: 'ticket_first', name: 'ticket_first', required: true, value: first, class: 'form-control'});
     first.appendTo(cell);
     cell.appendTo(row);
     cell = $('<td/>');
-    var last = $('<input/>', {type: "text", id: 'ticket_last_'+row_id, name: 'ticket_last_'+row_id, required: true, value: last, class: 'form-control'});
+    var last = $('<input/>', {type: "text", id: 'ticket_last', name: 'ticket_last', required: true, value: last, class: 'form-control'});
     last.appendTo(cell);
     cell.appendTo(row);
     cell = $('<td/>');
     var cell2 = $('<td/>');
-    var age = $('<select/>', {id: 'ticket_type_'+row_id, name: 'ticket_type_'+row_id, class: 'form-control', required: true, onchange: 'ticket_type_changed('+row_id+')'});
-    var cost = $('<input/>', {type: "text", id: 'ticket_cost', name: "ticket_cost_"+row_id, readonly: true, value: last, class: 'form-control'});
+    var age = $('<select/>', {id: 'ticket_type', name: 'ticket_type', class: 'form-control', required: true, onchange: 'ticket_type_changed(this)'});
+    var cost = $('<input/>', {type: "text", id: 'ticket_cost', name: "ticket_cost", readonly: true, value: last, class: 'form-control'});
     if(ticket_constraints != null)
     {
         populateDropdown(age, cost, type);
@@ -160,13 +160,13 @@ function reeval_lists()
     $('#email_lists :checkbox').each(reeval_list);
 }
 
-function ticket_type_changed(row)
+function ticket_type_changed(dropdown)
 {
-    var dropdown_value = $('#ticket_type_'+row).val();
-    if(ticket_constraints != null)
+    var dropdown_value = $(dropdown).val();
+    if(ticket_constraints !== null)
     {
         var count = 0;
-        var types = $('[id^=ticket_type_]');
+        var types = $('[id^=ticket_type]');
         for(i = 0; i < types.length; i++)
         {
             var x = $(types[i]);
@@ -180,7 +180,7 @@ function ticket_type_changed(row)
         {
             if(ticket_types[i].typeCode == dropdown_value)
             {
-                $('[name=ticket_cost_'+row+']').val('$'+ticket_types[i].cost);
+                $(dropdown).parent().siblings().find('[name="ticket_cost"]').val('$'+ticket_types[i].cost);
                 if(count > ticket_types[i].max_per_request)
                 {
                     alert("You are only allowed to have "+ticket_types[i].max_per_request+" "+
@@ -244,7 +244,7 @@ function donation_amount_changed(elem)
     {
         if($('#'+text_id).length < 1)
         {
-            var box = $('<input/>', {name: id, id: text_id, type: 'text'});
+            var box = $('<input/>', {name: id, id: text_id, type: 'text', 'class': 'form-control', 'placeholder': 'Donation ($)', 'type': 'number'});
             box.appendTo(jq.parent());
         }
     }
@@ -325,7 +325,7 @@ function add_donation_type_to_table(table, donation)
     cell.appendTo(row);
     cell = $('<td/>', {style: 'vertical-align:middle; horizontal-align:left'});
     var id = 'donation_amount_'+donation.entityName;
-    var dropdown = $('<select />', {id: id, name: id, onchange: 'donation_amount_changed('+id+')'});
+    var dropdown = $('<select />', {id: id, name: id, onchange: 'donation_amount_changed('+id+')', 'class':'form-control'});
     $('<option/>', {value: '0', text: '$0'}).appendTo(dropdown);
     $('<option/>', {value: '5', text: '$5'}).appendTo(dropdown);
     $('<option/>', {value: '10', text: '$10'}).appendTo(dropdown);
@@ -345,15 +345,16 @@ function add_donation_type_to_table(table, donation)
     }
 }
 
-function donations_ajax_done(data)
+function donations_ajax_done(jqXHR)
 {
+    var data = jqXHR.responseJSON;
     var div = $('#donations');
-    if(data.donations !== undefined)
+    if(data.length > 0)
     {
         var table = $('<table/>', {width: '100%'});
-        for(i = 0; i < data.donations.length; i++)
+        for(i = 0; i < data.length; i++)
         {
-            add_donation_type_to_table(table, data.donations[i]);
+            add_donation_type_to_table(table, data[i]);
         }
         table.appendTo(div);
     }
@@ -401,42 +402,54 @@ function addListToRow(list, row)
     cell.appendTo(row);
 }
 
-function lists_ajax_done(data)
+function lists_ajax_done(jqXHR)
 {
+    var data = jqXHR.responseJSON;
     var table = $('#email_lists');
-    if(data.lists != undefined)
+    if(data.length > 0)
     {
-        var lists = data.lists;
-        for(i = 0; i < lists.length; i+=2)
+        for(i = 0; i < data.length; i+=2)
         {
             var row = $('<tr/>');
-            addListToRow(lists[i], row);
-            if(i+1 < lists.length)
+            addListToRow(data[i], row);
+            if(i+1 < data.length)
             {
-                addListToRow(lists[i+1], row);
+                addListToRow(data[i+1], row);
             }
             row.appendTo(table);
         }
     }
 }
 
-function request_submit_done(data)
+function request_submit_done(jqXHR)
 {
-    if(data.need_minor_confirm != undefined && data.need_minor_confirm == '1')
+    if(jqXHR.status === 200)
     {
-        $('#minor_dialog').modal({
-            'backdrop': 'static',
-            'keyboard': false
-        });
-        $('[title]').tooltip('hide');
-    }
-    else if(data.success !== undefined)
-    {
-        location = 'index.php';
+        var data = jqXHR.responseJSON;
+        if(data.need_minor_confirm != undefined && data.need_minor_confirm == '1')
+        {
+            $('#minor_dialog').modal({
+                'backdrop': 'static',
+                'keyboard': false
+            });
+            $('[title]').tooltip('hide');
+        }
+        else
+        {
+            location = 'index.php';
+        }
     }
     else
     {
-        console.log(data);
+        if(jqXHR.responseJSON !== undefined)
+        {
+            alert(jqXHR.responseJSON.message);
+        }
+        else
+        {
+            alert('Unable to submit request!');
+            console.log(jqXHR);
+        }
     }
 }
 
@@ -462,18 +475,78 @@ function revert_donation_form()
     }
 }
 
-function request_data_submitted(form)
+function request_data_submitted()
 {
     $('[id^=donation_amount_]').each(fixup_donation_form);
+    var obj = {};
+    var a = $('#request').serializeArray();
+    for(var i = 0; i < a.length; i++)
+    {
+        var name = a[i].name;
+        var split = name.split('_');
+        if(split[0] == 'list')
+        {
+            if(obj['lists'] === undefined)
+            {
+                obj['lists'] = {};
+            }
+            obj['lists'][name.substring(5)] = a[i].value;
+        }
+        else if(split[0] == 'ticket')
+        {
+            var child_name = name.substring(7);
+            if(obj['tickets'] === undefined)
+            {
+                obj['tickets'] = [];
+            }
+            if(obj['tickets'].length === 0 || obj['tickets'][obj['tickets'].length-1][child_name] !== undefined)
+            {
+                 obj['tickets'][obj['tickets'].length] = {};
+            }
+            obj['tickets'][obj['tickets'].length-1][child_name] = a[i].value;
+        }
+        else if(split[0] == 'donation')
+        {
+            if(obj['donations'] === undefined)
+            {
+                obj['donations'] = {};
+            }
+            if(obj['donations'][split[2]] === undefined)
+            {
+                obj['donations'][split[2]] = {};
+            }
+            obj['donations'][split[2]][split[1]] = a[i].value;
+        }
+        else
+        {
+            obj[name] = a[i].value;
+        }
+    }
+    if(obj.donations !== undefined)
+    {
+        for(var donationType in obj.donations)
+        {
+            if(obj.donations[donationType].amount == 0)
+            {
+                delete obj.donations[donationType];
+            }
+        }
+        if($.isEmptyObject(obj.donations))
+        {
+            delete obj.donations;
+        }
+    }
 
     $.ajax({
-        url: '/tickets/ajax/request.php',
-        data: $(form).serialize(),
-        type: 'post',
+        url: 'api/v1/request',
+        data: JSON.stringify(obj),
+        type: 'POST',
         dataType: 'json',
-        success: request_submit_done});
+        processData: false,
+        complete: request_submit_done});
 
     $('[id^=donation_amount_]').each(revert_donation_form);
+    return false;
 }
 
 function resubmit_form()
@@ -489,20 +562,95 @@ function minor_affirm_clicked()
    $('#minor_dialog_continue').on('click', resubmit_form);
 }
 
+function current_request_done(jqXHR)
+{
+    var request = jqXHR.responseJSON;
+    if(request.length === 0)
+    {
+        $.ajax({
+            url: 'api/v1/requests/Actions/Requests.GetRequestID',
+            type: 'POST',
+            dataType: 'json',
+            complete: request_id_done})
+    }
+    else
+    {
+        request = request[0];
+        var tbody = $('#ticket_table tbody');
+        for(var propertyName in request)
+        {
+            switch(propertyName)
+            {
+                case 'tickets':
+                    for(var i = 0; i < request[propertyName].length; i++)
+                    {
+                        addRowToTable(tbody, request.tickets[i].first, request.tickets[i].last, request.tickets[i].type, table_row++);
+                    }
+                    break;
+                case 'donations':
+                    for(var i = 0; i < request[propertyName].length; i++)
+                    {
+                        var id = 'donation_amount_'+request.donations[i].type;
+                        var dropdown = $('#'+id);
+                        dropdown.val(request.donations[i].amount);
+                        if(dropdown.val() == null)
+                        {
+                            dropdown.val('other');
+                            var box = $('<input/>', {name: id, id: id+'_text', type: 'text', value: request.donations[i].amount});
+                            box.appendTo(dropdown.parent());
+                        }
+                        if(request.donations[i].disclose !== undefined && request.donations[i].disclose == '1')
+                        {
+                            $('#donation_disclose_'+request.donations[i].type).prop('checked', true);
+                        }
+                    }
+                    break;
+                default:
+                    $('#'+propertyName).val(request[propertyName]);
+                    break;
+            }
+        }
+        console.log(request);
+    }
+}
+
+function request_id_done(jqXHR)
+{
+    $('#request_id').val(jqXHR.responseJSON);
+    if(browser_supports_cors())
+    {
+        $.ajax({
+            url: 'https://profiles.test.burningflipside.com/api/v1/users/me',
+            type: 'get',
+            dataType: 'json',
+            xhrFields: {withCredentials: true},
+            success: request_ajax_done});
+    }
+    else
+    {
+        //TODO Get email from backend...
+        add_notification($('#request_set'), 'Your browser is out of date. Due to this some data may be missing from your request. Please make sure it is complete');
+    }
+}
+
 function init_request()
 {
+    var request_id  = getParameterByName('request_id');
+    var year        = getParameterByName('year');
+    var request_url = 'api/v1/requests/me/current';
+    if(request_id != null && year != null)
+    {
+        request_url = 'api/v1/requests/'+request_id+'/'+year;
+    }
+    $.ajax({
+        url: request_url,
+        type: 'get',
+        dataType: 'json',
+        complete: current_request_done})
     var request = $('#request').data('request');
     $('#add_new_ticket').on('click', add_new_ticket);
     if(request != undefined)
     {
-        $('#givenName').val(request.givenName);
-        $('#sn').val(request.sn);
-        $('#mail').val(request.mail);
-        $('#street').val(request.street);
-        $('#zip').val(request.zip);
-        $('#l').val(request.l);
-        $('#st').val(request.st);
-        $('#mobile').val(request.mobile);
         var tbody = $('#ticket_table tbody');
         for(var i = 0; i < request.tickets.length; i++)
         {
@@ -510,7 +658,7 @@ function init_request()
         }
         for(var i = 0; i < request.donations.length; i++)
         {
-            var id = 'donation_amount_'+request.donations[i].type.entityName;
+            var id = 'donation_amount_'+request.donations[i].type;
             var dropdown = $('#'+id);
             dropdown.val(request.donations[i].amount);
             if(dropdown.val() == null)
@@ -526,73 +674,27 @@ function init_request()
         }
         reeval_lists();
     }
-    else
-    {
-        if(browser_supports_cors())
-        {
-            $.ajax({
-                url: 'https://profiles.burningflipside.com/ajax/user.php',
-                type: 'get',
-                dataType: 'json',
-                xhrFields: {withCredentials: true},
-                success: request_ajax_done});
-        }
-        else
-        {
-            //TODO Get email from backend...
-            add_notification($('#request_set'), 'Your browser is out of date. Due to this some data may be missing from your request. Please make sure it is complete');
-        }
-    }
-   $('#request').validate({
-        debug: true,
-        submitHandler: request_data_submitted
-    });
-}
-
-function request_id_done(data)
-{
-    if(data.id != undefined)
-    {
-        $('#request_id').val(data.id);
-    }
-    else if(data.requests != undefined)
-    {
-        $('#request').data('request', data.requests[0]);
-        $('#request_id').val(data.requests[0].request_id);
-    }
+    $('#request').submit(request_data_submitted);
 }
 
 function start_populate_form()
 {
-    var request_id = getParameterByName('request_id');
-    var year       = getParameterByName('year');
-    var params     = null;
-    if(request_id != null && year != null)
-    {
-        params = 'request_id='+request_id+'&year='+year;
-    }
     $.when(
         $.ajax({
-            url: '/tickets/ajax/constraints.php',
+            url: 'api/v1/globals/constraints',
             type: 'get',
             dataType: 'json',
-            success: constraints_ajax_done}),
+            complete: constraints_ajax_done}),
         $.ajax({
-            url: '/tickets/ajax/request.php',
+            url: 'api/v1/globals/donation_types',
             type: 'get',
-            data: params,
             dataType: 'json',
-            success: request_id_done}),
+            complete: donations_ajax_done}),
         $.ajax({
-            url: '/tickets/ajax/donations.php',
+            url: 'api/v1/globals/lists',
             type: 'get',
             dataType: 'json',
-            success: donations_ajax_done}),
-        $.ajax({
-            url: '/tickets/ajax/lists.php',
-            type: 'get',
-            dataType: 'json',
-            success: lists_ajax_done})
+            complete: lists_ajax_done})
     ).done(init_request);
 }
 

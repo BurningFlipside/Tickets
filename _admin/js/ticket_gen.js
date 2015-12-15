@@ -30,3 +30,47 @@ function gen_tickets()
         success: generation_done});
     return false
 }
+
+function gotTicketType(jqXHR)
+{
+    if(jqXHR.status !== 200)
+    {
+        alert('Unable to get ticket count for type '+this+'!');
+        return;
+    }
+    var field = $('#'+this+'Current');
+    field.html(jqXHR.responseJSON['@odata.count']);
+}
+
+function gotTicketTypes(jqXHR)
+{
+    if(jqXHR.status !== 200)
+    {
+        alert('Unable to get ticket types!');
+        return;
+    }
+    var current = $('#current tbody');
+    var additional = $('#additional tbody');
+    for(var i = 0; i < jqXHR.responseJSON.length; i++)
+    {
+        current.append('<tr><td>'+jqXHR.responseJSON[i].description+'</td><td id="'+jqXHR.responseJSON[i].typeCode+'Current"></td></tr>');
+        additional.append('<tr><td>'+jqXHR.responseJSON[i].description+'</td><td><input type="number" id="'+jqXHR.responseJSON[i].typeCode+'" value="0"/></td></tr>');
+        $.ajax({
+            url: '../api/v1/tickets?$filter=year%20eq%202016%20and%20type%20eq%20A&$count=true&$select=@odata.count',
+            type: 'get',
+            context: jqXHR.responseJSON[i].typeCode,
+            complete: gotTicketType
+        });
+    }
+}
+
+function initPage()
+{
+    $.ajax({
+       url: '../api/v1/tickets/types',
+       type: 'get',
+       complete: gotTicketTypes
+    });
+}
+
+$(initPage);

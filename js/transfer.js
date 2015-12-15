@@ -26,30 +26,41 @@ function transfer_done(data)
 
 function change_name()
 {
+    var obj = {};
+    obj.firstName = $('#firstName').val();
+    obj.lastName  = $('#lastName').val();
     $.ajax({
-        url: '/tickets/ajax/tickets.php',
-        type: 'post',
-        data: 'hash='+$('#hash').val()+'&first='+$('#firstName').val()+'&last='+$('#lastName').val(),
+        url: 'api/v1/tickets/'+encodeURIComponent($('#hash').val()),
+        type: 'patch',
+        data: JSON.stringify(obj),
+        processData: false,
         dataType: 'json',
         success: change_name_done});
 }
 
 function transfer()
 {
+    var obj = {};
+    obj.email = $('#email').val();
     $.ajax({
-        url: '/tickets/ajax/tickets.php',
+        url: 'api/v1/tickets/'+encodeURIComponent($('#hash').val())+'/Actions/Transfer',
         type: 'post',
-        data: 'transfer=1&hash='+$('#hash').val()+'&email='+encodeURIComponent($('#email').val()),
+        data: JSON.stringify(obj),
+        processData: false,
         dataType: 'json',
         success: transfer_done});
 }
 
 function claim_ticket()
 {
+    var obj = {};
+    obj.firstName = $('#firstName').val();
+    obj.lastName  = $('#lastName').val();
     $.ajax({
-        url: '/tickets/ajax/tickets.php',
+        url: 'api/v1/tickets/'+encodeURIComponent($('#hash').val())+'/Actions/Claim',
         type: 'post',
-        data: 'claim=1&hash='+$('#hash').val()+'&first='+$('#firstName').val()+'&last='+$('#lastName').val(),
+        data: JSON.stringify(obj),
+        processData: false,
         dataType: 'json',
         success: change_name_done});
 }

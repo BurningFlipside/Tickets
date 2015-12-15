@@ -2,36 +2,15 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 require_once('class.TicketAdminPage.php');
-require_once('class.FlipsideTicketDB.php');
 $page = new TicketAdminPage('Burning Flipside - Tickets');
 
-$script_start_tag = $page->create_open_tag('script', array('src'=>'/js/jquery.dataTables.js'));
-$script_close_tag = $page->create_close_tag('script');
-$page->add_head_tag($script_start_tag.$script_close_tag);
+$page->add_js(JS_DATATABLE, false);
+$page->add_js(JS_BOOTSTRAP_FH);
+$page->add_css(CSS_DATATABLE);
+$page->add_css(CSS_BOOTSTRAP_FH);
+$page->add_js_from_src('js/requests.js');
 
-$script_start_tag = $page->create_open_tag('script', array('src'=>'js/requests.js'));
-$page->add_head_tag($script_start_tag.$script_close_tag);
-
-$css_tag = $page->create_open_tag('link', array('rel'=>'stylesheet', 'href'=>'/css/jquery.dataTables.css', 'type'=>'text/css'), true);
-$page->add_head_tag($css_tag);
-
-$db = new FlipsideTicketDB();
-$years = $db->getAllYears();
-
-$options = '';
-for($i = 0; $i < count($years); $i++)
-{
-    if($years[$i] == FlipsideTicketDB::getTicketYear())
-    {
-        $options .= '<option value="'.$years[$i].'" selected>'.$years[$i].'</option>';
-    }
-    else
-    {
-        $options .= '<option value="'.$years[$i].'">'.$years[$i].'</option>';
-    }
-}
-
-    $page->body .= '
+$page->body .= '
         <div class="row">
             <div class="col-lg-12">
                 <h1 class="page-header">Ticket Requests</h1>
@@ -39,7 +18,6 @@ for($i = 0; $i < count($years); $i++)
         </div>
         <div class="row">
             Request Year: <select id="year" onchange="change_year(this)">
-            '.$options.'
             </select>
             <table class="table" id="requests">
                 <thead>
@@ -47,7 +25,6 @@ for($i = 0; $i < count($years); $i++)
                     <th>Request ID</th>
                     <th>First Name</th>
                     <th>Last Name</th>
-                    <th>Number of Tickets</th>
                     <th>Total Due</th>
                 </thead>
                 <tbody>
@@ -55,7 +32,7 @@ for($i = 0; $i < count($years); $i++)
             </table>
         </div>
         <div class="modal fade in" aria-hidden="false" id="modal">
-            <div class="modal-dialog">
+            <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>

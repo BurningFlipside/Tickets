@@ -1,4 +1,4 @@
-function add_donation_type(donation_type)
+function addDonationType(donation_type)
 {
     var nav = $('#donation_type_nav');
     var nav_item = $('<li/>');
@@ -29,7 +29,7 @@ function add_donation_type(donation_type)
     inner_div.appendTo(div);
 
     label = $('<label/>', {'for': 'url_'+donation_type.entityName, 'class': 'col-sm-2 control-label'}).html('Website URL');
-    input = $('<input/>', {'type': 'text', 'class': 'form-control', 'id': 'url_'+donation_type.entityName, 'required': 'true'});
+    input = $('<input/>', {'type': 'url', 'class': 'form-control', 'id': 'url_'+donation_type.entityName, 'required': 'true'});
     if(donation_type.entityName != 'NEW')
     {
         input.attr('value', donation_type.url);
@@ -60,8 +60,6 @@ function add_donation_type(donation_type)
 
     form.appendTo(content_item);
     content_item.appendTo(content);
-
-    $('#thirdParty_'+donation_type.entityName).bootstrapSwitch();
 }
 
 function tab_shown(e)
@@ -79,26 +77,31 @@ function tab_shown(e)
     tab.find('[id^=delete_]').show();
 }
 
-function really_delete(e)
+function reallyDelete(e)
 {
     var button = $(e.currentTarget);
     var id = button.data('data');
     $.ajax({
-        url: '/tickets/ajax/donations.php',
-        data: 'delete='+id,
-        type: 'post',
+        url: '../api/v1/globals/donation_types/'+id,
+        type: 'DELETE',
         dataType: 'json',
-        success: init_ticket_type});
+        success: initDonationType,
+        error: actionFailed});
 }
 
-function delete_donation_type(e)
+function actionFailed(jqXHR)
+{
+    console.log(jqXHR);
+}
+
+function deleteDonationType(e)
 {
     var button = $(e.currentTarget);
     var id = button.attr('id').split('_');
     var type = id[1];
     var desc = $('#entityName_'+type).val();
 
-    var yes = {'close': true, 'text': 'Yes', 'method': really_delete, 'data': type};
+    var yes = {'close': true, 'text': 'Yes', 'method': reallyDelete, 'data': type};
     var no = {'close': true, 'text': 'No'};
     var buttons = [yes, no];
     var modal = create_modal('Are you sure?', 'Are you sure you want to delete the '+desc+' donation type? This operation cannot be undone.', buttons);
@@ -107,62 +110,73 @@ function delete_donation_type(e)
     e.preventDefault();
 }
 
-function commit_donation_type(e)
+function commitDonationType(e)
 {
     var button = $(e.currentTarget);
     var id = button.attr('id').split('_');
     var type = id[1];
     var controls = $('[id$=_'+type+'].form-control');
-    var data = '';
+    var data = {};
     for(i = 0; i < controls.length; i++)
     {
         var control = $(controls[i]);
-        data+=control.attr('id').split('_')[0];
-        data+='='+control.val();
-        if(i < controls.length - 1)
+        if(control[0].type === 'checkbox')
         {
-            data+='&';
+            data[control.attr('id').split('_')[0]] = control[0].checked;
+        }
+        else
+        {
+            data[control.attr('id').split('_')[0]] = control.val();
         }
     }
     e.preventDefault();
     $.ajax({
-        url: '/tickets/ajax/donations.php',
-        data: data,
-        type: 'post',
+        url: '../api/v1/globals/donation_types',
+        data: JSON.stringify(data),
+        type: 'POST',
+        processData: false,
         dataType: 'json',
-        success: init_ticket_type});
+        success: initDonationType,
+        error: actionFailed});
 }
 
-function donations_done(data)
+function donationsDone(jqXHR)
 {
-    if(data.donations !== undefined)
+    if(jqXHR.status !== 200)
     {
-        for(i = 0; i < data.donations.length; i++)
+        alert('Failed to obtain donation type data!');
+        console.log(jqXHR);
+    }
+    else
+    {
+        var data = jqXHR.responseJSON;
+        for(var i = 0; i < data.length; i++)
         {
-            add_donation_type(data.donations[i]);
+            addDonationType(data[i]);
         }
     }
     var new_type = new Object();
     new_type.entityName = 'NEW';
     new_type.thirdParty = '';
     new_type.url = '';
-    add_donation_type(new_type);
+    addDonationType(new_type);
     $('#donation_type_nav a:first').tab('show');
     $('#donation_type_nav a').on('shown.bs.tab', tab_shown);
     $('[title]').tooltip();
     tab_shown();
-    $('[id^=delete_]').on('click', delete_donation_type);
-    $('[id^=commit_]').on('click', commit_donation_type);
+    $('[id^=delete_]').on('click', deleteDonationType);
+    $('[id^=commit_]').on('click', commitDonationType);
 }
 
-function init_ticket_type()
+function initDonationType()
 {
-    $('#ticket_type_nav').empty();
+    $('#donation_type_nav').empty();
+    $('#donation_type_content').empty();
     $.ajax({
-        url: '/tickets/ajax/donations.php',
+        url: '../api/v1/globals/donation_types',
         type: 'get',
         dataType: 'json',
-        success: donations_done});
+        complete: donationsDone});
 }
 
-$(init_ticket_type);
+$(initDonationType);

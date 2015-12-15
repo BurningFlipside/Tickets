@@ -147,14 +147,14 @@ function get_ticket_types_done(data)
     var tbody = $('#ticket_select tbody');
     var id = getParameterByName('id');
     if(tbody.length == 0) return;
-    for(i = 0; i < data.ticket_types.length; i++)
+    for(i = 0; i < data.length; i++)
     {
-        tbody.append('<tr><td><input class="form-control" name="Qty'+data.ticket_types[i].typeCode+'" data-cost="'+data.ticket_types[i].cost+'" data-max="0" disabled/></td><td>'+data.ticket_types[i].description+'</td></tr>');
+        tbody.append('<tr><td><input class="form-control" name="Qty'+data[i].typeCode+'" data-cost="'+data[i].cost+'" data-max="0" disabled/></td><td>'+data[i].description+'</td></tr>');
     }
     if(id === null)
     {
         $.ajax({
-            url: '/tickets/api/v1/ticket?with_pool=true&sold=0',
+            url: '/tickets/api/v1/tickets/pos?$filter=sold eq 0',
             type: 'GET',
             dataType: 'json',
             success: get_tickets_done

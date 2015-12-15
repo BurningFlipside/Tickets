@@ -2,14 +2,11 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 require_once('class.TicketPage.php');
-require_once('class.Ticket.php');
 $page = new TicketPage('Burning Flipside - Tickets');
 
-$page->add_js_from_src('/js/jquery.dataTables.js');
+$page->add_js(JS_DATATABLE);
+$page->add_css(CSS_DATATABLE);
 $page->add_js_from_src('js/transfer.js');
-
-$css_tag = $page->create_open_tag('link', array('rel'=>'stylesheet', 'href'=>'/css/jquery.dataTables.css', 'type'=>'text/css'), true);
-$page->add_head_tag($css_tag);
 
 function ticket_id_entry_form()
 {
@@ -26,18 +23,11 @@ function ticket_id_entry_form()
             </div>';
 }
 
-if(!FlipSession::is_logged_in())
+if(!FlipSession::isLoggedIn())
 {
     $page->body .= '
 <div id="content">
-    <h1>Login</h1>
-    <form id="login_form" role="form" action="https://profiles.burningflipside.com/ajax/login.php" method="POST">
-        <input class="form-control" type="text" name="username" placeholder="Username or Email" required autofocus/>
-        <input class="form-control" type="password" name="password" placeholder="Password" required/>
-        <input type="hidden" name="return" value="'.$page->current_url().'"/>
-        <input type="hidden" name="redirect" value="1"/>
-        <button class="btn btn-lg btn-primary btn-block" type="submit">Login</button>
-    </form>
+    <h1>You must <a data-toggle="modal" data-target="#login-dialog" style="cursor: pointer;">log in <span class="glyphicon glyphicon-log-in"></span></a> to access the Burning Flipside Ticket system!</h1>
 </div>';
 }
 else
@@ -47,9 +37,9 @@ else
         $hash = $_GET['id'];
         if(strpos($hash, ' ') !== FALSE)
         {
-            $hash = Ticket::words_to_hash($hash); 
+            $hash = \Tickets\Ticket::words_to_hash($hash); 
         }
-        $ticket = Ticket::get_ticket_by_hash($hash);
+        $ticket = \Tickets\Ticket::get_ticket_by_hash($hash);
         if($ticket == FALSE)
         {
             $page->add_notification('The specified ticket does not exist!. Please enter the ID again. If this error persists then please contact the <a href="mailto:tickets@burningflipside.com" class="alert-link">Flipside Ticket Team</a>.', 
@@ -58,7 +48,7 @@ else
         }
         else
         {
-            if(Ticket::user_has_ticket($hash, FlipSession::get_user(TRUE)))
+            if(\Tickets\Ticket::user_has_ticket($hash, FlipSession::getUser()))
             {
                 /*This user already owns the ticket. Let them send it to someone else or just change the name*/
                 $page->body .= '<div id="content">

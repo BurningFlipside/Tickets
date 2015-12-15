@@ -1,9 +1,10 @@
 var out_of_window = false;
 var test_mode = false;
+var ticket_year = false;
 
 function tableDrawComplete()
 {
-    if($("#ticketList").DataTable().data().length != 0)
+    if($("#ticketList").DataTable().data().length !== 0)
     {
         $("#ticket_set").show();
     }
@@ -18,7 +19,7 @@ function tableDrawComplete()
 
 function get_words_done(data)
 {
-    $('#long_id_words').html(data.data);
+    $('#long_id_words').html(data.hash_words);
 }
 
 function show_long_id(hash)
@@ -26,7 +27,7 @@ function show_long_id(hash)
     $('#long_id').html(hash);
     $('#long_id_words').html('');
     $.ajax({
-        url: '/tickets/ajax/tickets.php?hash_to_words='+hash,
+        url: 'api/v1/tickets/'+hash+'?select=hash_words',
         type: 'get',
         dataType: 'json',
         success: get_words_done});
@@ -38,7 +39,8 @@ function get_ticket_data_by_hash(hash)
 {
     var json = $("#ticketList").DataTable().ajax.json();
     var ticket = null;
-    for(var i = 0; i < json.data.length; i++)
+    var i;
+    for(i = 0; i < json.data.length; i++)
     {
         if(json.data[i].hash == hash)
         {
@@ -48,7 +50,7 @@ function get_ticket_data_by_hash(hash)
     if(ticket === null)
     {
         json = $('#discretionary').DataTable().ajax.json();
-        for(var i = 0; i < json.data.length; i++)
+        for(i = 0; i < json.data.length; i++)
         {
             if(json.data[i].hash == hash)
             {
@@ -64,7 +66,7 @@ function view_ticket(control)
     var jq = $(control);
     var id = jq.attr('for');
     var ticket = get_ticket_data_by_hash(id);
-    if(ticket == null)
+    if(ticket === null)
     {
         alert('Cannot find ticket');
         return;
@@ -86,16 +88,18 @@ function save_ticket_done(data)
     }
     else
     {
-        location.reload();
+        console.log(data);
+        //location.reload();
     }
 }
 
 function save_ticket()
 {
     $.ajax({
-        url: '/tickets/ajax/tickets.php',
-        type: 'post',
-        data: 'hash='+$('#show_short_code').data('hash')+'&first='+$('#edit_first_name').val()+'&last='+$('#edit_last_name').val(),
+        url: 'api/v1/tickets/'+$('#show_short_code').data('hash'),
+        type: 'patch',
+        data: '{"firstName":"'+$('#edit_first_name').val()+'","lastName":"'+$('#edit_last_name').val()+'"}',
+        processData: false,
         dataType: 'json',
         success: save_ticket_done});
     $('#ticket_edit_modal').modal('hide');
@@ -106,7 +110,7 @@ function edit_ticket(control)
     var jq = $(control);
     var id = jq.attr('for');
     var ticket = get_ticket_data_by_hash(id);
-    if(ticket == null)
+    if(ticket === null)
     {
         alert('Cannot find ticket');
         return;
@@ -120,10 +124,10 @@ function edit_ticket(control)
 
 function download_ticket_done(data)
 {
-    if(data.pdf != undefined)
+    if(data.pdf !== undefined)
     {
         var win = window.open(data.pdf, '_blank');
-        if(win == undefined)
+        if(win === undefined)
         {
             alert('Popups are blocked! Please enable popups.');
         }
@@ -134,18 +138,8 @@ function download_ticket(control)
 {
     var jq = $(control);
     var id = jq.attr('for');
-    var ticket = get_ticket_data_by_hash(id);
-    if(ticket == null)
-    {
-        alert('Cannot find ticket');
-        return;
-    }
-    $.ajax({
-        url: '/tickets/ajax/tickets.php',
-        type: 'post',
-        data: 'hash='+ticket.hash+'&year='+ticket.year+'&pdf=1',
-        dataType: 'json',
-        success: download_ticket_done});
+    var win = window.open('api/v1/tickets/'+id+'/pdf', '_blank');
+    
 }
 
 function transfer_ticket(control)
@@ -153,7 +147,7 @@ function transfer_ticket(control)
     var jq = $(control);
     var id = jq.attr('for');
     var ticket = get_ticket_data_by_hash(id);
-    if(ticket == null)
+    if(ticket === null)
     {
         alert('Cannot find ticket');
         return;
@@ -169,48 +163,78 @@ function short_hash(data, type, row, meta)
 function make_actions(data, type, row, meta)
 {
     var res = '';
-    var view_options = {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'View Ticket Code', for: data, onclick: 'view_ticket(this)'};
-    var edit_options = {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Edit Ticket<br/>Use this option to keep the ticket<br/>on your account but<br/>change the legal name.', 'data-html': true, for: data, onclick: 'edit_ticket(this)'};
-    var pdf_options =  {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Download PDF', for: data, onclick: 'download_ticket(this)'};
-    var transfer_options = {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Transfer Ticket<br/>Use this option to send<br/>the ticket to someone else', 'data-html': true, for: data, onclick: 'transfer_ticket(this)'};
+    var view_options = {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'View Ticket Code', 'for': data, onclick: 'view_ticket(this)'};
+    var edit_options = {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Edit Ticket<br/>Use this option to keep the ticket<br/>on your account but<br/>change the legal name.', 'data-html': true, 'for': data, onclick: 'edit_ticket(this)'};
+    var pdf_options =  {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Download PDF', 'for': data, href: 'api/v1/tickets/'+data+'/pdf', target: '_blank'};
+    var transfer_options = {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Transfer Ticket<br/>Use this option to send<br/>the ticket to someone else', 'data-html': true, 'for': data, onclick: 'transfer_ticket(this)'};
+    var link;
     if(browser_supports_font_face())
     {
+        var button;
+        var glyph;
         if($(window).width() < 768)
         {
             view_options.type = 'button';
-            var button = $('<button/>', view_options);
-            var glyph = $('<span/>', {class: 'glyphicon glyphicon-search'});
+            button = $('<button/>', view_options);
+            glyph = $('<span/>', {'class': 'glyphicon glyphicon-search'});
             glyph.appendTo(button);
-            res += button.prop('outerHTML');
+            if(button.prop('outerHTML') === undefined)
+            {
+                res += new XMLSerializer().serializeToString(button[0]);
+            }
+            else
+            {
+                res += button.prop('outerHTML');
+            }
         }
         edit_options.type = 'button';
-        var button = $('<button/>', edit_options);
-        var glyph = $('<span/>', {class: 'glyphicon glyphicon-pencil'});
+        button = $('<button/>', edit_options);
+        glyph = $('<span/>', {'class': 'glyphicon glyphicon-pencil'});
         glyph.appendTo(button);
-        res += button.prop('outerHTML');
+        if(button.prop('outerHTML') === undefined)
+        {
+            res += new XMLSerializer().serializeToString(button[0]);
+        }
+        else
+        {
+            res += button.prop('outerHTML');
+        }
 
-        pdf_options.type = 'button';
-        button = $('<button/>', pdf_options);
-        glyph = $('<span/>', {class: 'glyphicon glyphicon-cloud-download'});
-        glyph.appendTo(button);
-        res += button.prop('outerHTML');
+	link = $('<a/>', pdf_options);
+        glyph = $('<span/>', {'class': 'glyphicon glyphicon-cloud-download'});
+        glyph.appendTo(link);
+        if(link.prop('outerHTML') === undefined)
+        {
+            res += new XMLSerializer().serializeToString(link[0]);
+        }
+        else
+        {
+            res += link.prop('outerHTML');
+        }
 
         transfer_options.type = 'button';
         button = $('<button/>', transfer_options);
-        glyph = $('<span/>', {class: 'glyphicon glyphicon-send'});
+        glyph = $('<span/>', {'class': 'glyphicon glyphicon-send'});
         glyph.appendTo(button);
-        res += button.prop('outerHTML');
+        if(button.prop('outerHTML') === undefined)
+        {
+            res += new XMLSerializer().serializeToString(button[0]);
+        }
+        else
+        {
+            res += button.prop('outerHTML');
+        }
     }
     else
     {
         if($(window).width() < 768)
         {
-            var link = $('<a/>', view_options);
+            link = $('<a/>', view_options);
             link.append("View");
             res += link.prop('outerHTML');
             res += '|';
         }
-        var link = $('<a/>', edit_options);
+        link = $('<a/>', edit_options);
         link.append("Edit");
         res += link.prop('outerHTML');
         res += '|';
@@ -230,7 +254,7 @@ function make_actions(data, type, row, meta)
 function init_table()
 {
     $('#ticketList').dataTable({
-        "ajax": '/tickets/ajax/tickets.php',
+        "ajax": 'api/v1/ticket?fmt=data-table',
         columns: [
             {'data': 'firstName'},
             {'data': 'lastName'},
@@ -265,24 +289,10 @@ function email_request(control)
     var tmp = jq.attr('for');
     var ids = tmp.split('_');
     $.ajax({
-        url: '/tickets/ajax/request.php',
+        url: 'api/v1/request/'+ids[0]+'/'+ids[1]+'/Actions/Requests.SendEmail',
         type: 'post',
-        data: 'request_id='+ids[0]+'&year='+ids[1]+'&email=1',
         dataType: 'json',
-        success: email_request_done});
-}
-
-function download_request_done(data)
-{
-    if(data.pdf != undefined)
-    {
-        var win = window.open(data.pdf, '_blank');
-        if(win == undefined)
-        {
-            alert('Popups are blocked! Please enable popups.');
-        }
-    }
-    console.log(data);
+        complete: email_request_done});
 }
 
 function download_request(control)
@@ -290,43 +300,41 @@ function download_request(control)
     var jq = $(control);
     var tmp = jq.attr('for');
     var ids = tmp.split('_');
-    $.ajax({
-        url: '/tickets/ajax/request.php',
-        type: 'post',
-        data: 'request_id='+ids[0]+'&year='+ids[1]+'&pdf=1',
-        dataType: 'json',
-        success: download_request_done});
+    location = 'api/v1/request/'+ids[0]+'/'+ids[1]+'/pdf';
 }
 
 function add_buttons_to_row(row, id, year)
 {
     var cell = $('<td/>', {style: 'white-space: nowrap;'});
-    var edit_options = {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Edit Request', for: id+'_'+year, onclick: 'edit_request(this)'};
-    var mail_options = {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Resend Request Email', for: id+'_'+year, onclick: 'email_request(this)'};
-    var pdf_options =  {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Download PDF', for: id+'_'+year, onclick: 'download_request(this)'};
+    var edit_options = {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Edit Request', 'for': id+'_'+year, onclick: 'edit_request(this)'};
+    var mail_options = {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Resend Request Email', 'for': id+'_'+year, onclick: 'email_request(this)'};
+    var pdf_options =  {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Download PDF', 'for': id+'_'+year, onclick: 'download_request(this)'};
+    var button;
+    var link;
+    var glyph;
     if(browser_supports_font_face())
     {
         edit_options.type = 'button';
-        var button = $('<button/>', edit_options);
-        var glyph = $('<span/>', {class: 'glyphicon glyphicon-pencil'});
+        button = $('<button/>', edit_options);
+        glyph = $('<span/>', {'class': 'glyphicon glyphicon-pencil'});
         glyph.appendTo(button);
         button.appendTo(cell);
 
         mail_options.type = 'button';
         button = $('<button/>', mail_options);
-        glyph = $('<span/>', {class: 'glyphicon glyphicon-envelope'});
+        glyph = $('<span/>', {'class': 'glyphicon glyphicon-envelope'});
         glyph.appendTo(button);
         button.appendTo(cell);
 
         pdf_options.type = 'button';
         button = $('<button/>', pdf_options);
-        glyph = $('<span/>', {class: 'glyphicon glyphicon-cloud-download'});
+        glyph = $('<span/>', {'class': 'glyphicon glyphicon-cloud-download'});
         glyph.appendTo(button);
         button.appendTo(cell);
     }
     else
     {
-        var link = $('<a/>', edit_options);
+        link = $('<a/>', edit_options);
         link.append("Edit");
         link.appendTo(cell);
         cell.append("|");
@@ -341,86 +349,122 @@ function add_buttons_to_row(row, id, year)
     cell.appendTo(row);
 }
 
-function add_request_to_table(tbody, request)
+function toggle_hidden_requests(e)
 {
-    var row = $('<tr/>');
-    var cell = $('<td/>');
-    cell.html(request.request_id);
-    cell.appendTo(row);
-    cell = $('<td/>');
-    cell.html(request.year);
-    cell.appendTo(row);
-    cell = $('<td/>');
-    if(request.tickets != null)
+    var rows = $('tr.old_request');
+    if(rows.is(':visible'))
     {
-        cell.html(request.tickets.length);
+        rows.hide();
     }
     else
     {
-        cell.html(0);
+        rows.show();
     }
-    cell.appendTo(row);
-    cell = $('<td/>');
+}
+
+function copy_request(e)
+{
+    var request = $(e.currentTarget).data('request');
+    location = 'copy_request.php?id='+request.request_id+'&year='+request.year;
+}
+
+function add_old_request_to_table(tbody, request)
+{
+    var container = tbody.find('tr#old_requests');
+    if(container.length === 0)
+    {
+        tbody.prepend('<tr id="old_requests" style="cursor: pointer;"><td colspan="5"><span class="glyphicon glyphicon-chevron-right"></span> Old Requests</td></tr>');
+        container = tbody.find('tr#old_requests');
+        container.on('click', toggle_hidden_requests);
+    }
+    var row = $('<tr class="old_request" style="display: none;">');
+    row.append('<td/>');
+    row.append('<td>'+request.year+'</td>');
+    row.append('<td>'+request.tickets.length+'</td>');
+    row.append('<td>$'+request.total_due+'</td>');
+    var cell = $('<td>');
+    var button = $('<button class="btn btn-link btn-sm" data-toggle="tooltip" data-placement="top" title="Copy Old Request"><span class="glyphicon glyphicon-copy"></span></button>');
+    button.data('request', request);
+    button.on('click', copy_request);
+    cell.append(button);
+    row.append(cell);
+    container.after(row);
+}
+
+function add_request_to_table(tbody, request, old_request_only)
+{
+    if(request.year != ticket_year)
+    {
+        add_old_request_to_table(tbody, request);
+        return;
+    }
+    old_request_only.value = false;
+    var row = $('<tr/>');
+    row.append('<td>'+request.request_id+'</td>');
+    row.append('<td>'+request.year+'</td>');
+    if(request.tickets !== null)
+    {
+        row.append('<td>'+request.tickets.length+'</td>');
+    }
+    else
+    {
+        row.append('<td>0</td>');
+    }
     if(!out_of_window || test_mode)
     {
-        var total = 0;
-        if(request.tickets != null)
-        {
-            for(i = 0; i < request.tickets.length; i++)
-            {
-                total += (request.tickets[i].type.cost)*1;
-            }
-        }
-        if(request.donations != null)
-        {
-            for(i = 0; i < request.donations.length; i++)
-            {
-                if(request.donations[i].amount !== undefined)
-                {
-                    total += (request.donations[i].amount)*1;
-                }
-            }
-        }
-        cell.html('$'+total);
+        row.append('<td>$'+request.total_due+'</td>');
     }
     else
     {
+        var cell = $('<td/>');
         cell.attr('data-original-title', request.status.description);
         cell.attr('data-container', 'body');
         cell.attr('data-toggle', 'tooltip');
         cell.attr('data-placement', 'top');
         cell.html(request.status.name);
+        cell.appendTo(row);
     }
-    cell.appendTo(row);
     if(!out_of_window || test_mode)
     {
         add_buttons_to_row(row, request.request_id, request.year);
     }
     else
     {
-        cell = $('<td/>');
-        cell.appendTo(row);
+        row.append('<td></td>');
     }
     row.appendTo(tbody);
     $('[data-original-title]').tooltip();
 }
 
-function get_requests_done(data)
+function process_requests(requests)
 {
-    if(data.error)
+    var tbody = $('#requestList tbody');
+    var old_request_only = {};
+    old_request_only.value = true;
+    for(var i = 0; i < requests.length; i++)
     {
-        if(data.error.startsWith("Access Denied"))
-        {
-        }
-        else
-        {
-            alert('Error obtaining request data: '+data.error);
-            console.log(data);
-        }
+        add_request_to_table(tbody, requests[i], old_request_only);
     }
-    else
+    if(old_request_only.value)
     {
-        if(data.requests == undefined || data.requests == null)
+        tbody.append('<tr><td colspan="5" style="text-align: center;"><a href="request.php"><span class="glyphicon glyphicon-new-window"></span> Create a new request</a></td></tr>');
+    }
+    if($('[title]').length > 0)
+    {
+        $('[title]').tooltip();
+    }
+    if($(window).width() < 768)
+    {
+        $('#requestList th:nth-child(1)').hide();
+        $('#requestList td:nth-child(1)').hide();
+    }
+}
+
+function get_requests_done(jqXHR)
+{
+    if(jqXHR.status === 200)
+    {
+        if(jqXHR.responseJSON === undefined || jqXHR.responseJSON.length === 0)
         {
             if(out_of_window)
             {
@@ -429,124 +473,132 @@ function get_requests_done(data)
             else
             {
                 $('#request_set').empty();
-                $('#request_set').append("You do not currently have a ticket request.<br/>");
+                $('#request_set').append("You do not currently have a current or previous ticket request.<br/>");
                 $('#request_set').append('<a href="/tickets/request.php">Create a Ticket Request</a>');
             }
         }
         else
         {
-            var tbody = $('#requestList tbody');
-            for(i = 0; i < data.requests.length; i++)
-            {
-                add_request_to_table(tbody, data.requests[i]);
-            }
-            if($('[title]').length > 0)
-            {
-                $('[title]').tooltip();
-            }
-            if($(window).width() < 768)
-            {
-                $('#requestList th:nth-child(1)').hide();
-                $('#requestList td:nth-child(1)').hide();
-            } 
+            process_requests(jqXHR.responseJSON);
         }
         if($('#request_set').length > 0)
         {
             $('#request_set').show();
         }
     }
+    else
+    {
+        console.log(jqXHR);
+        alert('Error obtaining request!');
+    }
 }
 
 function init_request()
 {
     $.ajax({
-        url: '/tickets/ajax/request.php?full',
+        url: 'api/v1/request',
         type: 'get',
         dataType: 'json',
-        success: get_requests_done});
+        complete: get_requests_done});
 }
 
 function get_window_done(data)
 {
-    if(data.window != undefined)
+    var my_window = data;
+    var now = new Date(Date.now());
+    var start = new Date(my_window.request_start_date+" GMT-0600");
+    var end = new Date(my_window.request_stop_date+" GMT-0600");
+    var mail_start = new Date(my_window.mail_start_date+" GMT-0600");
+    var server_now = new Date(my_window.current+" GMT-0600");
+    //You can't replace this with < 
+    if(!(start.getYear() > 2000))
     {
-        var my_window = data.window;
-        var now = new Date(Date.now());
-        var start = new Date(my_window.request_start_date+" GMT-0600");
-        var end = new Date(my_window.request_stop_date+" GMT-0600");
-        var mail_start = new Date(my_window.mail_start_date+" GMT-0600");
-        var server_now = new Date(my_window.current+" GMT-0600");
-        //You can't replace this with < 
-        if(!(start.getYear() > 2000))
+        start = new Date(my_window.request_start_date+"T06:00:00.000Z");
+        end   = new Date(my_window.request_stop_date+"T06:00:00.000Z");
+        mail_start = new Date(my_window.mail_start_date+"T06:00:00.000Z");
+        server_now = new Date(my_window.current+"T06:00:00.000Z");
+    }
+    end.setHours(23);
+    end.setMinutes(59);
+    ticket_year = data.year;
+    if(server_now < now)
+    {
+        now = server_now;
+    }
+    var alert_div;
+    if(now < start || now > end)
+    {
+        alert_div = $('<div/>', {'class': 'alert alert-info', role: 'alert'});
+        $('<strong/>').html('Notice: ').appendTo(alert_div);
+        alert_div.append('The request window is currently closed. No new ticket requests are accepted at this time.');
+        if(my_window.test_mode == '1')
         {
-            start = new Date(my_window.request_start_date+"T06:00:00.000Z");
-            end   = new Date(my_window.request_stop_date+"T06:00:00.000Z");
-            mail_start = new Date(my_window.mail_start_date+"T06:00:00.000Z");
-            server_now = new Date(my_window.current+"T06:00:00.000Z");
+            alert_div.append(' But test mode is enabled. Any requests created will be deleted before ticketing starts!');
+            $('#request_set').prepend(alert_div);
+            test_mode = true;
         }
-        end.setHours(23);
-        end.setMinutes(59);
-        if(server_now < now)
+        else
         {
-            now = server_now;
-        }
-        if(now < start || now > end)
-        {
-            var alert_div = $('<div/>', {class: 'alert alert-info', role: 'alert'});
-            $('<strong/>').html('Notice: ').appendTo(alert_div);
-            alert_div.append('The request window is currently closed.');
-            if(my_window.test_mode == '1')
-            {
-                alert_div.append(' But test mode is enabled. Any requests created will be deleted before ticketing starts!');
-                $('#request_set').prepend(alert_div);
-                test_mode = true;
-            }
-            else
-            {
-                //$('#request_set').prepend(alert_div);
-            }
-            out_of_window = true;
-            if(!test_mode)
-            {
-                $('#requestList th:nth-child(4)').html("Request Status");
-            }
-        }
-        if(now > mail_start && now < end)
-        {
-            var days = Math.floor(end/(1000*60*60*24) - now/(1000*60*60*24));
-            var alert_div = $('<div/>', {class: 'alert alert-warning', role: 'alert'});
-            $('<strong/>').html('Notice: ').appendTo(alert_div);
-            if(days == 1)
-            {
-                alert_div.append('The mail in window is currently open! You have '+days+' day left to mail your request!');
-            }
-            else if(days == 0)
-            {
-                alert_div.append('The mail in window is currently open! Today is the last day to mail your request!');
-            }
-            else
-            {
-                alert_div.append('The mail in window is currently open! You have '+days+' days left to mail your request!');
-            }
             $('#request_set').prepend(alert_div);
         }
+        out_of_window = true;
+        if(!test_mode)
+        {
+            $('#requestList th:nth-child(4)').html("Request Status");
+        }
+    }
+    if(now > mail_start && now < end)
+    {
+        var days = Math.floor(end/(1000*60*60*24) - now/(1000*60*60*24));
+        alert_div = $('<div/>', {'class': 'alert alert-warning', role: 'alert'});
+        $('<strong/>').html('Notice: ').appendTo(alert_div);
+        if(days === 1)
+        {
+            alert_div.append('The mail in window is currently open! You have '+days+' day left to mail your request!');
+        }
+        else if(days === 0)
+        {
+            alert_div.append('The mail in window is currently open! Today is the last day to mail your request!');
+        }
+        else
+        {
+            alert_div.append('The mail in window is currently open! You have '+days+' days left to mail your request!');
+        }
+        $('#request_set').prepend(alert_div);
     }
     init_request();
+    init_table();
 }
 
 function init_window()
 {
     $.ajax({
-        url: '/tickets/ajax/window.php',
-        type: 'get',
+        url: 'api/v1/globals/window',
+        type: 'GET',
         dataType: 'json',
         success: get_window_done});
 }
 
+function panel_heading_click(e)
+{
+    if($(this).hasClass('panel-collapsed'))
+    {
+        $(this).parents('.panel').find('.panel-body').slideDown();
+        $(this).removeClass('panel-collapsed');
+        $(this).find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+    }
+    else
+    {
+        $(this).parents('.panel').find('.panel-body').slideUp();
+        $(this).addClass('panel-collapsed');
+        $(this).find('i').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
+    }
+}
+
 function init_index()
 {
+    $('.panel-heading span.clickable').on("click", panel_heading_click);
     init_window();
-    init_table();
     if(getParameterByName('show_transfer_info') === '1')
     {
         var body = $('#content');

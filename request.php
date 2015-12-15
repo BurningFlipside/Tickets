@@ -4,26 +4,18 @@ error_reporting(E_ALL);
 require_once('class.TicketPage.php');
 $page = new TicketPage('Burning Flipside - Tickets');
 
-$script_start_tag = $page->create_open_tag('script', array('src'=>'/js/jquery.dataTables.js'));
-$script_close_tag = $page->create_close_tag('script');
-$page->add_head_tag($script_start_tag.$script_close_tag);
+$page->add_js(JS_DATATABLE);
+$page->add_js(JS_BOOTSTRAP_FH);
+$page->add_css(CSS_DATATABLE);
+$page->add_css(CSS_BOOTSTRAP_FH);
+$page->add_js_from_src('js/request.js');
 
-$script_start_tag = $page->create_open_tag('script', array('src'=>'js/request.js'));
-$page->add_head_tag($script_start_tag.$script_close_tag);
-
-$css_tag = $page->create_open_tag('link', array('rel'=>'stylesheet', 'href'=>'/css/jquery.dataTables.css', 'type'=>'text/css'), true);
-$page->add_head_tag($css_tag);
-
-if(!FlipSession::is_logged_in())
+$email = '';
+if($page->user)
 {
-    $page->body .= '
-<div id="content">
-    <h1>You must log in to access the Burning Flipside Ticket system!</h1>
-</div>';
+    $email = $page->user->getEmail();
 }
-else
-{
-    $user = FlipSession::get_user();
+
     $page->body .= '
 <div id="content">
     <form id="request" role="form">
@@ -53,7 +45,7 @@ else
             <div class="form-group">
                 <label for="mail" class="col-sm-2 control-label">Email:</label>
                 <div class="col-sm-10">
-                    <input class="form-control" type="text" name="mail" id="mail" readonly data-toggle="tooltip" data-placement="top" title="This is the email address used for futher communications. This email address has been set and confirmed by your profile. If you need to use a different email address please edit your profile." value="'.$user->mail[0].'"/>
+                    <input class="form-control" type="text" name="mail" id="mail" readonly data-toggle="tooltip" data-placement="top" title="This is the email address used for futher communications. This email address has been set and confirmed by your profile. If you need to use a different email address please edit your profile." value="'.$email.'"/>
                 </div>
             </div>
             <div class="form-group">
@@ -161,8 +153,8 @@ else
                     <li>Present the affidavit to the Gate staff with the minor\'s ticket and your legal ID. Gate will keep the affidavit for Flipside\'s records.</li>
                 </ol>
                 <center>
-                <a href="MinorAffidavit03222010.doc" target="_blank"><img src="/images/MS_word_DOC_icon.svg" style="width: 40px; height: 40px;" alt="Word Doc"/></a>
-                <a href="MinorAffidavit03222010.pdf" target="_blank"><img src="/images/Adobe_PDF_Icon.svg" style="width: 40px; height: 40px;" alt="PDF"/></a>
+                <a href="static/MinorAffidavit03222010.doc" target="_blank"><img src="/images/MS_word_DOC_icon.svg" style="width: 40px; height: 40px;" alt="Word Doc"/></a>
+                <a href="static/MinorAffidavit03222010.pdf" target="_blank"><img src="/images/Adobe_PDF_Icon.svg" style="width: 40px; height: 40px;" alt="PDF"/></a>
                 </center>
                 <input type="checkbox" id="minor_affirm" onchange="minor_affirm_clicked()">&nbsp;<label for="minor_affirm">I have read and understand the above policies.</label>
             </div>
@@ -175,7 +167,6 @@ else
 </div>
 ';
 
-}
 $page->print_page();
 // vim: set tabstop=4 shiftwidth=4 expandtab:
 ?>
