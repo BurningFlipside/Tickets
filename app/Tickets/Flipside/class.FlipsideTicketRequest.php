@@ -184,6 +184,10 @@ class FlipsideTicketRequest extends \SerializableObject
         }
         else
         {
+            if(!isset($old_request->donations))
+            {
+                $old_request->donations = array();
+            }
             $donationDataTable = $dataSet['RequestDonation'];
             $old_count = count((array)$old_request->donations);
             for($i = 0; $i < $old_count; $i++)

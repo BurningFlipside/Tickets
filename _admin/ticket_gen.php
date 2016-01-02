@@ -2,19 +2,19 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 require_once('class.TicketAdminPage.php');
-require_once('class.FlipsideTicketDB.php');
+require_once('../app/TicketAutoload.php');
 $page = new TicketAdminPage('Burning Flipside - Tickets');
 
 $page->add_js_from_src('js/ticket_gen.js');
 
-$db = new FlipsideTicketDB();
-$types = FlipsideTicketType::get_all_of_type($db);
+$types = \Tickets\TicketType::getAllTicketTypes();
+$dataTable = \Tickets\DB\TicketsDataTable::getInstance();
 
 $type_table = '<table><thead><th colspan="2">Current Counts</th></thead>';
 foreach($types as $type)
 {
-    $count = $db->getTicketCountByType($type->typeCode);
-    if($count === FALSE)
+    $count = $dataTable->count(new \Data\Filter("typeCode eq '$type->typeCode'"));
+    if($count === false)
     {
         $count = 0;
     }

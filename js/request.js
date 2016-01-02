@@ -426,6 +426,7 @@ function request_submit_done(jqXHR)
     if(jqXHR.status === 200)
     {
         var data = jqXHR.responseJSON;
+        console.log(jqXHR);
         if(data.need_minor_confirm != undefined && data.need_minor_confirm == '1')
         {
             $('#minor_dialog').modal({
@@ -610,7 +611,6 @@ function current_request_done(jqXHR)
                     break;
             }
         }
-        console.log(request);
     }
 }
 
@@ -620,7 +620,7 @@ function request_id_done(jqXHR)
     if(browser_supports_cors())
     {
         $.ajax({
-            url: 'https://profiles.test.burningflipside.com/api/v1/users/me',
+            url: 'https://profiles.burningflipside.com/api/v1/users/me',
             type: 'get',
             dataType: 'json',
             xhrFields: {withCredentials: true},

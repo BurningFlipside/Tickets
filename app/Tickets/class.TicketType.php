@@ -24,6 +24,20 @@ class TicketType extends \SerializableObject
         static::$dataTable = $dataSet['TicketTypes'];
     }
 
+    static function getAllTicketTypes()
+    {
+        if(static::$dataTable === null)
+        {
+            static::getDataTable();
+        }
+        $types = static::$dataTable->read();
+        foreach($types as $type)
+        {
+            static::$types[$type['typeCode']] = new static($type);
+        }
+        return static::$types;
+    }
+
     static function getTicketType($typeCode)
     {
         if(isset(static::$types[$typeCode]))
