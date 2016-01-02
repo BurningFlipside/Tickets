@@ -76,13 +76,19 @@ class TicketsDataTable extends SingletonDataTable
         {
             $data['test'] = 1;
         }
-        return $this->data_table($filter, $data);
+        return $this->data_table->update($filter, $data);
     }
 
     function delete($filter)
     {
         $this->modify_filter($filter);
-        return $this->data_table($filter);
+        return $this->data_table->delete($filter);
+    }
+
+    function count($filter=false)
+    {
+        $this->modify_filter($filter);
+        return $this->data_table->count($filter);
     }
 }
 ?>
