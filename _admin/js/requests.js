@@ -129,7 +129,42 @@ function save_request_done(data)
 
 function save_request(control)
 {
-    var obj = $('#request_edit_form').serializeObject();
+    var obj = {};
+    var a = $('#request_edit_form').serializeArray();
+    for(var i = 0; i < a.length; i++)
+    {
+        var name = a[i].name;
+        var split = name.split('_');
+        if(split[0] == 'ticket')
+        {
+            var child_name = split[1];
+            if(obj['tickets'] === undefined)
+            {
+                obj['tickets'] = [];
+            }
+            if(obj['tickets'].length === 0 || obj['tickets'][obj['tickets'].length-1][child_name] !== undefined)
+            {
+                 obj['tickets'][obj['tickets'].length] = {};
+            }
+            obj['tickets'][obj['tickets'].length-1][child_name] = a[i].value;
+        }
+        else if(split[0] == 'donation')
+        {
+            if(obj['donations'] === undefined)
+            {
+                obj['donations'] = {};
+            }
+            if(obj['donations'][split[2]] === undefined)
+            {
+                obj['donations'][split[2]] = {};
+            }
+            obj['donations'][split[2]][split[1]] = a[i].value;
+        }
+        else
+        {
+            obj[name] = a[i].value;
+        }
+    }
     obj.minor_confirm = true;
     $.ajax({
         url: '../api/v1/requests/'+$('#request_id').val(),
