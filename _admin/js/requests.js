@@ -162,6 +162,14 @@ function save_request(control)
         }
         else
         {
+            if(a[i].value === 'on')
+            {
+                a[i].value = 1;
+            }
+            if(name === 'critvol')
+            {
+                name = 'crit_vol';
+            }
             obj[name] = a[i].value;
         }
     }

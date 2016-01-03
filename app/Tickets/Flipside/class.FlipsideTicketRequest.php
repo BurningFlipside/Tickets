@@ -297,6 +297,11 @@ class FlipsideTicketRequest extends \SerializableObject
              //TODO Email lists
              unset($new_request->lists);
         }
+        if(isset($new_request->status))
+        {
+            $new_request->private_status = $new_request->status;
+            unset($new_request->status);
+        }
         $requestDataTable = $dataSet['TicketRequest'];
         $filter = new FlipsideRequestDefaultFilter($new_request->request_id, $new_request->year);
         $res = $requestDataTable->update($filter, (array)$new_request);

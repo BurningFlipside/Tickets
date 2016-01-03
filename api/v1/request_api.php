@@ -608,8 +608,12 @@ function editRequest($request_id, $year=false)
     if($old_request !== false)
     {
         \Tickets\Flipside\FlipsideTicketRequest::updateRequest($obj, $old_request);
+        echo 'true';
     }
-    echo 'true';
+    else
+    {
+        $app->notFound();
+    }
 }
 
 ?>

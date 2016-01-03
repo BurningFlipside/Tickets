@@ -12,10 +12,13 @@ function generation_done(data)
 function gen_tickets()
 {
     var total_count = 0;
-    var elements = $('#gen_form [type="text"]');
+    var elements = $('#additional [type="number"]');
+    var obj = $('#gen_form').serializeObject();
+    obj.types = {};
     for(var i = 0; i < elements.length; i++)
     {
         total_count += 1*$(elements[i]).val();
+        obj.types[elements[i].id] = 1*$(elements[i]).val();
     }
     if(total_count == 0)
     {
@@ -23,10 +26,11 @@ function gen_tickets()
         return false;
     }
     $.ajax({
-        url: 'ajax/tickets.php',
+        url: '../api/v1/tickets/Actions/GenerateTickets',
         type: 'post',
-        data: $('#gen_form').serialize(),
+        data: JSON.stringify(obj),
         dataType: 'json',
+        processData: false,
         success: generation_done});
     return false
 }

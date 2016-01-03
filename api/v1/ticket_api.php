@@ -15,6 +15,7 @@ function ticket_api_group()
     $app->post('/:hash/Actions/Ticket.SendEmail', 'send_email');
     $app->post('/pos/sell', 'sell_multiple_tickets');
     $app->post('/Actions/VerifyShortCode/:code', 'verifyShortCode');
+    $app->post('/Actions/GenerateTickets', 'generateTickets');
 }
 
 function list_tickets()
@@ -263,6 +264,44 @@ function verifyShortCode($code)
     $res = $ticket_data_table->read($filter);
     if($res === false) echo 'false';
     else echo 'true';
+}
+
+function generateTickets()
+{
+    global $app;
+    if(!$app->user)
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    else if(!$app->user->isInGroupNamed('TicketAdmins'))
+    {
+        throw new Exception('Must be member of TicketAdmins group', ACCESS_DENIED);
+    }
+    $obj = $app->getJsonBody(true);
+    $autoPopulate = false;
+    if(isset($obj['auto_populate']) && $obj['auto_populate'] === 'on')
+    {
+        $autoPopulate = true;
+    }
+    $types = $obj['types'];
+    $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+    $year = $settings['year'];
+    $ticketDataTable = \Tickets\DB\TicketsDataTable::getInstance();
+    foreach($types as $type=>$count)
+    {
+        for($i = 0; $i < $count; $i++)
+        {
+            $ticket = new \Tickets\Ticket();
+            $ticket->year = $year;
+            $ticket->type = $type;
+            $ticket->insert_to_db($ticketDataTable);
+        }
+    }
+    $dataSet = DataSetFactory::get_data_set('tickets');
+    $requestDataTable = $dataSet['TicketRequest'];
+    $requestedTicketsDataTable = $dataSet['RequestedTickets'];
+    $unTicketedRequests = $requestDataTable->read(new \Data\Filter("year eq $year and private_status eq 1"));
+    var_dump($unTicketedRequests); die();
 }
 
 ?>
