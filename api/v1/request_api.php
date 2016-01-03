@@ -542,6 +542,26 @@ function editRequest($request_id, $year=false)
         {
             throw new Exception('Request ID not correct!', INVALID_PARAM);
         }
+        if(isset($obj->critvol))
+        {
+            unset($obj->critvol);
+        }
+        if(isset($obj->protected))
+        {
+            unset($obj->protected);
+        }
+        if(isset($obj->total_received))
+        {
+            unset($obj->total_received);
+        }
+        if(isset($obj->status))
+        {
+            unset($obj->status);
+        }
+        if(isset($obj->comments))
+        {
+            unset($obj->comments);
+        }
     }
     $ticket_count = 0;
     if(isset($obj->tickets))
