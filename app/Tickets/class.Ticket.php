@@ -41,7 +41,24 @@ class Ticket extends \SerializableObject
         do
         {
             $this->rand = mt_rand();
-            $this->hash = hash('haval128,5', $this->year.$this->firstName.$this->lastName.$this->uid.$this->type.$this->previous_hash.$this->rand);
+            $hashStr = $this->year.$this->type.$this->rand;
+            if(isset($this->firstName))
+            {
+                $hashStr .= $this->firstName;
+            }
+            if(isset($this->lastName))
+            {
+                $hashStr .= $this->lastName;
+            }
+            if(isset($this->uid))
+            {
+                $hashStr .= $this->uid;
+            }
+            if(isset($this->previous_hash))
+            {
+                $hashStr .= $this->previous_hash;
+            }
+            $this->hash = hash('haval128,5', $hashStr);
         } while($datatable !== false && self::hash_exists($this->hash, $datatable));
     }
 
@@ -51,7 +68,7 @@ class Ticket extends \SerializableObject
         {
             $datatable = self::get_data_table();
         }
-        if($this->hash === false || $this->hash === null)
+        if(!isset($this->hash) || $this->hash === false || $this->hash === null)
         {
             $this->generate_hash($datatable);
         }
@@ -61,7 +78,7 @@ class Ticket extends \SerializableObject
             $this->generate_hash($datatable);
         }
         $res = $datatable->create($this->jsonSerialize());
-        if($res !== false && ($this->previous_hash !== false && $this->previous_hash !== null))
+        if($res !== false && (isset($this->previous_hash) && $this->previous_hash !== false && $this->previous_hash !== null))
         {
             $filter = new \Tickets\DB\TicketHashFilter($this->previous_hash);
             $datatable->raw_query('INSERT INTO tblTicketsHistory SELECT * FROM tblTickets WHERE '.$filter->to_sql_string());
