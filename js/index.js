@@ -447,7 +447,14 @@ function process_requests(requests)
     }
     if(old_request_only.value)
     {
-        tbody.append('<tr><td colspan="5" style="text-align: center;"><a href="request.php"><span class="glyphicon glyphicon-new-window"></span> Create a new request</a></td></tr>');
+        if(out_of_window === false)
+        {
+            tbody.append('<tr><td colspan="5" style="text-align: center;"><a href="request.php"><span class="glyphicon glyphicon-new-window"></span> Create a new request</a></td></tr>');
+        }
+        else
+        {
+            tbody.append('<tr><td colspan="5" style="text-align: center;"></td></tr>');
+        }
     }
     if($('[title]').length > 0)
     {
@@ -540,6 +547,7 @@ function get_window_done(data)
         else
         {
             $('#request_set').prepend(alert_div);
+            $('[href="request.php"]').hide();
         }
         out_of_window = true;
         if(!test_mode)
