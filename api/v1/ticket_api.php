@@ -297,11 +297,51 @@ function generateTickets()
             $ticket->insert_to_db($ticketDataTable);
         }
     }
-    $dataSet = DataSetFactory::get_data_set('tickets');
-    $requestDataTable = $dataSet['TicketRequest'];
-    $requestedTicketsDataTable = $dataSet['RequestedTickets'];
-    $unTicketedRequests = $requestDataTable->read(new \Data\Filter("year eq $year and private_status eq 1"));
-    var_dump($unTicketedRequests); die();
+    if($autoPopulate)
+    {
+        $dataSet = DataSetFactory::get_data_set('tickets');
+        $requestDataTable = $dataSet['TicketRequest'];
+        $requestedTicketsDataTable = $dataSet['RequestedTickets'];
+        $unTicketedRequests = $requestDataTable->read(new \Data\Filter("year eq $year and private_status eq 1"));
+        foreach($unTicketedRequests as $request)
+        {
+            $request_id = $request['request_id'];
+            $requestedTickets = $requestedTicketsDataTable->read(new \Data\Filter("year eq $year and request_id eq '$request_id'"));
+            foreach($requestedTickets as $requestedTicket)
+            {
+                $unAssignedTickets = $ticketDataTable->read(new \Data\Filter("assigned eq 0 and year eq $year and type eq '{$requestedTicket['type']}'"), false, 1);
+                if(!isset($unAssignedTickets[0]))
+                {
+                    throw new \Exception('Insufficient tickets of type '.$requestedTicket['type'].' to process all requests!');
+                }
+                $unAssignedTickets[0]['firstName'] = $requestedTicket['first'];
+                $unAssignedTickets[0]['lastName'] = $requestedTicket['last'];
+                $unAssignedTickets[0]['email'] = $request['mail'];
+                $unAssignedTickets[0]['request_id'] = $request['request_id'];
+                $unAssignedTickets[0]['assigned'] = 1;
+                $unAssignedTickets[0]['sold'] = 1;
+                if($requestedTicket['type'] !== 'A')
+                {
+                    $unAssignedTickets[0]['guardian_first'] = $request['givenName'];
+                    $unAssignedTickets[0]['guardian_last'] = $request['sn'];
+                }
+                $filter = new \Data\Filter("hash eq '{$unAssignedTickets[0]['hash']}'");
+                unset($unAssignedTickets[0]['hash_words']);
+                $ticketDataTable->update($filter, $unAssignedTickets[0]);
+                $requestedTicket['assigned_id'] = $unAssignedTickets[0]['hash'];
+                $filter = new \Data\Filter("requested_ticket_id eq {$requestedTicket['requested_ticket_id']}");
+                $requestedTicketsDataTable->update($filter, $requestedTicket);
+            }
+            $request['private_status'] = 6;
+            $filter = new \Data\Filter("year eq $year and request_id eq '$request_id'");
+            $requestDataTable->update($filter, $request);
+        }
+        echo 'true';
+    }
+    else
+    {
+        echo 'true';
+    }
 }
 
 ?>
