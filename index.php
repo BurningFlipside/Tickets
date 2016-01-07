@@ -61,6 +61,7 @@ if($page->user !== false && $page->user !== null && $page->user->isInGroupNamed(
                         </thead>
                         <tbody></tbody>
                     </table>
+                    <a href="request.php" id="fallback">Create a new ticket request</a>
                 </div>
             </div>
         </div>

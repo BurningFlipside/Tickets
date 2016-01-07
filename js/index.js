@@ -450,6 +450,19 @@ function process_requests(requests)
         if(out_of_window === false)
         {
             tbody.append('<tr><td colspan="5" style="text-align: center;"><a href="request.php"><span class="glyphicon glyphicon-new-window"></span> Create a new request</a></td></tr>');
+            $('#fallback').hide();
+        }
+        else
+        {
+            tbody.append('<tr><td colspan="5" style="text-align: center;"></td></tr>');
+        }
+    }
+    else
+    {
+        if(out_of_window === false)
+        {
+            tbody.append('<tr><td colspan="5" style="text-align: center;"><a href="request.php"><span class="glyphicon glyphicon-new-window"></span> Create a new request</a></td></tr>');
+            $('#fallback').hide();
         }
         else
         {
