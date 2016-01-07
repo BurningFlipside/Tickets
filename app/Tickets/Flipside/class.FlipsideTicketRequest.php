@@ -30,8 +30,10 @@ class FlipsideTicketRequest extends \SerializableObject
                   return static::updateRequest($request, $old_request);
              }
          }
-         catch(\Exception $e) {var_dump($e); die();}
+         catch(\Exception $e) {}
          $request->total_due = 0;
+         $dataSet = \DataSetFactory::get_data_set('tickets');
+         $donationDataTable = $dataSet['RequestDonation'];
          if(isset($request->donations) && count((array)$request->donations) > 0)
          {
              $donations = (array)$request->donations;
@@ -59,6 +61,7 @@ class FlipsideTicketRequest extends \SerializableObject
              }
              unset($donations); unset($request->donations);
          }
+         $requestedTicketDataTable = $dataSet['RequestedTickets'];
          if(isset($request->tickets))
          {
              $count = count($request->tickets);
@@ -81,6 +84,7 @@ class FlipsideTicketRequest extends \SerializableObject
              //TODO Email lists
              unset($request->lists);
          }
+         $requestDataTable = $dataSet['TicketRequest'];
          return $requestDataTable->create((array)$request);
     }
 
