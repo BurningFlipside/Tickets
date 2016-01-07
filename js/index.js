@@ -383,10 +383,10 @@ function add_old_request_to_table(tbody, request)
     row.append('<td>'+request.tickets.length+'</td>');
     row.append('<td>$'+request.total_due+'</td>');
     var cell = $('<td>');
-    var button = $('<button class="btn btn-link btn-sm" data-toggle="tooltip" data-placement="top" title="Copy Old Request"><span class="glyphicon glyphicon-copy"></span></button>');
-    button.data('request', request);
-    button.on('click', copy_request);
-    cell.append(button);
+    //var button = $('<button class="btn btn-link btn-sm" data-toggle="tooltip" data-placement="top" title="Copy Old Request"><span class="glyphicon glyphicon-copy"></span></button>');
+    //button.data('request', request);
+    //button.on('click', copy_request);
+    //cell.append(button);
     row.append(cell);
     container.after(row);
 }
