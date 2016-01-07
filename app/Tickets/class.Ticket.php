@@ -108,7 +108,7 @@ class Ticket extends \SerializableObject
             $mail->set_private_message($message);
         }
         $email_provider = EmailProvider::getInstance();
-        return $email_provider->sendEmail(false, $mail);
+        return $email_provider->sendEmail($mail);
     }
 
     function has_previous()
