@@ -16,6 +16,7 @@ function init_table()
 function expand_table()
 {
     $(this).DataTable().page.len(-1);
+    $(this).DataTable().draw();
 }
 
 function before_print()
