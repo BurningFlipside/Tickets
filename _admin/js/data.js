@@ -1,29 +1,30 @@
-function request_ajax_done(data)
+function request_ajax_done(jqXHR)
 {
-    if(data.requests === undefined)
+    if(jqXHR.responseJSON === undefined)
     {
         $('#modal').modal('hide');
         alert("Unable to locate request id "+$('#save_btn').data('id'));
         $('#request_id').focus();
         return;
     }
-    $('#modal_title').html('Request #'+data.requests[0].request_id);
-    $('#given_name').val(data.requests[0].givenName);
-    $('#last_name').val(data.requests[0].sn);
-    $('#total_due').val('$'+data.requests[0].total_due);
-    $('#comments').val(data.requests[0].comments);
-    $('#status').val(data.requests[0].private_status);
-    if(data.requests[0].total_received == 0)
+    var data = jqXHR.responseJSON[0];
+    $('#modal_title').html('Request #'+data.request_id);
+    $('#given_name').val(data.givenName);
+    $('#last_name').val(data.sn);
+    $('#total_due').val('$'+data.total_due);
+    $('#comments').val(data.comments);
+    $('#status').val(data.private_status);
+    if(data.total_received == 0)
     {
         $('#total_received').val('').focus();
     }
     else
     {
-        $('#total_received').val(data.requests[0].total_received).focus();
+        $('#total_received').val(data.total_received).focus();
     }
-    $('#bucket').val(data.requests[0].bucket);
-    $('#request_id_hidden').val(data.requests[0].request_id);
-    $('#save_btn').data('id', data.requests[0].id);
+    $('#bucket').val(data.bucket);
+    $('#request_id_hidden').val(data.request_id);
+    $('#save_btn').data('id', data.id);
 }
 
 function lookup_request(control)
@@ -31,11 +32,11 @@ function lookup_request(control)
     var id = $(control).val();
     $('#modal').modal('show');
     $.ajax({
-            url: '/tickets/ajax/request.php',
-            data: 'request_id='+id+'&genbucket=1',
+            url: '../api/v1/requests/'+id+'/current',
+            data: 'genbucket=1',
             type: 'get',
             dataType: 'json',
-            success: request_ajax_done});
+            complete: request_ajax_done});
     $(control).val('');
 }
 
@@ -44,11 +45,11 @@ function lookup_request_by_id(id)
     $('#request_select').modal('hide');
     $('#modal').modal('show');
     $.ajax({
-            url: '/tickets/ajax/request.php',
-            data: 'request_id='+id+'&genbucket=1',
+            url: '../api/v1/requests/'+id+'/current',
+            data: 'genbucket=1',
             type: 'get',
             dataType: 'json',
-            success: request_ajax_done});
+            complete: request_ajax_done});
 }
 
 function lookup_ajax_done(data)

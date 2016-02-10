@@ -167,6 +167,11 @@ function get_request($request_id, $year = false)
     $ticket_data_set = DataSetFactory::get_data_set('tickets');
     $request_data_table = $ticket_data_set['TicketRequest'];
     $filter = false;
+    if($year === 'current')
+    {
+        $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+        $year = $settings['year'];
+    }
     if($request_id === 'me')
     {
         $email = $app->user->getEmail();
@@ -176,11 +181,6 @@ function get_request($request_id, $year = false)
         }
         else
         {
-            if($year === 'current')
-            {
-                $settings = \Tickets\DB\TicketSystemSettings::getInstance();
-                $year = $settings['year'];
-            }
             $filter = new \Data\Filter("mail eq '$email' and year eq $year");
         }
     }
