@@ -7,6 +7,7 @@ function request_api_group()
     global $app;
     $app->get('', 'list_requests');
     $app->get('/crit_vols', 'get_crit_vols');
+    $app->get('/problems/:view', 'getProblems');
     $app->get('/:request_id(/:year)', 'get_request');
     $app->get('/me/:year', 'get_request');
     $app->get('/:request_id/:year/pdf', 'get_request_pdf');
@@ -614,6 +615,30 @@ function editRequest($request_id, $year=false)
     {
         $app->notFound();
     }
+}
+
+function getProblems($view)
+{
+    global $app;
+    if(!$app->user)
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    else if(!$app->user->isInGroupNamed('TicketAdmins') && !$app->user->isInGroupNamed('TicketTeam'))
+    {
+        throw new Exception('Must be Ticket Admin or Ticket Lead', ACCESS_DENIED);
+    }
+    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $data_table = $ticket_data_set[$view];
+    $filter = $app->odata->filter;
+    if($filter === false)
+    {
+        $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+        $year = $settings['year'];
+        $filter = new \Data\Filter("year eq $year");
+    }
+    $data = $data_table->read($filter, $app->odata->select, $app->odata->top, $app->odata->skip, $app->odata->orderby);
+    echo safe_json_encode($data);
 }
 
 ?>
