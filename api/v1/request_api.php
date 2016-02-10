@@ -301,7 +301,7 @@ function make_request()
         unset($obj->minor_confirm);
     }
     \Tickets\Flipside\FlipsideTicketRequest::createTicketRequest($obj);
-    echo 'true';
+    send_request_email($obj->request_id, $settings['year']);
 }
 
 function return_request_id()
