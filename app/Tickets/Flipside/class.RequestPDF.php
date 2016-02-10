@@ -44,6 +44,7 @@ class RequestPDF extends \PDF\PDF
         {
             $address .= $this->c.$linebreak;
         }
+        $last           = $this->request->sn;
         $address        = $this->request->givenName.' '.$this->request->sn.'<br/>';
         $address       .= $this->request->street.'<br/>';
         $address       .= $this->request->l.', '.$this->request->st.' '.$this->request->zip.'<br/>';
@@ -97,7 +98,8 @@ class RequestPDF extends \PDF\PDF
             '{$requestor}'      => $requestor,
             '{$email}'          => $email,
             '{$phone}'          => $phone,
-            '{$request_date}'   => $request_date
+            '{$request_date}'   => $request_date,
+            '{$last}'           => $last
         );
         $html           = strtr($this->source, $vars);
         $this->setPDFFromHTML($html);
