@@ -100,11 +100,17 @@ function restore_focus()
     $('#request_id').focus();
 }
 
-function status_ajax_done(data)
+function status_ajax_done(jqXHR)
 {
-    for(i = 0; i < data.data.length; i++)
+    if(jqXHR.responseJSON === undefined)
     {
-        $('#status').append('<option value="'+data.data[i].status_id+'">'+data.data[i].name+'</option>');
+        alert('Unable to obtain status data!');
+        return;
+    }
+    var data = jqXHR.responseJSON;
+    for(i = 0; i < data.length; i++)
+    {
+        $('#status').append('<option value="'+data[i].status_id+'">'+data[i].name+'</option>');
     }
 }
 
@@ -139,9 +145,9 @@ function init_page()
     $('#modal').modal({show: false});
     $('#modal').on('hidden.bs.modal', restore_focus);
     $.ajax({
-        url: 'ajax/status.php',
+        url: '../api/v1/globals/statuses',
         dataType: 'json',
-        success: status_ajax_done});
+        complete: status_ajax_done});
     $('#request_table').dataTable();
 }
 
