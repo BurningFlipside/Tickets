@@ -52,8 +52,8 @@ function used_done(data)
 function init_page()
 {
     $.ajax({
-        url: '/tickets/ajax/tickets.php',
-        data: 'used=1',
+        url: '../api/v1/tickets',
+        data: '$filter=used eq 1',
         type: 'get',
         dataType: 'json',
         success: used_done});
