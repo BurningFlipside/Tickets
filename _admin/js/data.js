@@ -52,11 +52,16 @@ function lookup_request_by_id(id)
             complete: request_ajax_done});
 }
 
-function lookup_ajax_done(data)
+function lookup_ajax_done(jqXHR)
 {
-    if(data.requests.length == 1)
+    if(jqXHR.status != 200 || jqXHR.responseJSON === undefined || jqXHR.responseJSON.length === 0)
     {
-        $('#request_id').val(data.requests[0].request_id);
+        alert('No request found!');
+    }
+    var data = jqXHR.responseJSON;
+    if(data.length == 1)
+    {
+        $('#request_id').val(data[0].request_id);
         lookup_request($('#request_id'));
     }
     else
@@ -64,12 +69,12 @@ function lookup_ajax_done(data)
         $('#request_select').modal('show');
         var table = $('#request_table').DataTable();
         table.clear();
-        for(i = 0; i < data.requests.length; i++)
+        for(i = 0; i < data.length; i++)
         {
             var row = [
-                '<a href="#" onclick="lookup_request_by_id(\''+data.requests[i].request_id+'\');">'+data.requests[i].request_id+'</a>',
-                data.requests[i].givenName+' '+data.requests[i].sn,
-                data.requests[i].mail
+                '<a href="#" onclick="lookup_request_by_id(\''+data[i].request_id+'\');">'+data[i].request_id+'</a>',
+                data[i].givenName+' '+data[i].sn,
+                data[i].mail
             ];
             table.row.add(row);
         }
@@ -81,12 +86,24 @@ function lookup_request_by_value(control)
 {
     var type  = $('#type').data('type');
     var value = $(control).val();
-    $.ajax({
-            url: '/tickets/ajax/request.php',
-            data: 'type='+type+'&value='+value,
+    if(type === '*')
+    {
+        $.ajax({
+            url: '../api/v1/requests',
+            data: '$search='+value+'&$filter=year eq current',
             type: 'get',
             dataType: 'json',
-            success: lookup_ajax_done});
+            complete: lookup_ajax_done});
+    }
+    else
+    {
+        $.ajax({
+            url: '../api/v1/requests',
+            data: '$filter=contains('+type+','+value+') and year eq current',
+            type: 'get',
+            dataType: 'json',
+            complete: lookup_ajax_done});
+    }
     $(control).val('');
 }
 

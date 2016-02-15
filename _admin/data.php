@@ -40,9 +40,9 @@ $page->body .= '
                                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false" id="type" data-type="*">All <span class="caret"></span></button>
                                 <ul class="dropdown-menu" role="menu">
                                     <li><a href="#" onclick="change_menu(\'*\', \'All\');">All</a></li>
-                                    <li><a href="#" onclick="change_menu(\'email\', \'Email\');">Email</a></li>
-                                    <li><a href="#" onclick="change_menu(\'first\', \'First Name\');">First Name</a></li>
-                                    <li><a href="#" onclick="change_menu(\'last\', \'Last Name\');">Last Name</a></li>
+                                    <li><a href="#" onclick="change_menu(\'mail\', \'Email\');">Email</a></li>
+                                    <li><a href="#" onclick="change_menu(\'givenName\', \'First Name\');">First Name</a></li>
+                                    <li><a href="#" onclick="change_menu(\'sn\', \'Last Name\');">Last Name</a></li>
                                 </ul>
                             </div>
                             <input class="form-control" type="text" name="value" id="value" onchange="lookup_request_by_value(this)"/>

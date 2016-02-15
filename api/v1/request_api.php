@@ -105,6 +105,12 @@ function list_requests()
     if($app->user->isInGroupNamed('TicketAdmins') && $app->odata->filter !== false)
     {
         $filter = $app->odata->filter;
+        if($filter->contains('year eq current'))
+        {
+            $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+            $clause = $filter->getClause('year'); 
+            $clause->var2 = $settings['year'];
+        }
         if(isset($params['with_children']))
         {
             $show_children = $params['with_children'];
@@ -114,6 +120,11 @@ function list_requests()
     {
         $filter = new \Data\Filter('mail eq \''.$app->user->getEmail().'\'');
         $show_children = true;
+    }
+    $search = $app->request->params('$search');
+    if($search !== null && $app->user->isInGroupNamed('TicketAdmins'))
+    {
+        $filter->addToSQLString(" AND (mail LIKE '%$search%' OR sn LIKE '%$search%' OR givenName LIKE '%$search%')");
     }
     $requests = $request_data_table->read($filter, $app->odata->select, $app->odata->top, $app->odata->skip, $app->odata->orderby);
     if($requests === false)
