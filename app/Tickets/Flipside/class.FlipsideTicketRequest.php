@@ -14,6 +14,18 @@ class FlipsideTicketRequest extends \SerializableObject
         }
     }
 
+    function update()
+    {
+        $dataSet = \DataSetFactory::get_data_set('tickets');
+        $requestDataTable = $dataSet['TicketRequest'];
+        $filter = new FlipsideRequestDefaultFilter($this->request_id, $this->year);
+        $copy = (array)$this;
+        unset($copy['tickets']);
+        unset($copy['donations']);
+        $res = $requestDataTable->update($filter, $copy);
+        return $res;
+    }
+
     static function createTicketRequest($request)
     {
          $settings = \Tickets\DB\TicketSystemSettings::getInstance();

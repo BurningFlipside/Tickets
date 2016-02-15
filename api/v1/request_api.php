@@ -18,6 +18,7 @@ function request_api_group()
     $app->post('/Actions/SetCritVols', 'setCritVols');
     $app->post('/:request_id/:year/Actions/Requests.GetPDF', 'get_request_pdf');
     $app->post('/:request_id/:year/Actions/Requests.SendEmail', 'send_request_email');
+    $app->post('/:request_id/:year/Actions/Requests.GetBucket', 'getRequestBucket');
     $app->patch('/:request_id(/:year)', 'editRequest');
 }
 
@@ -520,6 +521,43 @@ function send_request_email($request_id, $year)
         throw new \Exception('Unable to send email!');
     }
     echo 'true';
+}
+
+function getRequestBucket($request_id, $year)
+{
+    global $app;
+    if(!$app->user)
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+    if($year === 'current')
+    {
+        $year = $settings['year'];
+    }
+    $request = \Tickets\Flipside\FlipsideTicketRequest::getByIDAndYear($request_id, $year);
+    if($request === false)
+    {
+        $app->notFound();
+    }
+    $max_buckets = $settings['max_buckets'];
+    if($request->crit_vol === '1' || $request->crit_vol === true || $request->crit_vol === 1)
+    {
+        $request->bucket = 0;
+    }
+    else if($request->protected === '1' || $request->protected === true || $request->protected === 1)
+    {
+        $request->bucket = $max_buckets;
+    }
+    else
+    {
+        $request->bucket = (int)mt_rand(1, ($max_buckets-1));
+    }
+    if($request->update() === false)
+    {
+        throw new Exception('Unable to save request!');
+    }
+    echo json_encode($request);
 }
 
 function editRequest($request_id, $year=false)
