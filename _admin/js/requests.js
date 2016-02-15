@@ -58,7 +58,7 @@ function request_donations_loaded(data)
     {
         var new_row = $('<tr/>');
         $('<td/>').html(data[i].type).appendTo(new_row);
-        $('<td/>').html('<input type="text" id="ticket_type_'+data[i].type+'" name="ticket_type_'+data[i].type+'" class="form-control" value="'+data[i].amount+'"/>').appendTo(new_row);
+        $('<td/>').html('<input type="text" id="donation_amount_'+data[i].type+'" name="donation_amount_'+data[i].type+'" class="form-control" value="'+data[i].amount+'"/>').appendTo(new_row);
         new_row.appendTo(tbody);
     }
     this.donations = data;
