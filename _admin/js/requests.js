@@ -183,6 +183,11 @@ function save_request(control)
         success: save_request_done});
 }
 
+function edit_request(control)
+{
+    window.location = '../request.php?request_id='+$('#request_id').val();
+}
+
 function row_clicked()
 {
     var tr = $(this).closest('tr');

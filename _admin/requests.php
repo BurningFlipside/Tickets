@@ -180,7 +180,14 @@ $page->body .= '
                         </div>
                        </form>
                   </div>
-                  <div class="modal-footer"><button type="button" class="btn btn-default" onclick="save_request(this)">Ok</button><button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button></div></div></div></div>
+                  <div class="modal-footer">
+                      <button type="button" class="btn btn-default" onclick="save_request(this)">Ok</button>
+                      <button type="button" class="btn btn-default" onclick="edit_request(this)">Edit Tickets/Donations</button>
+                      <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                  </div>
+              </div>
+          </div>
+        </div>
     </div>
 </div>
 ';

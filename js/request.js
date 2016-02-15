@@ -642,6 +642,14 @@ function init_request()
     {
         request_url = 'api/v1/requests/'+request_id+'/'+year;
     }
+    else if(request_id != null)
+    {
+        request_url = 'api/v1/requests/'+request_id+'/current';
+    }
+    else
+    {
+        request_url = 'api/v1/requests/me/'+year;
+    }
     $.ajax({
         url: request_url,
         type: 'get',
