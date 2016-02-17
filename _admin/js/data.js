@@ -7,21 +7,23 @@ function request_ajax_done(jqXHR)
         $('#request_id').focus();
         return;
     }
-    var data = jqXHR.responseJSON[0];
+    var data = jqXHR.responseJSON;
+    console.log(data);
     $('#modal_title').html('Request #'+data.request_id);
     $('#given_name').val(data.givenName);
     $('#last_name').val(data.sn);
     $('#total_due').val('$'+data.total_due);
     $('#comments').val(data.comments);
     $('#status').val(data.private_status);
-    if(data.total_received == 0)
+    if(data.total_received === 0 || data.total_received === '0')
     {
-        $('#total_received').val('').focus();
+        $('#total_received').val('');
     }
     else
     {
-        $('#total_received').val(data.total_received).focus();
+        $('#total_received').val(data.total_received);
     }
+    setTimeout(function(){$("#total_received").focus();}, 300);
     $('#bucket').val(data.bucket);
     $('#request_id_hidden').val(data.request_id);
     $('#save_btn').data('id', data.id);
@@ -30,13 +32,7 @@ function request_ajax_done(jqXHR)
 function lookup_request(control)
 {
     var id = $(control).val();
-    $('#modal').modal('show');
-    $.ajax({
-            url: '../api/v1/requests/'+id+'/current',
-            data: 'genbucket=1',
-            type: 'get',
-            dataType: 'json',
-            complete: request_ajax_done});
+    lookup_request_by_id(id);
     $(control).val('');
 }
 
@@ -45,9 +41,8 @@ function lookup_request_by_id(id)
     $('#request_select').modal('hide');
     $('#modal').modal('show');
     $.ajax({
-            url: '../api/v1/requests/'+id+'/current',
-            data: 'genbucket=1',
-            type: 'get',
+            url: '../api/v1/requests/'+id+'/current/Actions/Requests.GetBucket',
+            type: 'POST',
             dataType: 'json',
             complete: request_ajax_done});
 }
