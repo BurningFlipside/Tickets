@@ -319,6 +319,10 @@ class FlipsideTicketRequest extends \SerializableObject
             unset($new_request->status);
         }
         $requestDataTable = $dataSet['TicketRequest'];
+        if(!isset($new_request->request_id) && isset($new_request->id))
+        {
+            $new_request->request_id = $new_request->id;
+        }
         $filter = new FlipsideRequestDefaultFilter($new_request->request_id, $new_request->year);
         $res = $requestDataTable->update($filter, (array)$new_request);
         return $res;
