@@ -61,36 +61,6 @@ function utf8ize($mixed)
     return $mixed;
 }
 
-function odata_filter_to_sql_conditions($filter, $db)
-{
-    $field = strtok($filter, ' ');
-    $operator = strtok(' ');
-    $rest = strtok("\0");
-    switch($operator)
-    {
-        case 'ne':
-            $operator = '!=';
-            break;
-        case 'eq':
-            $operator = '=';
-            break;
-        case 'lt':
-            $operator = '<';
-            break;
-        case 'le':
-            $operator = '<=';
-            break;
-        case 'gt':
-            $operator = '>';
-            break;
-        case 'ge':
-            $operator = '>=';
-            break;
-    }
-    $ret = array($field=>$operator.$rest);
-    return $ret;
-}
-
 function list_requests()
 {
     global $app;
