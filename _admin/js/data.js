@@ -8,7 +8,6 @@ function request_ajax_done(jqXHR)
         return;
     }
     var data = jqXHR.responseJSON;
-    console.log(data);
     $('#modal_title').html('Request #'+data.request_id);
     $('#given_name').val(data.givenName);
     $('#last_name').val(data.sn);
@@ -145,11 +144,22 @@ function save_request()
         alert('Need Total Received!');
         return;
     }
+    var obj = $('#req_form').serializeObject();
+    if(obj.total_due !== undefined && obj.total_due[0] === '$')
+    {
+        obj.total_due = obj.total_due.substring(1);
+    }
+    if(obj.total_received !== undefined && obj.total_received[0] === '$')
+    {
+        obj.total_received = obj.total_received.substring(1);
+    }
+    console.log(obj);
     $.ajax({
-        url: '/tickets/ajax/request.php',
-        data: $('#req_form').serialize(),
+        url: '../api/v1/requests/'+obj.id+'/current',
+        data: JSON.stringify(obj),
         dataType: 'json',
-        type: 'post',
+        type: 'patch',
+        processData: false,
         success: save_request_done}); 
 }
 
