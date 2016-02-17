@@ -61,6 +61,21 @@ function utf8ize($mixed)
     return $mixed;
 }
 
+function getRequestHelper($request_id, $year)
+{
+    global $app;
+    if($request_id === 'me')
+    {
+        $request_id = return_request_id();
+    }
+    if($year === 'current')
+    {
+        $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+        $year = $settings['year'];
+    }
+    return \Tickets\Flipside\FlipsideTicketRequest::getByIDAndYear($request_id, $year);
+} 
+
 function list_requests()
 {
     global $app;
@@ -393,7 +408,7 @@ function get_request_pdf($request_id, $year)
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $request = \Tickets\Flipside\FlipsideTicketRequest::getByIDAndYear($request_id, $year);
+    $request = getRequestHelper($request_id, $year);
     $pdf = new \Tickets\Flipside\RequestPDF($request);
     $app->fmt = 'passthru';
     if($app->request->isPost())
@@ -483,7 +498,7 @@ function send_request_email($request_id, $year)
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $request = \Tickets\Flipside\FlipsideTicketRequest::getByIDAndYear($request_id, $year);
+    $request = getRequestHelper($request_id, $year);
     $email_msg = new \Tickets\Flipside\FlipsideTicketRequestEmail($request);
     $email_provider = \EmailProvider::getInstance();
     if($email_provider->sendEmail($email_msg) === false)
@@ -500,16 +515,12 @@ function getRequestBucket($request_id, $year)
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $settings = \Tickets\DB\TicketSystemSettings::getInstance();
-    if($year === 'current')
-    {
-        $year = $settings['year'];
-    }
-    $request = \Tickets\Flipside\FlipsideTicketRequest::getByIDAndYear($request_id, $year);
+    $request = getRequestHelper($request_id, $year);
     if($request === false)
     {
         $app->notFound();
     }
+    $settings = \Tickets\DB\TicketSystemSettings::getInstance();
     $max_buckets = $settings['max_buckets'];
     if($request->crit_vol === '1' || $request->crit_vol === true || $request->crit_vol === 1)
     {
@@ -624,7 +635,7 @@ function editRequest($request_id, $year=false)
     {
         unset($obj->minor_confirm);
     }
-    $old_request = \Tickets\Flipside\FlipsideTicketRequest::getByIDAndYear($request_id, $year);
+    $old_request = getRequestHelper($request_id, $year);
     if($old_request !== false)
     {
         \Tickets\Flipside\FlipsideTicketRequest::updateRequest($obj, $old_request);
