@@ -204,20 +204,6 @@ class FlipsideTicketRequest extends \SerializableObject
                 }
             }
         }
-        else if(isset($old_request->donations))
-        {
-            if(!isset($old_request->donations))
-            {
-                $old_request->donations = array();
-            }
-            $donationDataTable = $dataSet['RequestDonation'];
-            $old_count = count((array)$old_request->donations);
-            for($i = 0; $i < $old_count; $i++)
-            {
-                $filter = new \Data\Filter('donation_id eq '.$old_request->donations[$i]['donation_id']);
-                $donationDataTable->delete($filter);
-            }
-        }
         if(isset($new_request->donations))
         {
             unset($new_request->donations);
@@ -322,6 +308,10 @@ class FlipsideTicketRequest extends \SerializableObject
         if(!isset($new_request->request_id) && isset($new_request->id))
         {
             $new_request->request_id = $new_request->id;
+        }
+        if($new_request->total_due === 0)
+        {
+            unset($new_request->total_due);
         }
         $filter = new FlipsideRequestDefaultFilter($new_request->request_id, $new_request->year);
         $res = $requestDataTable->update($filter, (array)$new_request);

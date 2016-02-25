@@ -3,17 +3,22 @@ function set_crit_done(data)
     console.log(data);
 }
 
+function patchRequestCritVol(request_id, value)
+{
+    $.ajax({
+        url: '../api/v1/requests/'+request_id+'/current',
+        data: '{"crit_vol": '+value+'}',
+        type: 'patch',
+        dataType: 'json',
+        complete: set_crit_done});
+}
+
 function save_one_critvol(index, element)
 {
     var elem = $(element);
     var name = elem.attr('name');
     name = name.substring(name.lastIndexOf('_')+1);
-    $.ajax({
-        url: '/tickets/ajax/request.php',
-        data: 'set_crit='+encodeURIComponent(name),
-        type: 'post',
-        dataType: 'json',
-        success: set_crit_done});
+    patchRequestCritVol(name, true);
 }
 
 function unsave_one_critvol(index, element)
@@ -21,12 +26,7 @@ function unsave_one_critvol(index, element)
     var elem = $(element);
     var name = elem.attr('name');
     name = name.substring(name.lastIndexOf('_')+1);
-    $.ajax({
-        url: '/tickets/ajax/request.php',
-        data: 'unset_crit='+encodeURIComponent(name),
-        type: 'post',
-        dataType: 'json',
-        success: set_crit_done});
+    patchRequestCritVol(name, false);
 }
 
 function save_critvol(event)
@@ -38,14 +38,15 @@ function save_critvol(event)
     $('.modal').modal('hide');
 }
 
-function search_done(data)
+function search_done(jqXHR)
 {
-    if(data.requests === undefined)
+    if(jqXHR.status !== 200 || jqXHR.responseJSON === undefined)
     {
         alert("No requests found!");
     }
     else
     {
+        var data = jqXHR.responseJSON;
             var table = $('<table/>', {'class': 'table'});
             var thead = $('<thead/>');
             var row = $('<tr/>');
@@ -61,17 +62,17 @@ function search_done(data)
             row.appendTo(thead);
             thead.appendTo(table);
             thead = $('<tbody/>');
-            for(i = 0; i < data.requests.length; i++)
+            for(i = 0; i < data.length; i++)
             {
                 row = $('<tr/>');
                 cell = $('<td/>');
-                cell.html(data.requests[i].request_id);
+                cell.html(data[i].request_id);
                 cell.appendTo(row);
                 cell = $('<td/>');
-                cell.html(data.requests[i].givenName+' '+data.requests[i].sn);
+                cell.html(data[i].givenName+' '+data[i].sn);
                 cell.appendTo(row);
-                var checkbox = $('<input/>', {'type': 'checkbox', 'name': 'crit_vol_'+data.requests[i].request_id});
-                if(data.requests[i].crit_vol)
+                var checkbox = $('<input/>', {'type': 'checkbox', 'name': 'crit_vol_'+data[i].request_id});
+                if(data[i].crit_vol)
                 {
                     checkbox.attr('checked', 'true');
                 }
@@ -90,12 +91,24 @@ function search(event)
 {
     var type = $('#search_type').val();
     var value = $('#search').val();
-    $.ajax({
-        url: '/tickets/ajax/request.php',
-        data: 'type='+encodeURIComponent(type)+'&value='+encodeURIComponent(value),
-        type: 'get',
-        dataType: 'json',
-        success: search_done});
+    if(type === '*')
+    {
+        $.ajax({
+            url: '../api/v1/requests',
+            data: '$search='+value+'&$filter=year eq current',
+            type: 'get',
+            dataType: 'json',
+            complete: search_done});
+    }
+    else
+    {
+        $.ajax({
+            url: '../api/v1/requests',
+            data: '$filter=contains('+type+','+value+') and year eq current',
+            type: 'get',
+            dataType: 'json',
+            complete: search_done});
+    }
     event.preventDefault();
     return false;
 }

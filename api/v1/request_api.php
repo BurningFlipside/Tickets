@@ -638,6 +638,10 @@ function editRequest($request_id, $year=false)
     $old_request = getRequestHelper($request_id, $year);
     if($old_request !== false)
     {
+        if(!isset($obj->request_id))
+        {
+            $obj->request_id = $old_request->request_id;
+        }
         \Tickets\Flipside\FlipsideTicketRequest::updateRequest($obj, $old_request);
         echo 'true';
     }
