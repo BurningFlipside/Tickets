@@ -113,25 +113,25 @@ function search(event)
     return false;
 }
 
-function uploadDone(data)
+function uploadDone(jqXHR)
 {
-    var json = eval('('+data+')');
+    if(jqXHR.status !== 200 || jqXHR.responseJSON === undefined)
+    {
+        alert('Error setting critical volunteers!');
+    }
+    var json = jqXHR.responseJSON;
     console.log(json);
-    $('#success_count').html(json.success.length);
-    $('#fail_count').html(json.fails.length);
+    $('#success_count').html(json.processed.length);
+    $('#fail_count').html(json.unprocessed.length);
     $('#successes').empty();
     $('#failures').empty();
-    for(i = 0; i < json.success.length; i++)
+    for(i = 0; i < json.processed.length; i++)
     {
-        $('#successes').append(json.success[i].token+' => '+json.success[i].name+'<br/>');
-        for(j = 0; j < json.success[i].tickets.length; j++)
-        {
-            $('#successes').append('&hellip;'+json.success[i].tickets[j].first+' '+json.success[i].tickets[j].last+'<br/>');
-        }
+        $('#successes').append(JSON.stringify(json.processed[i])+'<br/>');
     }
-    for(i = 0; i < json.fails.length; i++)
+    for(i = 0; i < json.unprocessed.length; i++)
     {
-        $('#failures').append(json.fails[i]+'<br/>');
+        $('#failures').append(JSON.stringify(json.unprocessed[i])+'<br/>');
     }
     $('#result_dialog').modal();
 }
@@ -145,17 +145,32 @@ function sendFileToServer(formData)
             processData: false,
             cache: false,
             data: formData,
-            success: upload_done}); 
+            complete: uploadDone}); 
+}
+
+function allCritvolsObtained(jqXHR)
+{
+    if(jqXHR.status !== 200 || jqXHR.responseText === undefined)
+    {
+        alert('Unable to obtain leads list!');
+        return;
+    }
+    $.ajax({
+        url: '../api/v1/requests/Actions/SetCritVols',
+        type: 'POST',
+        data: jqXHR.responseText,
+        processData: false,
+        complete: uploadDone});
 }
 
 function auto_critvol()
 {
     $.ajax({
-        url:  "critvol_upload.php?auto=1",
-        type: "POST",
-        contentType: false,
-        processData: false,
-        success: upload_done});
+        url: 'https://profiles.burningflipside.com/api/v1/leads?$select=mail',
+        type: 'get',
+        dataType: 'json',
+        xhrFields: {withCredentials: true},
+        complete: allCritvolsObtained});
 }
 
 function fileRead(e)

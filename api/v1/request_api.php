@@ -335,6 +335,80 @@ function get_request_id()
     echo json_encode($id);
 }
 
+function getRequestByID($id, $year)
+{
+    try
+    {
+        return \Tickets\Flipside\FlipsideTicketRequest::getByIDAndYear($entry['id'], $year);
+    }
+    catch(Exception $e)
+    {
+        return false;
+    }
+}
+
+function getRequestByMail($mail, $year, $dataTable)
+{
+    $filter = new \Data\Filter("mail eq '$mail' and year eq $year");
+    $requests = $dataTable->read($filter);
+    if($requests !== false && isset($requests[0]))
+    {
+        return new \Tickets\Flipside\FlipsideTicketRequest($requests[0]);
+    }
+    else
+    {
+        return false;
+    }
+}
+
+function getRequestFromListEntry($entry, $year, $dataTable)
+{
+    $request = false;
+    if(isset($entry['id']))
+    {
+        $request = getRequestByID($entry['id'], $year);
+        if($request !== false)
+        {
+            return $request;
+        }
+    }
+    if(isset($entry['mail']))
+    {
+        $request = getRequestByMail($entry['mail'], $year, $dataTable);
+        if($request !== false)
+        {
+            return $request;
+        }
+    }
+    if(isset($entry[0]))
+    {
+        $request = getRequestByID($entry[0], $year);
+        if($request !== false)
+        {
+            return $request;
+        }
+        $request = getRequestByMail($entry[0], $year, $dataTable);
+        if($request !== false)
+        {
+            return $request;
+        }
+    }
+    if(isset($entry[1]))
+    {
+        $request = getRequestByID($entry[1], $year);
+        if($request !== false)
+        {
+            return $request;
+        }
+        $request = getRequestByMail($entry[1], $year, $dataTable);
+        if($request !== false)
+        {
+            return $request;
+        }
+    }
+    return false;
+}
+
 function setCritVols()
 {
     global $app;
@@ -347,9 +421,18 @@ function setCritVols()
     $list = $app->request->getBody();
     $list = str_getcsv($list, "\n");
     $count = count($list);
-    for($i = 0; $i < $count; $i++)
+    if($count === 1 && ($list[0][0] === '[' || $list[0][0] === '{'))
     {
-        $list[$i] = str_getcsv($list[$i]);
+        $list = $app->getJsonBody(true);
+        $list = array_values(array_filter($list));
+        $count = count($list);
+    }
+    else
+    {
+        for($i = 0; $i < $count; $i++)
+        {
+            $list[$i] = str_getcsv($list[$i]);
+        }
     }
     $settings = \Tickets\DB\TicketSystemSettings::getInstance();
     $year = $settings['year'];
@@ -357,41 +440,11 @@ function setCritVols()
     $data_table = $data_set['TicketRequest'];
     for($i = 0; $i < $count; $i++)
     {
-        $request = false;
-        try{
-        $request = \Tickets\Flipside\FlipsideTicketRequest::getByIDAndYear($list[$i][0], $year);
-        } catch(Exception $e) {}
+        $request = getRequestFromListEntry($list[$i], $year, $data_table);
         if($request === false)
         {
-            if(isset($list[$i][1]))
-            {
-                try{
-                $request = \Tickets\Flipside\FlipsideTicketRequest::getByIDAndYear($list[$i][1], $year);
-                } catch(Exception $e) {}
-            }
-            if($request === false)
-            {
-                $filter = new \Data\Filter("mail eq '{$list[$i][0]}' and year eq $year");
-                $requests = $data_table->read($filter);
-                if($requests !== false && isset($requests[0]))
-                {
-                    $request = new \Tickets\Flipside\FlipsideTicketRequest($requests[0]);
-                }
-                else if(isset($list[$i][1]))
-                {
-                    $filter = new \Data\Filter("mail eq '{$list[$i][1]}' and year eq $year");
-                    $requests = $data_table->read($filter);
-                    if($requests !== false && isset($requests[0]))
-                    {
-                        $request = new \Tickets\Flipside\FlipsideTicketRequest($requests[0]);
-                    }
-                }
-                if($request === false)
-                {
-                    array_push($unprocessed, $list[$i]);
-                    continue;
-                }
-            }
+            array_push($unprocessed, $list[$i]);
+            continue;
         }
         $request->crit_vol = 1;
         $filter = new \Data\Filter("request_id eq '{$request->request_id}' and year eq $year");
