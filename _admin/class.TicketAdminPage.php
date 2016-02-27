@@ -10,9 +10,10 @@ class TicketAdminPage extends FlipAdminPage
     function __construct($title)
     {
         parent::__construct($title, 'TicketAdmins');
-        if($this->user !== false && $this->user !== null)
+        if($this->user !== false && $this->user !== null && $this->is_admin === false)
         {
             $this->is_data  = $this->user->isInGroupNamed('TicketTeam');
+            $this->is_admin = $this->is_data;
         }
         $this->add_tickets_css();
         $this->add_links();

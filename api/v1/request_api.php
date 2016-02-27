@@ -688,6 +688,15 @@ function editRequest($request_id, $year=false)
     {
         unset($obj->minor_confirm);
     }
+    if(isset($obj->dataentry))
+    {
+        unset($obj->dataentry);
+    }
+    if(isset($obj->id))
+    {
+        $obj->request_id = $obj->id;
+        unset($obj->id);
+    }
     $old_request = getRequestHelper($request_id, $year);
     if($old_request !== false)
     {
