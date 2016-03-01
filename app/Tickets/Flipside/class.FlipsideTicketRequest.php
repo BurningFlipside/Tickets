@@ -164,7 +164,7 @@ class FlipsideTicketRequest extends \SerializableObject
             $new_count = count((array)$new_request->donations);
             if($old_count !== 0 || $new_count !== 0)
             {
-                if($old_count > 0) $old_request->tickets = array_values($old_request->donations);
+                if($old_count > 0) $old_request->donations = array_values($old_request->donations);
                 if($old_count > 0 && $new_count > 0)
                 {
                     //TODO - Will handle when we actually need multiple donation types
