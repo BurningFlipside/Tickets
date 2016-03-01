@@ -5,6 +5,14 @@ function change_year(control)
     table.ajax.url('../api/v1/requests?'+data).load();
 }
 
+function changeStatusFilter(control)
+{
+   var year = $('#year').val();
+   var data = 'filter=year eq '+year+' and private_status eq '+$(control).val()+'&fmt=data-table';
+   var table = $('#requests').DataTable();
+   table.ajax.url('../api/v1/requests?'+data).load();
+}
+
 function total_due(row, type, val, meta)
 {
     return '$'+row.total_due;
@@ -275,6 +283,7 @@ function status_ajax_done(data)
     for(i = 0; i < data.length; i++)
     {
         $('#status').append('<option value="'+data[i].status_id+'">'+data[i].name+'</option>');
+        $('#statusFilter').append('<option value="'+data[i].status_id+'">'+data[i].name+'</option>');
     }
 }
 

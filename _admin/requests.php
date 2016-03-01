@@ -19,6 +19,9 @@ $page->body .= '
         <div class="row">
             Request Year: <select id="year" onchange="change_year(this)">
             </select>
+            Request Status: <select id="statusFilter" onchange="changeStatusFilter(this)">
+                <option value="*">All</option>
+            </select>
             <table class="table" id="requests">
                 <thead>
                     <th></th>
