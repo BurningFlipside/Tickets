@@ -7,7 +7,7 @@ function request_api_group()
     global $app;
     $app->get('', 'list_requests');
     $app->get('/crit_vols', 'get_crit_vols');
-    $app->get('/problems/:view', 'getProblems');
+    $app->get('/problems(/:view)', 'getProblems');
     $app->get('/:request_id(/:year)', 'get_request');
     $app->get('/me/:year', 'get_request');
     $app->get('/:request_id/:year/pdf', 'get_request_pdf');
@@ -258,9 +258,12 @@ function make_request()
     {
         throw new Exception('Request ID not retrievable! Call GetRequestID first.', INVALID_PARAM);
     }
-    else if($request_ids[0]['request_id'] !== $obj->request_id)
-    {
-        throw new Exception('Request ID not correct!', INVALID_PARAM);
+    if(!$app->user->isInGroupNamed('TicketAdmins') && !$app->user->isInGroupNamed('TicketTeam'))
+    { 
+        if($request_ids[0]['request_id'] !== $obj->request_id)
+        {
+            throw new Exception('Request ID not correct!', INVALID_PARAM);
+        }
     }
     $typeCounts = array();
     for($i = 0; $i < $ticket_count; $i++)
@@ -299,7 +302,14 @@ function make_request()
         unset($obj->minor_confirm);
     }
     \Tickets\Flipside\FlipsideTicketRequest::createTicketRequest($obj);
-    send_request_email($obj->request_id, $settings['year']);
+    if($request_ids[0]['request_id'] !== $obj->request_id)
+    {
+        echo 'true';
+    }
+    else
+    {
+        send_request_email($obj->request_id, $settings['year']);
+    }
 }
 
 function return_request_id()
@@ -713,7 +723,7 @@ function editRequest($request_id, $year=false)
     }
 }
 
-function getProblems($view)
+function getProblems($view = false)
 {
     global $app;
     if(!$app->user)
@@ -725,6 +735,10 @@ function getProblems($view)
         throw new Exception('Must be Ticket Admin or Ticket Lead', ACCESS_DENIED);
     }
     $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    if($view === false)
+    {
+        $view = 'vProblems';
+    }
     $data_table = $ticket_data_set[$view];
     $filter = $app->odata->filter;
     if($filter === false)
