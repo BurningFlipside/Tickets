@@ -52,7 +52,15 @@ $page->body .= '
                     </div>
                     <div id="crits" class="panel-collapse collapse">
                         <div class="panel-body">
-                            <canvas id="crits_chart"></canvas>
+                            <table id="critVolTable" class="table">
+                                <thead>
+                                    <tr><th></th><th>Non-Critvol & Non-Protected</th><th>Critvol</th><th>Protected</th><th>Critvol & Protected</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><th>Number</th></tr>
+                                    <tr><th>Percentage</th></tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>

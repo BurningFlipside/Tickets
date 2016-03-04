@@ -57,48 +57,40 @@ function requests_done(data)
 
 function crit_vols_done(data)
 {
+    var total = 0;
     var normal_count = 0;
     var protected_count = 0;
     var critvol_count = 0;
+    var both_count = 0;
     for(i = 0; i < data.length; i++)
     {
+        total+= (data[i].count)*1;
         if(data[i].crit_vol === '0' && data[i].protected === '0')
         {
             normal_count = (data[i].count)*1;
         }
-        else if(data[i].crit_vol === '1')
+        else if(data[i].crit_vol === '1' && data[i].protected === '0')
         {
-            critvol_count+= (data[i].count)*1;
+            critvol_count = (data[i].count)*1;
         }
-        else if(data[i].protected === '1')
+        else if(data[i].crit_vol === '0' && data[i].protected === '1')
         {
-            protected_count+= (data[i].count)*1;
+            protected_count = (data[i].count)*1;
+        }
+        else
+        {
+            both_count = (data[i].count)*1;
         }
     }
-    var crit_data = [
-        {
-            value: normal_count*1,
-            color: "#F7464A",
-            highlight: "#FF5A5E",
-            label: "Normal Requests"
-        },
-        {
-            value: protected_count*1,
-            color: "#46BFBD",
-            highlight: "#5AD3D1",
-            label: "Protected Requests"
-        },
-        {
-            value: critvol_count*1,
-            color: "#FDB45C",
-            highlight: "#FFC870",
-            label: "Critical Volunteer Requests"
-        }
-    ];
-    console.log(crit_data);
-
-    var ctx = $("#crits_chart").get(0).getContext("2d");
-    new Chart(ctx).Doughnut(crit_data);
+    var rows = $('#critVolTable tbody tr');
+    var row1 = rows.first();
+    var row2 = rows.last();
+    row1.append('<td>'+normal_count+'</td><td>'+critvol_count+'</td><td>'+protected_count+'</td><td>'+both_count+'</td>');
+    normal_count = ((normal_count/total)*100).toFixed(2);
+    critvol_count = ((critvol_count/total)*100).toFixed(2);
+    protected_count = ((protected_count/total)*100).toFixed(2);
+    both_count = ((both_count/total)*100).toFixed(2);
+    row2.append('<td>'+normal_count+'%</td><td>'+critvol_count+'%</td><td>'+protected_count+'%</td><td>'+both_count+'%</td>');
 }
 
 function gotRequestCounts(total, received, problem, rejected)

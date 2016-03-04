@@ -6,7 +6,7 @@ function request_api_group()
 {
     global $app;
     $app->get('', 'list_requests');
-    $app->get('/crit_vols', 'get_crit_vols');
+    $app->get('/crit_vols', 'getCritVols');
     $app->get('/problems(/:view)', 'getProblems');
     $app->get('/:request_id(/:year)', 'get_request');
     $app->get('/me/:year', 'get_request');
@@ -143,7 +143,7 @@ function list_requests()
     echo safe_json_encode($requests);
 }
 
-function get_crit_vols()
+function getCritVols()
 {
     global $app;
     if(!$app->user || !$app->user->isInGroupNamed('TicketAdmins'))
@@ -151,7 +151,9 @@ function get_crit_vols()
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
     $ticket_data_set = DataSetFactory::get_data_set('tickets');
-    $types = $ticket_data_set->raw_query('SELECT crit_vol,protected,COUNT(*) as count FROM tickets.tblTicketRequest GROUP BY crit_vol,protected;');
+    $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+    $year = $settings['year'];
+    $types = $ticket_data_set->raw_query('SELECT crit_vol,protected,COUNT(*) as count FROM tickets.tblTicketRequest WHERE year='.$year.' GROUP BY crit_vol,protected;');
     echo json_encode($types);
 }
 
