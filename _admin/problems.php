@@ -11,12 +11,12 @@ $page->add_js_from_src('js/problems.js');
 $page->body .= '
         <div class="row">
             <div class="col-lg-12">
-                <h1 class="page-header">Problem Requests</h1>
+                <h1 class="page-header">Problem Requests <a href="#" onclick="exportCSV()"><i class="fa fa-file-excel-o"></i></a></h1>
             </div>
         </div>
         <div class="row">
             <div class="col-lg-12">
-                <h2>Status is pending, but there are comments</h2>
+                <h2>Status is pending, but there are comments <a href="#" onclick="exportCSV(\'vProblemPendingWComments\')"><i class="fa fa-file-excel-o"></i></a></h2>
             </div>
             <table class="table" id="vProblemPendingWComments">
                 <thead>
@@ -27,7 +27,7 @@ $page->body .= '
         </div>
         <div class="row">
             <div class="col-lg-12">
-                <h2>Status is Receieved but total_due!=total_received</h2>
+                <h2>Status is Receieved but total_due!=total_received <a href="#" onclick="exportCSV(\'vProblemReceivedIncorrect\')"><i class="fa fa-file-excel-o"></i></a></h2>
             </div>
             <table class="table" id="vProblemReceivedIncorrect">
                 <thead>
@@ -38,7 +38,7 @@ $page->body .= '
         </div>
         <div class="row">
             <div class="col-lg-12">
-                <h2>Problem Status</h2>
+                <h2>Problem Status <a href="#" onclick="exportCSV(\'vProblemStatus\')"><i class="fa fa-file-excel-o"></i></a></h2>
             </div>
             <table class="table" id="vProblemStatus">
                 <thead>
@@ -49,7 +49,7 @@ $page->body .= '
         </div>
         <div class="row">
             <div class="col-lg-12">
-                <h2>Received Money but not correct status</h2>
+                <h2>Received Money but not correct status <a href="#" onclick="exportCSV(\'vProblemMoneyWrongStatus\')"><i class="fa fa-file-excel-o"></i></a></h2>
             </div>
             <table class="table" id="vProblemMoneyWrongStatus">
                 <thead>

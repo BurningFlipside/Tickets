@@ -41,6 +41,18 @@ function on_print_change(mql)
     }
 }
 
+function exportCSV(view)
+{
+    if(view === undefined)
+    {
+        window.location = '../api/v1/requests/problems?$format=csv';
+    }
+    else
+    {
+        window.location = '../api/v1/requests/problems/'+view+'?$format=csv';
+    }
+}
+
 function init_page()
 {
     $('table').each(init_table);
