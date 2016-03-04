@@ -196,6 +196,12 @@ function edit_request(control)
     window.location = '../request.php?request_id='+$('#request_id').val();
 }
 
+function getPDF(control)
+{
+    var year = $('#year').val();
+    window.location = '../api/v1/requests/'+$('#request_id').val()+'/'+year+'/pdf';
+}
+
 function row_clicked()
 {
     var tr = $(this).closest('tr');

@@ -186,6 +186,7 @@ $page->body .= '
                   <div class="modal-footer">
                       <button type="button" class="btn btn-default" onclick="save_request(this)">Ok</button>
                       <button type="button" class="btn btn-default" onclick="edit_request(this)">Edit Tickets/Donations</button>
+                      <button type="button" class="btn btn-default" onclick="getPDF(this)">Get PDF</button>
                       <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
                   </div>
               </div>
