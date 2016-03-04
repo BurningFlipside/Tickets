@@ -186,7 +186,8 @@ function save_ticket_done(jqXHR)
     }
     else
     {
-        console.log(jqXHR);
+        $('#ticket_modal').modal('hide');
+        yearChanged();
     }
 }
 
