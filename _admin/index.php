@@ -11,6 +11,11 @@ $data_table = $data_set['Problems'];
 $settings = \Tickets\DB\TicketSystemSettings::getInstance();
 $year = $settings['year'];
 
+$yearFilter = new \Data\Filter('year eq '.$year);
+
+$ticketDataTable = \Tickets\DB\TicketsDataTable::getInstance();
+$issuedTicketCount = $ticketDataTable->count($yearFilter);
+
 $page->body .= '
 <div class="row">
     <div class="col-lg-12">
@@ -19,10 +24,18 @@ $page->body .= '
 </div>
 <div class="row">';
 
-$page->add_card('fa-file', '<div id="requestCount">?</div>', 'Ticket Requests', 'requests.php');
-$page->add_card('fa-tag',  '<div id="requestedTicketCount">?</div>', 'Requested Tickets', 'request_tickets.php', $page::CARD_GREEN);
-$page->add_card('fa-fire', $data_table->count(new \Data\Filter('year eq '.$year)), 'Problem Requests', 'problems.php', $page::CARD_RED);
+if($issuedTicketCount == 0)
+{
+    $page->add_card('fa-file', '<div id="requestCount">?</div>', 'Ticket Requests', 'requests.php');
+    $page->add_card('fa-tag',  '<div id="requestedTicketCount">?</div>', 'Requested Tickets', 'request_tickets.php', $page::CARD_GREEN);
+}
+$page->add_card('fa-fire', $data_table->count($yearFilter), 'Problem Requests', 'problems.php', $page::CARD_RED);
 $page->add_card('fa-usd',  '<div id="soldTicketCount">?</div>', 'Sold Tickets', 'sold_tickets.php', $page::CARD_YELLOW);
+if($issuedTicketCount != 0)
+{
+    $page->add_card('fa-ticket', '<div id="unsoldCount">?</div>', 'Unsold Tickets', 'unsold_tickets.php');
+    $page->add_card('fa-check', '<div id="usedCount">?</div>', 'Used Tickets', 'used_tickets.php', $page::CARD_GREEN);
+}
 $page->body.='</div>';
 
 $page->print_page();
