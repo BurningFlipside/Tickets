@@ -22,6 +22,7 @@ $page->body .= '
             Request Status: <select id="statusFilter" onchange="changeStatusFilter(this)">
                 <option value="*">All</option>
             </select>
+            <a onclick="getCSV();" title="Export CSV"><i class="fa fa-file-excel-o"></i></a>
             <table class="table" id="requests">
                 <thead>
                     <th></th>

@@ -202,6 +202,20 @@ function getPDF(control)
     window.location = '../api/v1/requests/'+$('#request_id').val()+'/'+year+'/pdf';
 }
 
+function getCSV()
+{
+    var year = $('#year').val();
+    var status = $('#statusFilter').val();
+    if(status === '*')
+    {
+        window.location = '../api/v1/requests?$format=csv&$filter=year eq '+year;
+    }
+    else
+    {
+        window.location = '../api/v1/requests?$format=csv&$filter=year eq '+year+' and private_status eq '+status;
+    }
+}
+
 function row_clicked()
 {
     var tr = $(this).closest('tr');
