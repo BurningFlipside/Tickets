@@ -111,8 +111,84 @@ function crit_vols_done(data)
     new Chart(ctx).Doughnut(crit_data);
 }
 
+function gotRequestCounts(total, received, problem, rejected)
+{
+    var totalCount = 0;
+    if(total[1] === 'success')
+    {
+        totalCount = total[0]['@odata.count'];
+        $('#requestCount').html(totalCount);
+    }
+    if(received[1] === 'success')
+    {
+        var receivedCount = received[0]['@odata.count'];
+        var receivedText = receivedCount+' ';
+        if(totalCount !== 0)
+        {
+            var percent = ((receivedCount/totalCount)*100).toFixed(2);
+            receivedText+='- '+percent+'%';
+        }
+        $('#receivedRequestCount').html(receivedText);
+    }
+    if(problem[1] === 'success')
+    {
+        var problemCount = problem[0]['@odata.count'];
+        var problemText = problemCount+' ';
+        if(totalCount !== 0)
+        {
+            var percent = ((problemCount/totalCount)*100).toFixed(2);
+            problemText+='- '+percent+'%';
+        }
+        $('#problemRequestCount').html(problemText);
+    }
+    if(rejected[1] === 'success')
+    {
+        var rejectedCount = rejected[0]['@odata.count'];
+        var rejectedText = rejectedCount+' ';
+        if(totalCount !== 0)
+        {
+            var percent = ((rejectedCount/totalCount)*100).toFixed(2);
+            rejectedText+='- '+percent+'%';
+        }
+        $('#rejectedRequestCount').html(rejectedText);
+    }
+}
+
+function yearDone(jqXHR)
+{
+    if(jqXHR.status !== 200 || jqXHR.responseJSON === undefined)
+    {
+        alert('Unable to obtain current ticket request year!');
+        return;
+    }
+    var year = jqXHR.responseJSON;
+    $.when(
+    $.ajax({
+        url: '../api/v1/requests?$filter=year eq '+year+'&$count=true&$select=@odata.count',
+        type: 'get',
+        dataType: 'json'}),
+    $.ajax({
+        url: '../api/v1/requests?$filter=year eq '+year+' and private_status eq 1&$count=true&$select=@odata.count',
+        type: 'get',
+        dataType: 'json'}),
+    $.ajax({
+        url: '../api/v1/requests?$filter=year eq '+year+' and private_status eq 2&$count=true&$select=@odata.count',
+        type: 'get',
+        dataType: 'json'}),
+    $.ajax({
+        url: '../api/v1/requests?$filter=year eq '+year+' and private_status eq 3&$count=true&$select=@odata.count',
+        type: 'get',
+        dataType: 'json'})
+    ).then(gotRequestCounts);
+}
+
 function init_page()
 {
+    $.ajax({
+        url: '../api/v1/globals/vars/year',
+        type: 'get',
+        dataType: 'json',
+        complete: yearDone});
     $.ajax({
         url: '../api/v1/requests_w_tickets/types',
         type: 'get',

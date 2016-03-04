@@ -12,11 +12,24 @@ $page->add_js_from_src('js/chart_requests.js');
 $page->body .= '
         <div class="row">
             <div class="col-lg-12">
-                <h1 class="page-header">Request Graphs</h1>
+                <h1 class="page-header">Request Statistics</h1>
             </div>
         </div>
         <div class="row">
             <div class="panel-group" id="accordion">
+                <div class="panel panel-default">
+                     <div class="panel-heading">
+                        <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#requestStats">Request Stats</a></h4>
+                    </div>
+                    <div id="requestStats" class="panel-collapse collapse in">
+                        <div class="panel-body">
+                            Total Request Count: <span id="requestCount">?</span><br/>
+                            Received Request Count: <span id="receivedRequestCount">?</span><br/>
+                            Problem Request Count: <span id="problemRequestCount">?</span><br/>
+                            Rejected Request Count: <span id="rejectedRequestCount">?</span><br/>
+                        </div>
+                    </div>
+                </div>
                 <div class="panel panel-default">
                     <div class="panel-heading">
                         <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#requestTypes">Request Types</a></h4>

@@ -57,7 +57,7 @@ class TicketAdminPage extends FlipAdminPage
             $probs = '<span class="badge">'.$count.'</span>';
         }
         $charts_menu = array(
-            'Request Graphs' => 'chart_requests.php',
+            'Request Statistics' => 'chart_requests.php',
             'Tickets Graphs' => 'chart_tickets.php',
             'Gate Graphs'    => 'chart_used.php'
         );
