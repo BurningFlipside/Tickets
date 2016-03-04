@@ -34,9 +34,15 @@ $page->body .= '
                     <div class="panel-heading">
                         <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#requestTypes">Request Types</a></h4>
                     </div>
-                    <div id="requestTypes" class="panel-collapse collapse in">
+                    <div id="requestTypes" class="panel-collapse collapse">
                         <div class="panel-body">
-                            <canvas id="request_type_chart"></canvas>
+                            <table id="requestTypesTable" class="table">
+                                <thead>
+                                    <tr><th>Type</th><th>Total Count</th><th>Received Count</th></tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>

@@ -91,6 +91,15 @@ function get_requested_types()
     $year = $settings['year'];
     $ticket_data_set = DataSetFactory::get_data_set('tickets');
     $types = $ticket_data_set->raw_query('SELECT tblTicketTypes.description,COUNT(*) as count FROM tickets.vRequestWTickets INNER JOIN tblTicketTypes ON tblTicketTypes.typeCode=vRequestWTickets.type  WHERE vRequestWTickets.year='.$year.' GROUP BY type;');
+    $received = $ticket_data_set->raw_query('SELECT COUNT(*) as count FROM tickets.vRequestWTickets WHERE vRequestWTickets.year='.$year.' AND private_status IN (1,6) GROUP BY type;');
+    if($types !== false && $received !== false)
+    {
+        $count = count($types);
+        for($i = 0; $i < $count; $i++)
+        {
+            $types[$i]['receivedCount'] = $received[$i]['count'];
+        }
+    }
     echo json_encode($types);
 }
 
