@@ -276,7 +276,7 @@ class Ticket extends \SerializableObject
         {
             return false;
         }
-        $res = new SerializableObject();
+        $res = new \SerializableObject();
         $res->current = $current;
         $res->history = array();
         $ticket = $current;
