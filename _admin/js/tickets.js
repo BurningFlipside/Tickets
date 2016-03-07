@@ -1,9 +1,22 @@
 var ticket_data = null;
+var ticketTypes = null;
 
 function short_hash(data, type, row, meta)
 {
     var short_hash = data.substring(0,7);
     return '<a style="cursor: pointer;" onclick="view_ticket(\''+data+'\');">'+short_hash+'</a>';
+}
+
+function renderTicketType(data, type, row, meta)
+{
+    if(ticketTypes === null || ticketTypes[data] === undefined)
+    {
+        return data;
+    }
+    else
+    {
+        return ticketTypes[data];
+    }
 }
 
 function get_ticket_by_selected()
@@ -272,6 +285,24 @@ function gotTicketYears(jqXHR)
     yearChanged(e);
 }
 
+function gotTicketTypes(jqXHR)
+{
+    if(jqXHR.status !== 200 || jqXHR.responseJSON === undefined)
+    {
+        console.log(jqXHR);
+        return;
+    }
+    var data = jqXHR.responseJSON;
+    var options = '';
+    ticketTypes = {};
+    for(i = 0; i < data.length; i++)
+    {
+        options+='<option value="'+data[i].typeCode+'">'+data[i].description+'</option>';
+        ticketTypes[data[i].typeCode] = data[i].description;
+    }
+    $('#type').replaceWith('<select id="type" name="type" class="form-control">'+options+'</select>');
+}
+
 function init_page()
 {
     $('#tickets').dataTable({
@@ -280,7 +311,7 @@ function init_page()
             {'data': 'firstName'},
             {'data': 'lastName'},
             {'data': 'email'},
-            {'data': 'type'}
+            {'data': 'type', 'render': renderTicketType}
         ]
     });
     $.ajax({
@@ -288,6 +319,11 @@ function init_page()
         type: 'get',
         dataType: 'json',
         complete: gotTicketYears});
+    $.ajax({
+        url: '../api/v1/globals/ticket_types',
+        type: 'get',
+        dataType: 'json',
+        complete: gotTicketTypes});
 
     $('#tickets').on('search.dt', table_searched);
 }
