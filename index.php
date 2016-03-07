@@ -9,7 +9,7 @@ $page->add_css(CSS_DATATABLE);
 $page->add_js_from_src('js/index.js', false);
 
 $discretionary = '';
-if($page->user !== false && $page->user !== null && $page->user->isInGroupNamed('AAR'))
+if($page->user !== false && $page->user !== null && ($page->user->isInGroupNamed('AAR') || $page->user->isInGroupNamed('AFs')))
 {
     $page->add_js_from_src('js/discretionary.js');
     $discretionary = '
