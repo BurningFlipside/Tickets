@@ -91,7 +91,8 @@ class TicketAdminPage extends FlipAdminPage
         if($this->user->isInGroupNamed('AAR'))
         {
             $aar_menu = array(
-                'Critical Volunteers' => 'critvols.php'
+                'Critical Volunteers' => 'critvols.php',
+                'Discretionary Management' => 'discretionary.php'
             );
             $this->add_link('<span class="glyphicon glyphicon-fire"></span> AAR', '#', $aar_menu);
         }
