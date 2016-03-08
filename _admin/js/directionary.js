@@ -79,6 +79,20 @@ function gotTicketYear(jqXHR)
         complete: gotDiscretionaryTickets});
 }
 
+function gotGroups(jqXHR)
+{
+    if(jqXHR.status !== 200 || jqXHR.responseJSON === undefined)
+    {
+        alert('Unable to obtain groups!');
+        return;
+    }
+    var data = jqXHR.responseJSON;
+    for(var i = 0; i < data.length; i++)
+    {
+        $('#group').append('<option value="'+data[i].cn+'">'+data[i].cn+'</option>');
+    }
+}
+
 function initPage()
 {
     $.ajax({
@@ -86,6 +100,12 @@ function initPage()
         type: 'get',
         dataType: 'json',
         complete: gotTicketYear});
+    $.ajax({
+        url: 'https://profiles.burningflipside.com/api/v1/groups?$select=cn',
+        type: 'get',
+        dataType: 'json',
+        xhrFields: {withCredentials: true},
+        complete: gotGroups});
 }
 
 $(initPage);

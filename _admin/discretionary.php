@@ -27,6 +27,9 @@ $page->body .= '
                 </tbody>
             </table>
         </div>
+        <div class="row">
+        Assign <input type="number" name="count" id="count"/> discretionary tickets to everyone in <select name="group" id="group"></select>. <button class="btn btn-default" onclick="assignTickets();">Assign</button>
+        </div>
     </div>
 </div>
 ';
