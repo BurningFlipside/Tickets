@@ -13,6 +13,8 @@ function ticket_api_group()
     $app->get('/:hash/pdf', 'get_pdf');
     $app->patch('/:hash', 'update_ticket');
     $app->post('/:hash/Actions/Ticket.SendEmail', 'send_email');
+    $app->post('/:hash/Actions/Ticket.Claim', 'claimTicket');
+    $app->post('/:hash/Actions/Ticket.Transfer', 'transferTicket');
     $app->post('/pos/sell', 'sell_multiple_tickets');
     $app->post('/Actions/VerifyShortCode/:code', 'verifyShortCode');
     $app->post('/Actions/GenerateTickets', 'generateTickets');
@@ -203,9 +205,61 @@ function send_email($hash)
     $email_provider = EmailProvider::getInstance();
     if($email_provider->sendEmail($email_msg) === false)
     {
-        throw new \Exception('Unable to send password reset email!');
+        throw new \Exception('Unable to send ticket email!');
     }
     echo 'true';
+}
+
+function claimTicket($hash)
+{
+    global $app;
+    if(!$app->user)
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    $ticket = \Tickets\Ticket::get_ticket_by_hash($hash);
+    if($ticket === false)
+    {
+        $app->notFound();
+        return;
+    }
+    $ticket->email = $app->user->getEmail();
+    $array = $app->get_json_body(true);
+    if(isset($array['firstName']))
+    {
+        $ticket->firstName = $array['firstName'];
+    }
+    if(isset($array['lastName']))
+    {
+        $ticket->lastName = $array['lastName'];
+    }
+    $ticket->transferInProgress = 0;
+    return $ticket->insert_to_db(); 
+}
+
+function transferTicket($hash)
+{
+    global $app;
+    if(!$app->user)
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    $array = $app->get_json_body(true);
+    if(!isset($array['email']))
+    {
+        throw new \Exception('Missing Required Parameter email!');
+    }
+    $ticket = \Tickets\Ticket::get_ticket_by_hash($hash);
+    $email_msg = new \Tickets\TicketTransferEmail($ticket, $array['email']);
+    $email_provider = EmailProvider::getInstance();
+    if($email_provider->sendEmail($email_msg) === false)
+    {
+        throw new \Exception('Unable to send ticket email!');
+    }
+    $ticket_data_table = \Tickets\DB\TicketsDataTable::getInstance();
+    $filter = new \Tickets\DB\TicketHashFilter($id);
+    $res = $ticket_data_table->update($filter, array('transferInProgress'=>1));
+    echo json_encode($res);
 }
 
 function sell_multiple_tickets()

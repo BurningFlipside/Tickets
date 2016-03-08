@@ -43,7 +43,7 @@ function transfer()
     var obj = {};
     obj.email = $('#email').val();
     $.ajax({
-        url: 'api/v1/tickets/'+encodeURIComponent($('#hash').val())+'/Actions/Transfer',
+        url: 'api/v1/tickets/'+encodeURIComponent($('#hash').val())+'/Actions/Ticket.Transfer',
         type: 'post',
         data: JSON.stringify(obj),
         processData: false,
@@ -57,7 +57,7 @@ function claim_ticket()
     obj.firstName = $('#firstName').val();
     obj.lastName  = $('#lastName').val();
     $.ajax({
-        url: 'api/v1/tickets/'+encodeURIComponent($('#hash').val())+'/Actions/Claim',
+        url: 'api/v1/tickets/'+encodeURIComponent($('#hash').val())+'/Actions/Ticket.Claim',
         type: 'post',
         data: JSON.stringify(obj),
         processData: false,
