@@ -19,7 +19,7 @@ function drawTable(disc)
         }
         for(var type in disc[mail])
         {
-            row.append('<td>'+type+'</td><td>'+disc[mail][type]+'</td>');
+            row.append('<td>'+type+'</td><td>'+disc[mail][type]['unsold']+'</td><td>'+disc[mail][type]['sold']+'</td>');
             table.append(row);
             row = $('<tr>');
         }
@@ -45,22 +45,32 @@ function gotDiscretionaryTickets(jqXHR)
     var calls = [];
     for(var i = 0; i < data.length; i++)
     {
-        if(disc[data[i].email] === undefined)
+        var email = data[i].discretionaryOrig;
+        if(disc[email] === undefined)
         {
-            disc[data[i].email] = {};
+            disc[email] = {};
             calls.push(
                 $.ajax({
-                url: 'https://profiles.burningflipside.com/api/v1/users?$filter=mail eq '+data[i].email,
+                url: 'https://profiles.burningflipside.com/api/v1/users?$filter=mail eq '+email,
                 type: 'get',
                 dataType: 'json',
                 xhrFields: {withCredentials: true},
             }));
         }
-        if(disc[data[i].email][data[i].type] === undefined)
+        if(disc[email][data[i].type] === undefined)
         {
-            disc[data[i].email][data[i].type] = 0;
+            disc[email][data[i].type] = {};
+            disc[email][data[i].type]['sold'] = 0;
+            disc[email][data[i].type]['unsold'] = 0;
         }
-        disc[data[i].email][data[i].type]++;
+        if(data[i].sold == 0)
+        {
+            disc[email][data[i].type]['unsold']++;
+        }
+        else
+        {
+            disc[email][data[i].type]['sold']++;
+        }
     }
     $.when.apply($, calls).done(gotUsers);
 }
@@ -73,7 +83,7 @@ function gotTicketYear(jqXHR)
         return;
     }
     $.ajax({
-        url: '../api/v1/tickets?$filter=discretionary eq 1 and sold eq 0 and year eq '+jqXHR.responseJSON,
+        url: '../api/v1/tickets?$filter=discretionary eq 1 and year eq '+jqXHR.responseJSON,
         type: 'get',
         dataType: 'json',
         complete: gotDiscretionaryTickets});

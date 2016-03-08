@@ -22,6 +22,7 @@ $page->body .= '
                     <th>Holder</th>
                     <th>Ticket Type</th>
                     <th>Unsold</th>
+                    <th>Sold</th>
                 </thead>
                 <tbody>
                 </tbody>
