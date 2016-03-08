@@ -22,6 +22,7 @@ $page->body .= '
                         <th>First Name</th>
                         <th>Last Name</th>
                         <th>Type</th>
+                        <th>Sold At</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
