@@ -154,7 +154,7 @@ function list_discretionary_tickets()
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    if(!$app->user->isInGroupNamed('AAR'))
+    if(!$app->user->isInGroupNamed('AAR') && !$app->user->isInGroupNamed('AFs'))
     {
         throw new Exception('Must be member of AAR group', ACCESS_DENIED);
     }
