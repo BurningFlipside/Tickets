@@ -204,6 +204,18 @@ function save_ticket_done(jqXHR)
     }
 }
 
+function noChangeDone(jqXHR)
+{
+    if(jqXHR.status != 200)
+    {
+        alert("Error!");
+    }
+    else
+    {
+        $('#ticket_modal').modal('hide');
+    }
+}
+
 function save_ticket()
 {
     var ticket = get_ticket_by_selected();
@@ -232,6 +244,17 @@ function save_ticket()
     {
         $('#ticket_modal').modal('hide');
     }
+}
+
+function resendTicketEmail()
+{
+    var ticket = get_ticket_by_selected();
+    $.ajax({
+        url: '../api/v1/tickets/'+ticket.hash+'/Actions/Ticket.SendEmail',
+        contentType: 'application/json',
+        type: 'post',
+        dataType: 'json',
+        complete: noChangeDone}); 
 }
 
 function backend_search_done(data)

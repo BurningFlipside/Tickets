@@ -3,21 +3,22 @@ namespace Tickets;
 require_once('Autoload.php');
 require_once('app/TicketAutoload.php');
 
-
-class TicketTransferEmail extends TicketEmail
+class TicketEmail extends \Email\Email
 {
     protected $pm;
 
-    public function __construct($ticket, $email, $pm = false)
+    public function __construct($ticket, $pm = false)
     {
         parent::__construct();
         $this->pm         = $pm;
-        $this->addToAddress($email);
+        $this->addToAddress($ticket->email);
+        $pdf = new \Tickets\TicketPDF($ticket);
+        $this->addAttachmentFromBuffer($ticket->hash.'.pdf', $pdf->toPDFBuffer(), 'application/pdf');
     }
 
     public function getSubject()
     {
-        return 'Burning Flipside '.$this->ticket->year.' Will Call Ticket Transfer';
+        return 'Burning Flipside '.$this->ticket->year.' Will Call Receipt';
     }
 
     private function getBodyFromDB($html=true)
@@ -46,7 +47,7 @@ class TicketTransferEmail extends TicketEmail
             '{$type}'           => $type
         );
         $long_text = \Tickets\DB\LongTextStringsDataTable::getInstance();
-        $raw_text = $long_text['ticket_transfer_email_source'];
+        $raw_text = $long_text['ticket_email_source'];
         if($html === true)
         {
             return strtr($raw_text, $vars);

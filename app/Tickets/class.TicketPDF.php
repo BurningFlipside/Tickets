@@ -44,7 +44,7 @@ class TicketPDF extends \PDF\PDF
         $year           = $this->ticket->year;
         $ticket_id      = $this->ticket->hash;
         $short_id       = substr($this->ticket->hash, 0, 8);
-        $word_code      = \Ticket::hash_to_words($this->ticket->hash);
+        $word_code      = Ticket::hash_to_words($this->ticket->hash);
         $name           = $this->ticket->firstName.' '.$this->ticket->lastName;
         $email          = $this->ticket->email;
         $type           = $this->ticket->type;
