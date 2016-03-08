@@ -280,7 +280,7 @@ class Ticket extends \SerializableObject
         $res->current = $current;
         $res->history = array();
         $ticket = $current;
-        while($ticket->has_previous())
+        while($ticket !== false && $ticket->has_previous())
         {
             $ticket = $ticket->get_previous();
             array_push($res->history, $ticket);

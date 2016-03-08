@@ -257,6 +257,17 @@ function resendTicketEmail()
         complete: noChangeDone}); 
 }
 
+function spinHash()
+{
+    var ticket = get_ticket_by_selected();
+    $.ajax({
+        url: '../api/v1/tickets/'+ticket.hash+'/Actions/Ticket.SpinHash',
+        contentType: 'application/json',
+        type: 'post',
+        dataType: 'json',
+        complete: save_ticket_done});
+}
+
 function backend_search_done(data)
 {
     var tickets = data;
@@ -285,7 +296,16 @@ function table_searched()
 
 function yearChanged(e)
 {
-    $('#tickets').DataTable().ajax.url('../api/v1/tickets?filter=year eq '+e.currentTarget.value+'&fmt=data-table').load();
+    var year;
+    if(e === undefined)
+    {
+        year = $('#ticket_year').value;
+    }
+    else
+    {
+        year = e.currentTarget.value;
+    }
+    $('#tickets').DataTable().ajax.url('../api/v1/tickets?filter=year eq '+year+'&fmt=data-table').load();
 }
 
 function gotTicketYears(jqXHR)

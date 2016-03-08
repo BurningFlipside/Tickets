@@ -34,6 +34,10 @@ class TicketsDataTable extends SingletonDataTable
         {
             $data['test'] = 1;
         }
+        if(isset($data['hash_words']))
+        {
+            unset($data['hash_words']);
+        }
         return $this->data_table->create($data);
     }
 
@@ -89,6 +93,11 @@ class TicketsDataTable extends SingletonDataTable
     {
         $this->modify_filter($filter);
         return $this->data_table->count($filter);
+    }
+
+    function raw_query($query)
+    {
+        return $this->data_table->raw_query($query);
     }
 }
 ?>

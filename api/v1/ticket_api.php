@@ -15,6 +15,7 @@ function ticket_api_group()
     $app->post('/:hash/Actions/Ticket.SendEmail', 'send_email');
     $app->post('/:hash/Actions/Ticket.Claim', 'claimTicket');
     $app->post('/:hash/Actions/Ticket.Transfer', 'transferTicket');
+    $app->post('/:hash/Actions/Ticket.SpinHash', 'spinHash');
     $app->post('/pos/sell', 'sell_multiple_tickets');
     $app->post('/Actions/VerifyShortCode/:code', 'verifyShortCode');
     $app->post('/Actions/GenerateTickets', 'generateTickets');
@@ -260,6 +261,26 @@ function transferTicket($hash)
     $filter = new \Tickets\DB\TicketHashFilter($id);
     $res = $ticket_data_table->update($filter, array('transferInProgress'=>1));
     echo json_encode($res);
+}
+
+function spinHash($hash)
+{
+    global $app;
+    if(!$app->user)
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    if(!$app->user->isInGroupNamed('TicketAdmins'))
+    {
+        throw new Exception('Must be member of TicketAdmins group', ACCESS_DENIED);
+    }
+    $ticket = \Tickets\Ticket::get_ticket_by_hash($hash);
+    if($ticket === false)
+    {
+        $app->notFound();
+        return;
+    }
+    echo json_encode($ticket->insert_to_db());
 }
 
 function sell_multiple_tickets()

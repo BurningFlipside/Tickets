@@ -132,6 +132,7 @@ $page->body .= '
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                         <button type="button" class="btn btn-default" onclick="resendTicketEmail();">Resend Ticket Email</button>
+                        <button type="button" class="btn btn-default" onclick="spinHash();">Assign New ID</button>
                         <button type="button" class="btn btn-primary" id="saveticket" onclick="save_ticket()">Save changes</button>
                     </div>
                 </div>
