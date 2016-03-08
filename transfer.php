@@ -58,13 +58,13 @@ else
                                         <div class="form-group">
                                             <label for="firstName" class="col-sm-2 control-label">First Name:</label>
                                             <div class="col-sm-10">
-                                                <input class="form-control" type="text" name="firstName" id="firstName" data-toggle="tooltip" data-placement="top" title="The first name that matches the legal photo ID that will be presented at the Burning Flipside gate." value="'.$ticket[0]->firstName.'"/>
+                                                <input class="form-control" type="text" name="firstName" id="firstName" data-toggle="tooltip" data-placement="top" title="The first name that matches the legal photo ID that will be presented at the Burning Flipside gate." value="'.$ticket->firstName.'"/>
                                             </div>
                                         </div>
                                         <div class="form-group">
                                             <label for="lastName" class="col-sm-2 control-label">Last Name:</label>
                                             <div class="col-sm-10">
-                                                <input class="form-control" type="text" name="lastName" id="lastName" data-toggle="tooltip" data-placement="top" title="The last name that matches the legal photo ID that will be presented at the Burning Flipside gate." value="'.$ticket[0]->lastName.'"/>
+                                                <input class="form-control" type="text" name="lastName" id="lastName" data-toggle="tooltip" data-placement="top" title="The last name that matches the legal photo ID that will be presented at the Burning Flipside gate." value="'.$ticket->lastName.'"/>
                                             </div>
                                         </div>
                                         <button type="button" class="btn btn-primary" onclick="change_name()">Change Name</button>
@@ -74,7 +74,7 @@ else
                                         <div class="form-group">
                                             <label for="email" class="col-sm-2 control-label">Email:</label>
                                             <div class="col-sm-10">
-                                                <input class="form-control" type="text" name="email" id="email" data-toggle="tooltip" data-placement="top" title="The email to send the ticket to." value="'.$ticket[0]->email.'"/>
+                                                <input class="form-control" type="text" name="email" id="email" data-toggle="tooltip" data-placement="top" title="The email to send the ticket to." value="'.$ticket->email.'"/>
                                             </div>
                                         </div>
                                         <button type="button" class="btn btn-primary" onclick="transfer()">Transfer Tickets</button>
@@ -92,13 +92,13 @@ else
                                         <div class="form-group">
                                             <label for="firstName" class="col-sm-2 control-label">First Name:</label>
                                             <div class="col-sm-10">
-                                                <input class="form-control" type="text" name="firstName" id="firstName" data-toggle="tooltip" data-placement="top" title="The first name that matches the legal photo ID that will be presented at the Burning Flipside gate." value="'.$ticket[0]->firstName.'"/>
+                                                <input class="form-control" type="text" name="firstName" id="firstName" data-toggle="tooltip" data-placement="top" title="The first name that matches the legal photo ID that will be presented at the Burning Flipside gate." value="'.$ticket->firstName.'"/>
                                             </div>
                                         </div>
                                         <div class="form-group">
                                             <label for="lastName" class="col-sm-2 control-label">Last Name:</label>
                                             <div class="col-sm-10">
-                                                <input class="form-control" type="text" name="lastName" id="lastName" data-toggle="tooltip" data-placement="top" title="The last name that matches the legal photo ID that will be presented at the Burning Flipside gate." value="'.$ticket[0]->lastName.'"/>
+                                                <input class="form-control" type="text" name="lastName" id="lastName" data-toggle="tooltip" data-placement="top" title="The last name that matches the legal photo ID that will be presented at the Burning Flipside gate." value="'.$ticket->lastName.'"/>
                                             </div>
                                         </div>
                                         <button type="button" class="btn btn-primary" onclick="claim_ticket()">Claim Ticket</button>
