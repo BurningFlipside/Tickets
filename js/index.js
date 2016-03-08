@@ -176,7 +176,7 @@ function make_actions(data, type, row, meta)
         {
             view_options.type = 'button';
             button = $('<button/>', view_options);
-            glyph = $('<span/>', {'class': 'glyphicon glyphicon-search'});
+            glyph = $('<span/>', {'class': 'fa fa-search'});
             glyph.appendTo(button);
             if(button.prop('outerHTML') === undefined)
             {
@@ -189,7 +189,7 @@ function make_actions(data, type, row, meta)
         }
         edit_options.type = 'button';
         button = $('<button/>', edit_options);
-        glyph = $('<span/>', {'class': 'glyphicon glyphicon-pencil'});
+        glyph = $('<span/>', {'class': 'fa fa-pencil'});
         glyph.appendTo(button);
         if(button.prop('outerHTML') === undefined)
         {
@@ -201,7 +201,7 @@ function make_actions(data, type, row, meta)
         }
 
 	link = $('<a/>', pdf_options);
-        glyph = $('<span/>', {'class': 'glyphicon glyphicon-cloud-download'});
+        glyph = $('<span/>', {'class': 'fa fa-download'});
         glyph.appendTo(link);
         if(link.prop('outerHTML') === undefined)
         {
@@ -214,7 +214,7 @@ function make_actions(data, type, row, meta)
 
         transfer_options.type = 'button';
         button = $('<button/>', transfer_options);
-        glyph = $('<span/>', {'class': 'glyphicon glyphicon-send'});
+        glyph = $('<span/>', {'class': 'fa fa-send'});
         glyph.appendTo(button);
         if(button.prop('outerHTML') === undefined)
         {
@@ -316,19 +316,19 @@ function add_buttons_to_row(row, id, year)
     {
         edit_options.type = 'button';
         button = $('<button/>', edit_options);
-        glyph = $('<span/>', {'class': 'glyphicon glyphicon-pencil'});
+        glyph = $('<span/>', {'class': 'fa fa-pencil'});
         glyph.appendTo(button);
         button.appendTo(cell);
 
         mail_options.type = 'button';
         button = $('<button/>', mail_options);
-        glyph = $('<span/>', {'class': 'glyphicon glyphicon-envelope'});
+        glyph = $('<span/>', {'class': 'fa fa-envelope'});
         glyph.appendTo(button);
         button.appendTo(cell);
 
         pdf_options.type = 'button';
         button = $('<button/>', pdf_options);
-        glyph = $('<span/>', {'class': 'glyphicon glyphicon-cloud-download'});
+        glyph = $('<span/>', {'class': 'fa fa-download'});
         glyph.appendTo(button);
         button.appendTo(cell);
     }
@@ -373,7 +373,7 @@ function add_old_request_to_table(tbody, request)
     var container = tbody.find('tr#old_requests');
     if(container.length === 0)
     {
-        tbody.prepend('<tr id="old_requests" style="cursor: pointer;"><td colspan="5"><span class="glyphicon glyphicon-chevron-right"></span> Old Requests</td></tr>');
+        tbody.prepend('<tr id="old_requests" style="cursor: pointer;"><td colspan="5"><span class="fa fa-chevron-right"></span> Old Requests</td></tr>');
         container = tbody.find('tr#old_requests');
         container.on('click', toggle_hidden_requests);
     }
@@ -383,7 +383,7 @@ function add_old_request_to_table(tbody, request)
     row.append('<td>'+request.tickets.length+'</td>');
     row.append('<td>$'+request.total_due+'</td>');
     var cell = $('<td>');
-    //var button = $('<button class="btn btn-link btn-sm" data-toggle="tooltip" data-placement="top" title="Copy Old Request"><span class="glyphicon glyphicon-copy"></span></button>');
+    //var button = $('<button class="btn btn-link btn-sm" data-toggle="tooltip" data-placement="top" title="Copy Old Request"><span class="fa fa-clipboard"></span></button>');
     //button.data('request', request);
     //button.on('click', copy_request);
     //cell.append(button);
@@ -449,7 +449,7 @@ function process_requests(requests)
     {
         if(out_of_window === false)
         {
-            tbody.append('<tr><td colspan="5" style="text-align: center;"><a href="request.php"><span class="glyphicon glyphicon-new-window"></span> Create a new request</a></td></tr>');
+            tbody.append('<tr><td colspan="5" style="text-align: center;"><a href="request.php"><span class="fa fa-plus-square"></span> Create a new request</a></td></tr>');
             $('#fallback').hide();
         }
         else
@@ -461,7 +461,7 @@ function process_requests(requests)
     {
         if(out_of_window === false)
         {
-            tbody.append('<tr><td colspan="5" style="text-align: center;"><a href="request.php"><span class="glyphicon glyphicon-new-window"></span> Create a new request</a></td></tr>');
+            tbody.append('<tr><td colspan="5" style="text-align: center;"><a href="request.php"><span class="fa fa-plus-square"></span> Create a new request</a></td></tr>');
             $('#fallback').hide();
         }
         else
@@ -606,13 +606,13 @@ function panel_heading_click(e)
     {
         $(this).parents('.panel').find('.panel-body').slideDown();
         $(this).removeClass('panel-collapsed');
-        $(this).find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+        $(this).find('i').removeClass('fa-chevron-down').addClass('fa-chevron-up');
     }
     else
     {
         $(this).parents('.panel').find('.panel-body').slideUp();
         $(this).addClass('panel-collapsed');
-        $(this).find('i').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
+        $(this).find('i').removeClass('fa-chevron-up').addClass('fa-chevron-down');
     }
 }
 

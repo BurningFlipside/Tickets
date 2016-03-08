@@ -11,14 +11,14 @@ function verifyCodeDone(jqXHR)
     var data = jqXHR.responseJSON;
     if(data.verified)
     {
-            $('#verified').html('<span class="glyphicon glyphicon-ok"></span>');
+            $('#verified').html('<span class="fa fa-check"></span>');
             $('#verified').css('background-color', 'GreenYellow');
             $('#verified').css('color', 'green');
             $('#verified').attr('title', 'Ticket Code is valid!');
     }
     else
     {
-            $('#verified').html('<span class="glyphicon glyphicon-remove"></span>');
+            $('#verified').html('<span class="fa fa-times"></span>');
             $('#verified').css('background-color', 'red');
             $('#verified').css('color', 'DarkRed');
             $('#verified').attr('title', 'Ticket Code is not valid.');

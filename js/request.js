@@ -70,7 +70,7 @@ function addRowToTable(tbody, first, last, type, row_id)
     if(row_id != 0)
     {
         var button = $('<button/>', {type: 'button', class: 'btn btn-link btn-sm', id: 'delete_'+row_id, onclick: 'delete_ticket()'});
-        $('<span/>', {class: 'glyphicon glyphicon-remove'}).appendTo(button);
+        $('<span/>', {class: 'fa fa-times'}).appendTo(button);
         button.appendTo(cell);
     }
     cell.appendTo(row);

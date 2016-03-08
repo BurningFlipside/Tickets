@@ -19,7 +19,7 @@ if($page->user !== false && $page->user !== null && ($page->user->isInGroupNamed
                 <div class="panel panel-default">
                     <div class="panel-heading">
                         <h3 class="panel-title">Discretionary Tickets</h3>
-                        <span class="pull-right clickable"><i class="glyphicon glyphicon-chevron-up"></i></span>
+                        <span class="pull-right clickable"><i class="fa fa-chevron-up"></i></span>
                     </div>
                     <div class="panel-body">
                         <table id="discretionary" class="table">
@@ -46,7 +46,7 @@ if($page->user !== false && $page->user !== null && ($page->user->isInGroupNamed
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h3 class="panel-title">Ticket Request</h3>
-                    <span class="pull-right clickable"><i class="glyphicon glyphicon-chevron-up"></i></span>
+                    <span class="pull-right clickable"><i class="fa fa-chevron-up"></i></span>
                 </div>
                 <div class="panel-body">
                     <table id="requestList" class="table">
@@ -72,7 +72,7 @@ if($page->user !== false && $page->user !== null && ($page->user->isInGroupNamed
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h3 class="panel-title">Tickets</h3>
-                    <span class="pull-right clickable"><i class="glyphicon glyphicon-chevron-up"></i></span>
+                    <span class="pull-right clickable"><i class="fa fa-chevron-up"></i></span>
                 </div>
                 <div class="panel-body">
                     <table id="ticketList">

@@ -23,13 +23,13 @@ function make_d_action(data, type, row, meta)
         {
             view_options.type = 'button';
             var button = $('<button/>', view_options);
-            var glyph = $('<span/>', {class: 'glyphicon glyphicon-search'});
+            var glyph = $('<span/>', {class: 'fa fa-search'});
             glyph.appendTo(button);
             res += button.prop('outerHTML');
         }
         pdf_options.type = 'button';
         button = $('<button/>', pdf_options);
-        glyph = $('<span/>', {class: 'glyphicon glyphicon-cloud-download'});
+        glyph = $('<span/>', {class: 'fa fa-download'});
         glyph.appendTo(button);
         if(button.prop('outerHTML') === undefined)
         {
@@ -40,20 +40,23 @@ function make_d_action(data, type, row, meta)
             res += button.prop('outerHTML');
         }
 
-        var rand = Math.floor(Math.random() * 3);
+        var rand = Math.floor(Math.random() * 4);
 
         sell_options.type = 'button';
         button = $('<button/>', sell_options);
         switch(rand)
         {
             case 0:
-                glyph = $('<span/>', {class: 'glyphicon glyphicon-usd'});
+                glyph = $('<span/>', {class: 'fa fa-usd'});
                 break;
             case 1:
-                glyph = $('<span/>', {class: 'glyphicon glyphicon-euro'});
+                glyph = $('<span/>', {class: 'fa fa-euro'});
                 break;
             case 2:
-                glyph = $('<span/>', {class: 'glyphicon glyphicon-yen'});
+                glyph = $('<span/>', {class: 'fa fa-yen'});
+                break;
+            case 3:
+                glyph = $('<span/>', {class: 'fa fa-gbp'});
                 break;
         }
         glyph.appendTo(button);
