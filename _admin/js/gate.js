@@ -1,4 +1,5 @@
 var history_data = null;
+var year;
 
 function finish_processing_ticket(data)
 {
@@ -326,7 +327,7 @@ function filter_from_mag_stripe(stripe_value)
     var card = process_mag_stripe(stripe_value);
     if(card.first !== undefined && card.last !== undefined)
     {
-        return 'filter='+
+        return 'filter=year eq '+year+' and '+
                  'substringof(firstName,\''+card.first+'\') and '+
                  'substringof(lastName,\''+card.last+'\')';
     }
@@ -337,7 +338,7 @@ function filter_from_mag_stripe(stripe_value)
         if(parts.length > 2)
         {
             var names = parts[1].split('$');
-            return 'filter='+
+            return 'filter=year eq '+year+' and '+
                  'substringof(firstName,\''+names[1]+'\') and '+
                  'substringof(lastName,\''+names[0]+'\')';
         }
@@ -355,18 +356,18 @@ function really_search(jqXHR)
     else if(this.indexOf(' ') > -1)
     {
         var names = this.split(' ');
-        filter = 'filter='+
+        filter = 'filter=year eq '+year+' and '+
                  'substringof(firstName,\''+names[0]+'\') and '+
                  'substringof(lastName,\''+names[1]+'\')';
     }
     else
     {
-        filter = 'filter='+
-                 'substringof(firstName,\''+this+'\') or '+
+        filter = 'filter=year eq '+year+' and '+
+                 '(substringof(firstName,\''+this+'\') or '+
                  'substringof(lastName,\''+this+'\') or '+
                  'substringof(hash,\''+this+'\') or '+
                  'substringof(email,\''+this+'\') or '+
-                 'substringof(request_id,\''+this+'\')';
+                 'substringof(request_id,\''+this+'\'))';
     }
     $.ajax({
         url:  '../api/v1/tickets',
@@ -381,6 +382,7 @@ function really_search(jqXHR)
 function really_search_history(jqXHR)
 {
     var filter = false;
+    console.log(jqXHR);
     if(this.indexOf('%') === 0)
     {
         filter = filter_from_mag_stripe(this);
@@ -388,18 +390,18 @@ function really_search_history(jqXHR)
     else if(this.indexOf(' ') > -1)
     {
         var names = this.split(' ');
-        filter = 'filter='+
+        filter = 'filter=year eq '+year+' and '+
                  'substringof(firstName,\''+names[0]+'\') and '+
                  'substringof(lastName,\''+names[1]+'\')';
     }
     else
     {
-        filter = 'filter='+
-                 'substringof(firstName,\''+this+'\') or '+
+        filter = 'filter=year eq '+year+' and '+
+                 '(substringof(firstName,\''+this+'\') or '+
                  'substringof(lastName,\''+this+'\') or '+
                  'substringof(hash,\''+this+'\') or '+
                  'substringof(email,\''+this+'\') or '+
-                 'substringof(request_id,\''+this+'\')';
+                 'substringof(request_id,\''+this+'\'))';
     }
     $.ajax({
         url:  '../api/v1/tickets_history',
@@ -511,8 +513,23 @@ function fullscreen()
     $('#screen').html('<span class="glyphicon glyphicon-resize-small"></span>').attr('title', 'revert').unbind('click', fullscreen).click(revert_screen);
 }
 
+function gotTicketYear(jqXHR)
+{
+    if(jqXHR.status !== 200 || jqXHR.responseJSON === undefined)
+    {
+        alert('Unable to obtain ticket year!');
+        return;
+    }
+    year = jqXHR.responseJSON;
+}
+
 function init_gate_page()
 {
+    $.ajax({
+        url: '../api/v1/globals/vars/year',
+        type: 'get',
+        dataType: 'json',
+        complete: gotTicketYear});
     $('#ticket_search').keypress(ticket_search);
     $('#history_search').keypress(history_search);
     $('#process_ticket_modal').on('shown.bs.modal', focus_on_ticket_id);
