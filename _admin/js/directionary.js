@@ -1,4 +1,5 @@
 var disc;
+var year;
 
 function drawTable(disc)
 {
@@ -75,6 +76,11 @@ function gotDiscretionaryTickets(jqXHR)
     $.when.apply($, calls).done(gotUsers);
 }
 
+function getCSV()
+{
+    window.location = '../api/v1/tickets?$format=csv&$filter=discretionary eq 1 and year eq '+year;
+}
+
 function gotTicketYear(jqXHR)
 {
     if(jqXHR.status !== 200 || jqXHR.responseJSON === undefined)
@@ -82,6 +88,7 @@ function gotTicketYear(jqXHR)
         alert('Unable to obtain ticket year!');
         return;
     }
+    year = jqXHR.responseJSON;
     $.ajax({
         url: '../api/v1/tickets?$filter=discretionary eq 1 and year eq '+jqXHR.responseJSON,
         type: 'get',
