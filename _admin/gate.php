@@ -14,7 +14,7 @@ $page->body .= '
         <div class="col-sm-12">
             <h1 class="page-header">
                 Gate
-                <button id="screen" class="btn btn-default pull-right" title="fullscreen" onclick="fullscreen()"><span class="glyphicon glyphicon-fullscreen"></span></button>
+                <button id="screen" class="btn btn-default pull-right" title="fullscreen" onclick="fullscreen()"><span class="fa fa-arrows-alt"></span></button>
             </h1>
         </div>
     </div>
@@ -234,8 +234,8 @@ $page->body .= '
                         </div>
                     </div>
                     <div class="clearfix visible-sm visible-md visible-lg"></div>
-                    <div class="col-md-6" style="text-align: center;"><a onclick="prev_ticket()" style="cursor: pointer;" id="left_arrow"><span class="glyphicon glyphicon-chevron-left"></span></a></div>
-                    <div class="col-md-6" style="text-align: center;"><a onclick="next_ticket()" style="cursor: pointer;" id="right_arrow"><span class="glyphicon glyphicon-chevron-right"></span></a></div>
+                    <div class="col-md-6" style="text-align: center;"><a onclick="prev_ticket()" style="cursor: pointer;" id="left_arrow"><span class="fa fa-chevron-left"></span></a></div>
+                    <div class="col-md-6" style="text-align: center;"><a onclick="next_ticket()" style="cursor: pointer;" id="right_arrow"><span class="fa fa-chevron-right"></span></a></div>
                     <div class="clearfix visible-sm visible-md visible-lg"></div>
                 </div></div>
                 <div class="modal-footer">

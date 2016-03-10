@@ -42,9 +42,13 @@ class TicketAdminPage extends FlipAdminPage
 
     function add_links()
     {
+        if($this->user === false && $this->user === null)
+        {
+            return;
+        }
         if(!$this->is_admin)
         {
-            $this->add_link('<span class="glyphicon glyphicon-pencil"></span> Data Entry', 'data.php');
+            $this->add_link('<span class="fa fa-pencil"></span> Data Entry', 'data.php');
             return;
         }
         $probs = '';
@@ -81,22 +85,22 @@ class TicketAdminPage extends FlipAdminPage
             'Edit Ticket PDF'    => 'ticket_pdf.php',
             'Data Entry Users'   => 'users.php'
         );
-        $this->add_link('<span class="glyphicon glyphicon-dashboard"></span> Dashboard', 'index.php');
-        $this->add_link('<span class="glyphicon glyphicon-stats"></span> Charts', '#', $charts_menu);
-        $this->add_link('<span class="glyphicon glyphicon-file"></span> Requests', '#', $request_menu);
-        $this->add_link('<span class="glyphicon glyphicon-tag"></span> Tickets', '#', $ticket_menu);
-        $this->add_link('<span class="glyphicon glyphicon-pencil"></span> Data Entry', 'data.php');
-        $this->add_link('<span class="glyphicon glyphicon-usd"></span> Sales', 'pos.php');
-        $this->add_link('<span class="glyphicon glyphicon-log-in"></span> Gate', 'gate.php');
+        $this->add_link('<span class="fa fa-tachometer"></span> Dashboard', 'index.php');
+        $this->add_link('<span class="fa fa-bar-chart"></span> Charts', '#', $charts_menu);
+        $this->add_link('<span class="fa fa-file"></span> Requests', '#', $request_menu);
+        $this->add_link('<span class="fa fa-ticket"></span> Tickets', '#', $ticket_menu);
+        $this->add_link('<span class="fa fa-pencil"></span> Data Entry', 'data.php');
+        $this->add_link('<span class="fa fa-usd"></span> Sales', 'pos.php');
+        $this->add_link('<span class="fa fa-sign-in"></span> Gate', 'gate.php');
         if($this->user->isInGroupNamed('AAR'))
         {
             $aar_menu = array(
                 'Critical Volunteers' => 'critvols.php',
                 'Discretionary Management' => 'discretionary.php'
             );
-            $this->add_link('<span class="glyphicon glyphicon-fire"></span> AAR', '#', $aar_menu);
+            $this->add_link('<span class="fa fa-fire"></span> AAR', '#', $aar_menu);
         }
-        $this->add_link('<span class="glyphicon glyphicon-tower"></span> Admin', '#', $admin_menu);
+        $this->add_link('<span class="fa fa-cog"></span> Admin', '#', $admin_menu);
     }
 
     function print_page($header = true)
@@ -106,7 +110,7 @@ class TicketAdminPage extends FlipAdminPage
             $this->body = '
         <div class="row">
             <div class="col-lg-12">
-                <h1 class="page-header">You must <a href="https://profiles.burningflipside.com/login.php?return='.$this->current_url().'">log in <span class="glyphicon glyphicon-log-in"></span></a> to access the Burning Flipside Ticket system!</h1>
+                <h1 class="page-header">You must <a href="https://profiles.burningflipside.com/login.php?return='.$this->current_url().'">log in <span class="fa fa-sign-in"></span></a> to access the Burning Flipside Ticket system!</h1>
             </div>
         </div>';
         }

@@ -503,14 +503,14 @@ function revert_screen()
 {
     $('.navbar').show();
     $('#page-wrapper').css('margin', '0 0 0 250px').css('width', '').css('height', '');
-    $('#screen').html('<span class="glyphicon glyphicon-fullscreen"></span>').attr('title', 'fullscreen').unbind('click', revert_screen).click(fullscreen);
+    $('#screen').html('<span class="fa fa-arrows-alt"></span>').attr('title', 'fullscreen').unbind('click', revert_screen).click(fullscreen);
 }
 
 function fullscreen()
 {
     $('.navbar').hide();
     $('#page-wrapper').css('width', '100%').css('height', '100%').css('margin', '0');
-    $('#screen').html('<span class="glyphicon glyphicon-resize-small"></span>').attr('title', 'revert').unbind('click', fullscreen).click(revert_screen);
+    $('#screen').html('<span class="fa fa-compress"></span>').attr('title', 'revert').unbind('click', fullscreen).click(revert_screen);
 }
 
 function gotTicketYear(jqXHR)

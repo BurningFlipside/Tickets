@@ -25,7 +25,7 @@ $page->add_js_from_src('js/vars.js');
                             <div class="input-group">
                                 <input type="text" class="form-control" id="year" name="year"/>
                                 <span class="input-group-btn">
-                                    <button type="button" class="btn btn-default" id="known_change_year" for="year" onclick="known_change(this)"><span class="glyphicon glyphicon-ok"></span></button>
+                                    <button type="button" class="btn btn-default" id="known_change_year" for="year" onclick="known_change(this)"><span class="fa fa-check"></span></button>
                                 </span>
                             </div>
                         </div>
@@ -74,7 +74,7 @@ $page->add_js_from_src('js/vars.js');
                             <div class="input-group">
                                 <input type="text" class="form-control" id="max_tickets_per_request" name="max_tickets_per_request"/>
                                 <span class="input-group-btn">
-                                    <button type="button" class="btn btn-default" id="known_change_max_tickets_per_request" for="max_tickets_per_request" onclick="known_change(this)"><span class="glyphicon glyphicon-ok"></span></button>
+                                    <button type="button" class="btn btn-default" id="known_change_max_tickets_per_request" for="max_tickets_per_request" onclick="known_change(this)"><span class="fa fa-check"></span></button>
                                 </span>
                             </div>
                         </div>
@@ -85,7 +85,7 @@ $page->add_js_from_src('js/vars.js');
                             <div class="input-group">
                                 <input type="text" class="form-control" id="max_buckets" name="max_buckets"/>
                                 <span class="input-group-btn">
-                                    <button type="button" class="btn btn-default" id="known_change_max_buckets" for="max_buckets" onclick="known_change(this)"><span class="glyphicon glyphicon-ok"></span></button>
+                                    <button type="button" class="btn btn-default" id="known_change_max_buckets" for="max_buckets" onclick="known_change(this)"><span class="fa fa-check"></span></button>
                                 </span>
                             </div>
                         </div>

@@ -33,7 +33,7 @@ function child_data(row, type, val, meta)
 
 function draw_done()
 {
-    $('td.details-control').html('<span class="glyphicon glyphicon-plus"></span>');
+    $('td.details-control').html('<span class="fa fa-plus"></span>');
 }
 
 function request_loaded(data)
@@ -110,13 +110,13 @@ function details_clicked()
     if(row.child.isShown())
     {
         row.child.hide();
-        $(this).html('<span class="glyphicon glyphicon-plus"></span>');
+        $(this).html('<span class="fa fa-plus"></span>');
         tr.removeClass('shown');
     }
     else
     {
         row.child(show_tickets(row.data())).show();
-        $(this).html('<span class="glyphicon glyphicon-minus"></span>');
+        $(this).html('<span class="fa fa-minus"></span>');
         tr.addClass('shown');
     }
 }

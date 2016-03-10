@@ -5,6 +5,7 @@ require_once('ticket_history_api.php');
 require_once('request_api.php');
 require_once('request_ticket_api.php');
 require_once('global_api.php');
+require_once('pool_api.php');
 
 if($_SERVER['REQUEST_URI'][0] == '/' && $_SERVER['REQUEST_URI'][1] == '/')
 {
@@ -22,6 +23,7 @@ $app->group('/request', 'request_api_group');
 $app->group('/requests', 'request_api_group');
 $app->group('/requests_w_tickets', 'request_ticket_api_group');
 $app->group('/globals', 'global_api_group');
+$app->group('/pools', 'poolApiGroup');
 
 function getRoot()
 {
