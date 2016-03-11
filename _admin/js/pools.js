@@ -1,6 +1,37 @@
 var id;
 var pools;
 
+function setIfValueDifferent(newObj, origObj, inputname, fieldname)
+{
+    if(fieldname === undefined)
+    {
+        fieldname = inputname;
+    }
+    var input = $('#'+inputname);
+    if(input.attr('type') === 'checkbox')
+    {
+         if(input.is(':checked'))
+         {
+             if(origObj[fieldname] == 0)
+             {
+                 newObj[fieldname] = 1;
+             }
+         }
+         else if(origObj[fieldname] == 1)
+         {
+             newObj[fieldname] = 0;
+         }
+    }
+    else
+    {
+        var val = $('#'+inputname).val();
+        if(val != origObj[fieldname])
+        {
+            newObj[fieldname] = val;
+        }
+    }
+}
+
 function opDone(jqXHR)
 {
     if(jqXHR.status === 200)
@@ -26,6 +57,27 @@ function deletePool(really)
             complete: opDone
         });
     }
+}
+
+function updatePool()
+{
+    var obj = {};
+    setIfValueDifferent(obj, pools[id], 'pool_name');
+    setIfValueDifferent(obj, pools[id], 'group_name');
+    $('#editModal').modal('hide');
+    if(Object.keys(obj).length === 0)
+    {
+        alert('No changes to save!');
+        return;
+    }
+    $.ajax({
+        url: '../api/v1/pools/'+id,
+        method: 'patch',
+        data: JSON.stringify(obj),
+        processData: false,
+        complete: opDone
+    });
+    return;
 }
 
 function deletePoolDialog(_id)
