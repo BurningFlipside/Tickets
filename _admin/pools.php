@@ -56,6 +56,36 @@ $page->body .= '
                 </div>
             </div>
         </div>
+        <div id="newModal" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                        <h4 class="modal-title" id="modal_title">New Ticket Pool</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="show_short_code" class="col-sm-2 control-label">Pool Name:</label>
+                            <div class="col-sm-10">
+                                <input class="form-control" type="text" name="pool_name" id="pool_name_new"/>
+                            </div>
+                        </div>
+                        <div class="clearfix visible-sm visible-md visible-lg"></div>
+                        <div class="form-group">
+                            <label for="show_short_code" class="col-sm-2 control-label">Pool Owner:</label>
+                            <div class="col-sm-10">
+                                <input class="form-control typeahead" type="text" name="group_name" id="group_name_new"/>
+                            </div>
+                        </div>
+                        <div class="clearfix visible-sm visible-md visible-lg"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-defualt" data-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="createPool()">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 ';

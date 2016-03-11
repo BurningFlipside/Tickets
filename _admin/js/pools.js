@@ -80,6 +80,21 @@ function updatePool()
     return;
 }
 
+function createPool()
+{
+    var obj = {};
+    obj['pool_name'] = $('#pool_name_new').val();
+    obj['group_name'] = $('#group_name_new').val();
+    $('#newModal').modal('hide');
+    $.ajax({
+        url: '../api/v1/pools',
+        method: 'post',
+        data: JSON.stringify(obj),
+        processData: false,
+        complete: opDone
+    });
+}
+
 function deletePoolDialog(_id)
 {
     id = _id;
@@ -93,6 +108,11 @@ function editDialogPool(_id)
     $('#pool_name').val(pools[_id].pool_name);
     $('#group_name').val(pools[_id].group_name);
     $('#editModal').modal('show');
+}
+
+function newPool()
+{
+    $('#newModal').modal('show');
 }
 
 function gotPools(jqXHR)
@@ -133,6 +153,7 @@ function gotGroups(jqXHR)
         queryTokenizer: Bloodhound.tokenizers.whitespace,
         local: names});
     $('#group_name').typeahead(null, {name: 'group_name', source: group_names});
+    $('#group_name_new').typeahead(null, {name: 'group_name', source: group_names});
 }
 
 function initTable()
