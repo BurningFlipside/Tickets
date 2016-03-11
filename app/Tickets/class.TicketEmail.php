@@ -6,12 +6,14 @@ require_once('app/TicketAutoload.php');
 class TicketEmail extends \Email\Email
 {
     protected $pm;
+    protected $ticket;
 
     public function __construct($ticket, $pm = false)
     {
         parent::__construct();
         $this->pm         = $pm;
         $this->addToAddress($ticket->email);
+        $this->ticket = $ticket;
         $pdf = new \Tickets\TicketPDF($ticket);
         $this->addAttachmentFromBuffer($ticket->hash.'.pdf', $pdf->toPDFBuffer(), 'application/pdf');
     }
@@ -42,6 +44,7 @@ class TicketEmail extends \Email\Email
             '{$short_id}'       => $short_id,
             '{$word_code}'      => $word_code,
             '{$firstName}'      => $this->ticket->firstName,
+            '{$lastName}'       => $this->ticket->lastName,
             '{$name}'           => $name,
             '{$email}'          => $email,
             '{$type}'           => $type
@@ -50,10 +53,20 @@ class TicketEmail extends \Email\Email
         $raw_text = $long_text['ticket_email_source'];
         if($html === true)
         {
-            return strtr($raw_text, $vars);
+            $text = strtr($raw_text, $vars);
+            return $text;
         }
         else
         {
+            $index = strpos($raw_text, "<script");
+            if($index !== false)
+            {
+                $end = strpos($raw_text, "</script>");
+                if($index === 0)
+                {
+                    $raw_text = substr($raw_text, $end+9);
+                }
+            }
             return strtr(strip_tags($raw_text), $vars);
         }
     }
