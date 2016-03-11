@@ -1,5 +1,6 @@
 var id;
 var pools;
+var year;
 
 function setIfValueDifferent(newObj, origObj, inputname, fieldname)
 {
@@ -95,6 +96,49 @@ function createPool()
     });
 }
 
+function gotPoolTickets(jqXHR)
+{
+    if(jqXHR.status !== 200 || jqXHR.responseJSON === undefined)
+    {
+        alert('Unable to obtain pools!');
+        return;
+    }
+    var msg = '';
+    var sold_count = 0;
+    var unsold_count = 0;
+    var data = jqXHR.responseJSON;
+    for(var i = 0; i < data.length; i++)
+    {
+        if(data[i].sold == 1)
+        {
+            sold_count++;
+        }
+        else
+        {
+            unsold_count++;
+        }
+    }
+    msg+= 'Pool Name: '+pools[this].pool_name+'<br/>';
+    msg+= 'Pool Owning Group: '+pools[this].group_name+'<br/>';
+    msg+= 'Sold Count: '+sold_count+'<br/>';
+    msg+= 'Unsold Count: '+unsold_count+'<br/>';
+
+    bootbox.dialog({
+        title: 'Pool Statistics for Pool #'+this,
+        message: msg
+    });
+}
+
+function poolStats(_id)
+{
+    $.ajax({
+        url: '../api/v1/tickets?$filter=year eq '+year+' and pool_id eq '+_id,
+        method: 'get',
+        context: _id,
+        complete: gotPoolTickets
+    }); 
+}
+
 function deletePoolDialog(_id)
 {
     id = _id;
@@ -156,6 +200,11 @@ function gotGroups(jqXHR)
     $('#group_name_new').typeahead(null, {name: 'group_name', source: group_names});
 }
 
+function gotYear(jqXHR)
+{
+    year = jqXHR.responseJSON;
+}
+
 function initTable()
 {
     $.ajax({
@@ -173,6 +222,11 @@ function initPage()
         dataType: 'json',
         xhrFields: {withCredentials: true},
         complete: gotGroups});
+    $.ajax({
+        url: '../api/v1/globals/vars/year',
+        method: 'get',
+        complete: gotYear
+    }); 
     $("#editModal").modal({"show":false});
     initTable();
 }
