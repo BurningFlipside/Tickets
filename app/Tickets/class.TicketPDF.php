@@ -33,13 +33,15 @@ class TicketPDF extends \PDF\PDF
     private function createPDFBody()
     {
         //$barcode_hash   = $this->ticket->getBarcodeHash();
-        $remainder    = gmp_init(substr($this->ticket->hash, 0), 16);
-        $barcode_hash = gmp_strval($remainder);
-        if((strlen($barcode_hash) % 2) === 1)
-        {
-             $barcode_hash = '0'.$barcode_hash;
-        }
-        $barcode        = '<barcode code="'.$barcode_hash.'" type="C128C"/>';
+        $tmp = substr($this->ticket->hash, 0, 8).substr($this->ticket->hash, 24, 8);
+        //$remainder    = gmp_init($tmp, 16);
+        //$barcode_hash = gmp_strval($remainder);
+        //if((strlen($barcode_hash) % 2) === 1)
+        //{
+        //     $barcode_hash = '0'.$barcode_hash;
+        //}
+        $barcode_hash   = $tmp;
+        $barcode        = '<barcode code="'.$barcode_hash.'" type="C128B"/>';
         $transfer_qr    = '<barcode code="https://secure.burningflipside.com/tickets/transfer.php?id='.$this->ticket->hash.'" type="QR" class="barcode" size="1" error="M" />';
         $year           = $this->ticket->year;
         $ticket_id      = $this->ticket->hash;

@@ -420,14 +420,35 @@ function get_ticket(hash)
         really_search.call(hash);
         return;
     }
-    $.ajax({
-        url:  '../api/v1/tickets/'+hash,
-        type: 'get',
-        dataType: 'json',
-        context: hash,
-        success: found_ticket,
-        error: really_search
-    });
+    var pos = hash.indexOf('transfer.php?id=');
+    if(pos != -1)
+    {
+        pos+=16;
+        hash = hash.substring(pos);
+    }
+    if(hash.length === 16)
+    {
+        hash = hash.substring(0, 8)+'%25'+hash.substring(8);
+        $.ajax({
+            url:  '../api/v1/tickets/?$filter=contains(hash,\''+hash+'\')',
+            type: 'get',
+            dataType: 'json',
+            context: hash,
+            success: found_ticket,
+            error: really_search
+        });    
+    }
+    else
+    {
+        $.ajax({
+            url:  '../api/v1/tickets/'+hash,
+            type: 'get',
+            dataType: 'json',
+            context: hash,
+            success: found_ticket,
+            error: really_search
+        });
+    }
 }
 
 function get_history(hash)
