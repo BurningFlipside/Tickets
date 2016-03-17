@@ -381,10 +381,11 @@ function generateTickets()
         foreach($unTicketedRequests as $request)
         {
             $request_id = $request['request_id'];
-            $requestedTickets = $requestedTicketsDataTable->read(new \Data\Filter("year eq $year and request_id eq '$request_id'"));
+            $filter = new \Data\Filter("year eq $year and request_id eq '$request_id'");
+            $requestedTickets = $requestedTicketsDataTable->read($filter);
             foreach($requestedTickets as $requestedTicket)
             {
-                $unAssignedTickets = $ticketDataTable->read(new \Data\Filter("assigned eq 0 and year eq $year and type eq '{$requestedTicket['type']}'"), false, 1);
+                $unAssignedTickets = $ticketDataTable->read(new \Data\Filter("sold eq 0 and year eq $year and type eq '{$requestedTicket['type']}'"), false, 1);
                 if(!isset($unAssignedTickets[0]))
                 {
                     throw new \Exception('Insufficient tickets of type '.$requestedTicket['type'].' to process all requests!');
@@ -393,7 +394,6 @@ function generateTickets()
                 $unAssignedTickets[0]['lastName'] = $requestedTicket['last'];
                 $unAssignedTickets[0]['email'] = $request['mail'];
                 $unAssignedTickets[0]['request_id'] = $request['request_id'];
-                $unAssignedTickets[0]['assigned'] = 1;
                 $unAssignedTickets[0]['sold'] = 1;
                 if($requestedTicket['type'] !== 'A')
                 {
