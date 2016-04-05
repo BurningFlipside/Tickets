@@ -132,7 +132,6 @@ class Ticket extends \SerializableObject
     {
         $this->email = $email;
         $this->sold  = 1;
-        $this->discretionary = 0;
         if($this->insert_to_db($db) === false)
         {
             return FALSE;
@@ -231,6 +230,14 @@ class Ticket extends \SerializableObject
         return true;
     }
 
+    static function getDiscretionaryTicketsForUser($user, $criteria = false)
+    {
+        $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+        $filter = new \Tickets\DB\TicketDefaultFilter($user->getEmail(), true);
+        $res = self::get_tickets($filter);
+        return $res;
+    }
+
     static function get_tickets_for_user_and_pool($user, $criteria = false)
     {
         $settings = \Tickets\DB\TicketSystemSettings::getInstance();
@@ -260,11 +267,16 @@ class Ticket extends \SerializableObject
         }
         if($res === false || !isset($res[0]))
         {
-            return false;
+            return self::getDiscretionaryTicketsForUser($user, $criteria);
         }
         else if(!is_array($res))
         {
             $res = array($res);
+        }
+        $tmp = self::getDiscretionaryTicketsForUser($user, $criteria);
+        if($tmp !== false)
+        {
+            $res = array_merge($res, $tmp);
         }
         return $res;
     }
@@ -391,12 +403,12 @@ class Ticket extends \SerializableObject
         $datatable = self::get_data_table();
         foreach($types as $type=>$qty)
         {
-            $tickets = self::get_tickets_for_user_and_pool($user, array('sold'=>'=0', 'type'=>'=\''.$type.'\''));
+            $tickets = self::get_tickets_for_user_and_pool($user, new \Data\Filter("sold eq 0 and type eq '$type'"));
             $sold = 0;
             $count = count($tickets);
             for($i = 0; $sold < $qty; $i++)
             {
-                if($i > $count) return FALSE;
+                if($i >= $count) return false;
                 if($tickets[$i]->sellTo($email, $message, $datatable))
                 {
                     $sold++;

@@ -16,6 +16,7 @@ function ticket_api_group()
     $app->post('/:hash/Actions/Ticket.Claim', 'claimTicket');
     $app->post('/:hash/Actions/Ticket.Transfer', 'transferTicket');
     $app->post('/:hash/Actions/Ticket.SpinHash', 'spinHash');
+    $app->post('/:hash/Actions/Ticket.Sell', 'sellTicket');
     $app->post('/pos/sell', 'sell_multiple_tickets');
     $app->post('/Actions/VerifyShortCode/:code', 'verifyShortCode');
     $app->post('/Actions/GenerateTickets', 'generateTickets');
@@ -111,7 +112,7 @@ function update_ticket($id)
     }
     $ticket_data_table = \Tickets\DB\TicketsDataTable::getInstance();
     $filter = new \Tickets\DB\TicketHashFilter($id);
-    $array = $app->get_json_body(true);
+    $array = $app->getJsonBody(true);
     $copy = $array;
     unset($copy['firstName']);
     unset($copy['lastName']);
@@ -258,7 +259,7 @@ function transferTicket($hash)
         throw new \Exception('Unable to send ticket email!');
     }
     $ticket_data_table = \Tickets\DB\TicketsDataTable::getInstance();
-    $filter = new \Tickets\DB\TicketHashFilter($id);
+    $filter = new \Tickets\DB\TicketHashFilter($hash);
     $res = $ticket_data_table->update($filter, array('transferInProgress'=>1));
     echo json_encode($res);
 }
@@ -281,6 +282,51 @@ function spinHash($hash)
         return;
     }
     echo json_encode($ticket->insert_to_db());
+}
+
+function sellTicket($hash)
+{
+    global $app;
+    if(!$app->user)
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    if(!$app->user->isInGroupNamed('TicketAdmins'))
+    {
+        throw new Exception('Must be member of TicketAdmins group', ACCESS_DENIED);
+    }
+    $ticket = \Tickets\Ticket::get_ticket_by_hash($hash);
+    if($ticket === false)
+    {
+        $app->notFound();
+        return;
+    }
+    $obj = $app->getJsonBody();
+    if($obj === null || $obj === false)
+    {
+        throw new \Exception('Unable to parse payload!');
+    }
+    $ticket->sold = 1;
+    $ticket->email = $obj->email;
+    if(isset($obj->firstName))
+    {
+        $ticket->firstName = $obj->firstName;
+    }
+    if(isset($obj->lastName))
+    {
+        $ticket->lastName = $obj->lastName;
+    }
+    $res = $ticket->insert_to_db();
+    if($res === true)
+    {
+        $email_msg = new \Tickets\TicketEmail($ticket);
+        $email_provider = EmailProvider::getInstance();
+        if($email_provider->sendEmail($email_msg) === false)
+        {
+            throw new \Exception('Unable to send ticket email!');
+        }
+    }
+    echo json_encode($res);
 }
 
 function sell_multiple_tickets()

@@ -37,6 +37,14 @@ $page->body .= '
                 </div>
                 <div class="tab-content">
                     <div role="tabpanel" class="tab-pane active" id="tab0">
+                        <div class="form-group">
+                            <label for="pool" class="col-sm-2 control-label">Ticket From Pool:</label>
+                            <div class="col-sm-10">
+                                <select class="form-control" name="pool" id="pool" onchange="poolChanged(this)">
+                                    <option value="-1">Personal Discretionary Tickets</option>
+                                </select>
+                            </div>
+                        </div>
                         <table class="table" id="ticket_select">
                             <thead>
                                 <tr>

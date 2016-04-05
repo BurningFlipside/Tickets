@@ -7,6 +7,7 @@ function poolApiGroup()
     global $app;
     $app->get('', 'listPools');
     $app->post('', 'createPool');
+    $app->get('/me', 'listPoolsForUser');
     $app->get('/:id', 'getPool');
     $app->patch('/:id', 'updatePool');
     $app->delete('/:id', 'deletePool');
@@ -86,6 +87,26 @@ function createPool()
         unset($obj['pool_id']);
     }
     echo json_encode($dataTable->create($obj));
+}
+
+function listPoolsForUser()
+{
+    global $app;
+    if(!$app->user)
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    $dataSet = DataSetFactory::get_data_set('tickets');
+    $groups = $app->user->getGroups();
+    $count = count($groups);
+    for($i = 0; $i < $count; $i++)
+    {
+        $groups[$i] = '\''.$groups[$i]->getGroupName().'\'';
+    }
+    $groups = implode(',', $groups);
+    $dataTable = $dataSet['PoolMap'];
+    $pools = $dataTable->raw_query('SELECT * FROM tblPoolMap WHERE group_name IN ('.$groups.')');
+    echo json_encode($pools);
 }
 
 function getPool($id)

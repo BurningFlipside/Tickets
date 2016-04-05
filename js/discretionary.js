@@ -90,6 +90,24 @@ function make_d_action(data, type, row, meta)
     return res;
 }
 
+function createOverlay(index, value)
+{
+    var row = $(value);
+    var div = $('<div>');
+    div.append('<a href="#" onclick="cancelTransfer()">Cancel Transfer</a>');
+    div.css({
+        position: 'absolute',
+        'background-color': '#C0C0C0',
+        'top': row[0].offsetTop,
+        'left': row[0].offsetLeft,
+        width: row.width(),
+        height: row.height(),
+        opacity: 0.8,
+        'text-align': 'center'
+    });
+    $('#discretionary_wrapper').append(div);
+}
+
 function dTableDrawComplete()
 {
     if($("#discretionary").DataTable().data().length !== 0)
@@ -103,12 +121,22 @@ function dTableDrawComplete()
         $('#discretionary th:nth-child(2)').hide();
         $('#discretionary td:nth-child(2)').hide();
     }
+    $.each($('.transferInProgress'), createOverlay);
+}
+
+function rowCreated(row, data, index)
+{
+    if(data.transferInProgress === '1')
+    {
+        $(row).addClass('transferInProgress');
+    }
 }
 
 function init_d_table()
 {
     $('#discretionary').dataTable({
         "ajax": 'api/v1/ticket/discretionary?fmt=data-table',
+        'createdRow': rowCreated,
         columns: [
             {'data': 'firstName'},
             {'data': 'lastName'},

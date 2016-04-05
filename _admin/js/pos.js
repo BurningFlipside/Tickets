@@ -1,3 +1,6 @@
+var selectedPool = 0;
+var tickets = null;
+
 function show_tab(e)
 {
     e.preventDefault();
@@ -92,6 +95,7 @@ function final_post(e)
     if(validate_current())
     {
         $('.next').attr('disabled', true);
+        var id = getParameterByName('id');
         var obj = {};
         obj.email = $('#confirm_email').val();
         obj.tickets = {};
@@ -118,6 +122,19 @@ function final_post(e)
             obj.lastName = lastName;
         }
         var data_str = JSON.stringify(obj);
+        if(id !== null)
+        {
+            var obj = {};
+            obj.email = $('#confirm_email').val();
+            $.ajax({
+                 url: '/tickets/api/v1/tickets/'+id+'/Actions/Ticket.Sell',
+                 type: 'POST',
+                 dataType: 'json',
+                 processData: false,
+                 data: data_str,
+                 success: final_post_done});
+            return;
+        }
         $.ajax({
            url: '/tickets/api/v1/ticket/pos/sell',
            type: 'POST',
@@ -142,14 +159,20 @@ function next_tab(e)
     }
 }
 
-function get_ticket_types_done(data)
+function getTicketTypesDone(jqXHR)
 {
+    if(jqXHR.status !== 200 || jqXHR.responseJSON === undefined)
+    {
+        alert('Unable to get ticket pools!');
+        return;
+    }
+    var data = jqXHR.responseJSON;
     var tbody = $('#ticket_select tbody');
     var id = getParameterByName('id');
     if(tbody.length == 0) return;
     for(i = 0; i < data.length; i++)
     {
-        tbody.append('<tr><td><input class="form-control" name="Qty'+data[i].typeCode+'" data-cost="'+data[i].cost+'" data-max="0" disabled/></td><td>'+data[i].description+'</td></tr>');
+        tbody.append('<tr><td><input class="form-control" name="Qty'+data[i].typeCode+'" data-type="'+data[i].typeCode+'" data-cost="'+data[i].cost+'" data-max="0" disabled/></td><td>'+data[i].description+'</td></tr>');
     }
     if(id === null)
     {
@@ -175,6 +198,33 @@ function get_ticket_types_done(data)
     }
 }
 
+function updateControl(index, element)
+{
+    var control = $(element);
+    var type = control.data('type');
+    if(tickets[selectedPool][type] === undefined)
+    {
+        control.attr('disabled', true);
+        control.attr('max', 0);
+        control.attr('min', 0);
+    }
+    else
+    {
+        control.removeAttr('disabled');
+        control.attr('max', tickets[selectedPool][type].length);
+        control.attr('min', 0);
+        control.data('max', tickets[selectedPool][type].length);
+        control.attr('data-max', tickets[selectedPool][type].length);
+    }
+}
+
+function poolChanged(control)
+{
+    selectedPool = $(control).val()*1;
+    var inputs = $('[name^=Qty]');
+    inputs.each(updateControl);
+}
+
 function get_tickets_done(data)
 {
     if(data.length == 0)
@@ -194,7 +244,30 @@ function get_tickets_done(data)
             control.data('max', max);
             control.attr('data-max', max);
         }
+        if(tickets === null)
+        {
+            tickets = [];
+        }
+        var pool_id = data[i].pool_id*1;
+        if(tickets[pool_id] === undefined)
+        {
+            tickets[pool_id] = {};
+        }
+        if(tickets[pool_id][data[i].type] === undefined)
+        {
+            tickets[pool_id][data[i].type] = [];
+        }
+        tickets[pool_id][data[i].type].push(data[i]);
     }
+    var options = $('#pool option');
+    for(i = 0; i < options.length; i++)
+    {
+        if(tickets[options[i].value*1] === undefined)
+        {
+            $(options[i]).prop('disabled', true);
+        }
+    }
+    poolChanged($('#pool')[0]);
 }
 
 function get_ticket_done(data)
@@ -214,24 +287,51 @@ function get_ticket_done(data)
         control.data('max', max);
         control.attr('data-max', max);
     }
+    $('#pool').val(data.pool_id);
+    $('#pool').prop('disabled', true);
 }
 
-function get_available_tickets()
+function getTicketTypes()
 {
     $.ajax({
         url: '/tickets/api/v1/ticket/types',
         type: 'GET',
         dataType: 'json',
-        success: get_ticket_types_done
+        complete: getTicketTypesDone
     });
     $('.navbar-nav').click(show_tab);
     $('.previous').attr('class', 'previous disabled');
     $('a[data-toggle="tab"]').on('shown.bs.tab', tab_changed);
 }
 
+function getPoolsDone(jqXHR)
+{
+    if(jqXHR.status !== 200 || jqXHR.responseJSON === undefined)
+    {
+        alert('Unable to get ticket pools!');
+        return;
+    }
+    var poolSelect = $('#pool');
+    for(var i = 0; i < jqXHR.responseJSON.length; i++)
+    {
+        poolSelect.append('<option value="'+jqXHR.responseJSON[i].pool_id+'">'+jqXHR.responseJSON[i].pool_name+'</option>');
+    }
+}
+
+function getPools()
+{
+    $.ajax({
+        url: '../api/v1/pools/me',
+        type: 'GET',
+        dataType: 'json',
+        complete: getPoolsDone
+    });
+}
+
 function init_pos_page()
 {
-    get_available_tickets();
+    getPools();
+    getTicketTypes();
     if(browser_supports_input_type('email'))
     {
         $('#email').attr('type', 'email');
