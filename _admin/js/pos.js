@@ -24,7 +24,7 @@ function tab_changed(e)
     var last_index = $(e.target).parent().siblings().last().index();
     if(tab_index >= last_index)
     {
-        $('.next').html('<a onclick="final_post(event)">Submit</a>');
+        $('.next').html('<a href="#" onclick="final_post(event)">Sell</a>');
     }
     else
     {
@@ -97,6 +97,7 @@ function final_post(e)
         $('.next').attr('disabled', true);
         var id = getParameterByName('id');
         var obj = {};
+        obj.pool = selectedPool;
         obj.email = $('#confirm_email').val();
         obj.tickets = {};
         var qtys = $('[name^=Qty]');
@@ -104,7 +105,7 @@ function final_post(e)
         {
             var control = $(qtys[i]);
             var name = control.attr('name').substr(3);
-            obj.tickets[name] = control.val();
+            obj.tickets[name] = control.val()*1;
         }
         var message = $('#message').val();
         if(message !== undefined && message.trim().length > 0)
@@ -202,7 +203,7 @@ function updateControl(index, element)
 {
     var control = $(element);
     var type = control.data('type');
-    if(tickets[selectedPool][type] === undefined)
+    if(tickets[selectedPool] === undefined || tickets[selectedPool][type] === undefined)
     {
         control.attr('disabled', true);
         control.attr('max', 0);
@@ -282,11 +283,15 @@ function get_ticket_done(data)
     var control = $('[name=Qty'+data.type+']');
     if(control.length > 0)
     {
-        control.removeAttr('disabled');
+        //control.removeAttr('disabled');
         var max = parseInt(control.data('max'),10)+1;
         control.data('max', max);
         control.attr('data-max', max);
+        control.attr('max', 1);
+        control.attr('min', 1);
+        control.val(1);
     }
+    selectedPool = data.pool_id;
     $('#pool').val(data.pool_id);
     $('#pool').prop('disabled', true);
 }

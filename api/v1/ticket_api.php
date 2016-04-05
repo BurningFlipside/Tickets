@@ -362,7 +362,12 @@ function sell_multiple_tickets()
     {
         $lastName = $obj['lastName'];
     }
-    $res = \Tickets\Ticket::do_sale($app->user, $obj['email'], $obj['tickets'], $message, $firstName, $lastName);
+    $pool = false;
+    if(isset($obj['pool']))
+    {
+        $pool = $obj['pool'];
+    }
+    $res = \Tickets\Ticket::do_sale($app->user, $obj['email'], $obj['tickets'], $message, $firstName, $lastName, $pool);
     echo json_encode($res); 
 }
 

@@ -107,7 +107,7 @@ class Ticket extends \SerializableObject
         {
             $mail->set_private_message($message);
         }
-        $email_provider = EmailProvider::getInstance();
+        $email_provider = \EmailProvider::getInstance();
         return $email_provider->sendEmail($mail);
     }
 
@@ -128,10 +128,18 @@ class Ticket extends \SerializableObject
         return new Ticket($ticket_data[0]);
     }
 
-    function sellTo($email, $message = false, $db = false)
+    function sellTo($email, $message = false, $firstName = false, $lastName = false, $db = false)
     {
         $this->email = $email;
         $this->sold  = 1;
+        if($firstName !== false)
+        {
+            $this->firstName = $firstName;
+        }
+        if($lastName !== false)
+        {
+            $this->lastName = $lastName;
+        }
         if($this->insert_to_db($db) === false)
         {
             return FALSE;
@@ -146,10 +154,10 @@ class Ticket extends \SerializableObject
         return $hash;
     }
 
-    static function get_tickets($filter=false, $select=false)
+    static function get_tickets($filter=false, $select=false, $count=false)
     {
         $ticket_data_table = self::get_data_table();
-        $tickets = $ticket_data_table->read($filter, $select);
+        $tickets = $ticket_data_table->read($filter, $select, $count);
         if($tickets === false)
         {
             return false;
@@ -186,7 +194,7 @@ class Ticket extends \SerializableObject
         return new Ticket($tickets[0]);
     }
 
-    static function get_tickets_for_user($user, $filter=false, $select=false)
+    static function get_tickets_for_user($user, $filter=false, $select=false, $count=false)
     {
         $user_filter = new \Data\Filter('email eq \''.$user->getEmail().'\'');
         if($filter === false)
@@ -197,7 +205,7 @@ class Ticket extends \SerializableObject
         {
             $filter->add($user_filter);
         }
-        return self::get_tickets($filter, $select);
+        return self::get_tickets($filter, $select, $count);
     }
 
     static function find_current_from_old_hash($hash)
@@ -230,15 +238,20 @@ class Ticket extends \SerializableObject
         return true;
     }
 
-    static function getDiscretionaryTicketsForUser($user, $criteria = false)
+    static function getDiscretionaryTicketsForUser($user, $criteria = false, $count=false)
     {
         $settings = \Tickets\DB\TicketSystemSettings::getInstance();
         $filter = new \Tickets\DB\TicketDefaultFilter($user->getEmail(), true);
-        $res = self::get_tickets($filter);
+        if($criteria !== false)
+        {
+            $filter->appendChild('and');
+            $filter->appendChild($criteria);
+        }
+        $res = self::get_tickets($filter, false, $count);
         return $res;
     }
 
-    static function get_tickets_for_user_and_pool($user, $criteria = false)
+    static function get_tickets_for_user_and_pool($user, $criteria = false, $maxCount=false)
     {
         $settings = \Tickets\DB\TicketSystemSettings::getInstance();
         $groups = $user->getGroups();
@@ -267,7 +280,7 @@ class Ticket extends \SerializableObject
         }
         if($res === false || !isset($res[0]))
         {
-            return self::getDiscretionaryTicketsForUser($user, $criteria);
+            return self::getDiscretionaryTicketsForUser($user, $criteria, $count);
         }
         else if(!is_array($res))
         {
@@ -277,6 +290,11 @@ class Ticket extends \SerializableObject
         if($tmp !== false)
         {
             $res = array_merge($res, $tmp);
+        }
+        if($maxCount !== false)
+        {
+            $tmp = array_chunk($res, $maxCount);
+            $res = $tmp[0];
         }
         return $res;
     }
@@ -398,24 +416,37 @@ class Ticket extends \SerializableObject
         return FALSE;
     }
 
-    static function do_sale($user, $email, $types, $message = FALSE)
+    static function do_sale($user, $email, $types, $message = false, $firstName = false, $lastName = false, $pool = false)
     {
         $datatable = self::get_data_table();
         foreach($types as $type=>$qty)
         {
-            $tickets = self::get_tickets_for_user_and_pool($user, new \Data\Filter("sold eq 0 and type eq '$type'"));
+            $tickets = false;
+            if($pool === false)
+            {
+               $tickets = self::get_tickets_for_user_and_pool($user, new \Data\Filter("sold eq 0 and type eq '$type'"), $qty);
+            }
+            else if($pool === -1 || $pool === '-1')
+            {
+               $tickets = self::getDiscretionaryTicketsForUser($user, new \Data\Filter("type eq '$type'"), $qty);
+            }
+            else
+            {
+               $filter = new \Data\Filter("sold eq 0 and type eq '$type' and pool_id eq $pool");
+               $tickets = self::get_tickets($filter, false, $qty);
+            }
             $sold = 0;
             $count = count($tickets);
             for($i = 0; $sold < $qty; $i++)
             {
                 if($i >= $count) return false;
-                if($tickets[$i]->sellTo($email, $message, $datatable))
+                if($tickets[$i]->sellTo($email, $message, $firstName, $lastName, $datatable))
                 {
                     $sold++;
                 }
             }
         }
-        return TRUE;
+        return true;
     }
 }
 ?>
