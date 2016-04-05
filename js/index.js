@@ -4,9 +4,9 @@ var ticket_year = false;
 
 function tableDrawComplete()
 {
+    $("#ticket_set").show();
     if($("#ticketList").DataTable().data().length !== 0)
     {
-        $("#ticket_set").show();
     }
     if($(window).width() < 768)
     {
