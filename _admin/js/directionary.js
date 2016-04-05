@@ -30,7 +30,12 @@ function drawTable(disc)
 function gotUsers()
 {
     console.log(arguments);
-    disc[arguments[0][0].mail]['Name'] = arguments[0][0].displayName;
+    for(var i = 0; i < arguments.length; i++)
+    {
+        if(arguments[i].length === 0 || arguments[i][0].length === 0) continue;
+        var user = arguments[i][0][0];
+        disc[user.mail]['Name'] = user.displayName;
+    }
     drawTable(disc);
 }
 
