@@ -10,27 +10,38 @@ class TicketDefaultFilter extends \Data\Filter
         $this->children[0]->var2 = "'$email'";
         $this->children[0]->op = '=';
         $this->children[] = 'and';
-        $this->children[] = new \Data\FilterClause();
-        $this->children[2]->var1 = 'discretionary';
+        $clause = new \Data\FilterClause();
         if($discretionary === false)
         {
-            $this->children[2]->var2 = '0';
+            $clause->var1 = 'sold';
+            $clause->var2 = '1';
+            $clause->op   = '=';
         }
         else
         {
-            $this->children[2]->var2 = '1';
+            $clause->var1 = 'discretionary';
+            $clause->var2 = '1';
+            $clause->op   = '=';
+            $this->children[] = $clause;
+            $this->children[] = 'and';
+            $clause = new \Data\FilterClause();
+            $clause->var1 = 'sold';
+            $clause->var2 = '0';
+            $clause->op   = '=';
         }
-        $this->children[2]->op = '=';
+        $this->children[] = $clause;
         $this->children[] = 'and';
-        $this->children[] = new \Data\FilterClause();
-        $this->children[4]->var1 = 'used';
-        $this->children[4]->var2 = '0';
-        $this->children[4]->op = '=';
+        $clause = new \Data\FilterClause();
+        $clause->var1 = 'used';
+        $clause->var2 = '0';
+        $clause->op   = '=';
+        $this->children[] = $clause;
         $this->children[] = 'and';
-        $this->children[] = new \Data\FilterClause();
-        $this->children[6]->var1 = 'year';
-        $this->children[6]->var2 = TicketSystemSettings::getInstance()['year'];
-        $this->children[6]->op = '=';
+        $clause = new \Data\FilterClause();
+        $clause->var1 = 'year';
+        $clause->var2 = TicketSystemSettings::getInstance()['year'];
+        $clause->op   = '=';
+        $this->children[] = $clause;
     }
 }
 ?>
