@@ -6,12 +6,9 @@ require_once('app/TicketAutoload.php');
 
 class TicketTransferEmail extends TicketEmail
 {
-    protected $pm;
-
     public function __construct($ticket, $email, $pm = false)
     {
-        parent::__construct();
-        $this->pm         = $pm;
+        parent::__construct($ticket, $pm);
         $this->addToAddress($email);
     }
 
