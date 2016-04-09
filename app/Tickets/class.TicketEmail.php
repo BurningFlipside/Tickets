@@ -13,6 +13,7 @@ class TicketEmail extends \Email\Email
         parent::__construct();
         $this->pm         = $pm;
         $this->addToAddress($ticket->email);
+        $this->setFromAddress('tickets@burningflipside.com', 'Burning Flipside Tickets');
         $this->ticket = $ticket;
         $pdf = new \Tickets\TicketPDF($ticket);
         $this->addAttachmentFromBuffer($ticket->hash.'.pdf', $pdf->toPDFBuffer(), 'application/pdf');

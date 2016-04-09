@@ -98,7 +98,7 @@ function final_post(e)
         var id = getParameterByName('id');
         var obj = {};
         obj.pool = selectedPool;
-        obj.email = $('#confirm_email').val();
+        obj.email = $('#email').val();
         obj.tickets = {};
         var qtys = $('[name^=Qty]');
         for(i = 0; i < qtys.length; i++)
@@ -126,7 +126,7 @@ function final_post(e)
         if(id !== null)
         {
             var obj = {};
-            obj.email = $('#confirm_email').val();
+            obj.email = $('#email').val();
             $.ajax({
                  url: '/tickets/api/v1/tickets/'+id+'/Actions/Ticket.Sell',
                  type: 'POST',
