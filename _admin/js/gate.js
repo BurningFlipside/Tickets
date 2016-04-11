@@ -1,5 +1,6 @@
 var history_data = null;
 var year;
+var earlyEntry;
 
 function finish_processing_ticket(data)
 {
@@ -75,6 +76,10 @@ function found_ticket(data)
     else
     {
         $('#void').removeAttr('checked');
+    }
+    if(data['earlyEntryWindow']*1 < earlyEntry)
+    {
+        add_notification($('#process_ticket_modal .modal-body'), 'Ticket is not valid for current early entry status!', NOTIFICATION_FAILED, false);
     }
     $('#used').attr('checked', true);
     $('#hash').val(data.hash);
@@ -544,6 +549,16 @@ function gotTicketYear(jqXHR)
     year = jqXHR.responseJSON;
 }
 
+function gotEarlyEntry(jqXHR)
+{
+    if(jqXHR.status !== 200 || jqXHR.responseJSON === undefined)
+    {
+        alert('Unable to obtain ticket year!');
+        return;
+    }
+    earlyEntry = jqXHR.responseJSON*1;
+}
+
 function init_gate_page()
 {
     $.ajax({
@@ -551,6 +566,11 @@ function init_gate_page()
         type: 'get',
         dataType: 'json',
         complete: gotTicketYear});
+    $.ajax({
+        url: '../api/v1/globals/vars/currentEarlyEntry',
+        type: 'get',
+        dataType: 'json',
+        complete: gotEarlyEntry});
     $('#ticket_search').keypress(ticket_search);
     $('#history_search').keypress(history_search);
     $('#process_ticket_modal').on('shown.bs.modal', focus_on_ticket_id);
