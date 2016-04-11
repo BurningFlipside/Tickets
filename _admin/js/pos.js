@@ -76,9 +76,15 @@ function validate_current()
     }
 }
 
-function final_post_done(data)
+function final_post_done(jqXHR)
 {
     $('.next').attr('disabled', false);
+    if(jqXHR.status !== 200 || jqXHR.responseJSON === undefined)
+    {
+        alert('Unable to get ticket pools!');
+        return;
+    }
+    data = jqXHR.responseJSON;
     if(data === true)
     {
         location.reload();
@@ -133,7 +139,7 @@ function final_post(e)
                  dataType: 'json',
                  processData: false,
                  data: data_str,
-                 success: final_post_done});
+                 complete: final_post_done});
             return;
         }
         $.ajax({
@@ -142,7 +148,7 @@ function final_post(e)
            dataType: 'json',
            processData: false,
            data: data_str,
-           success: final_post_done
+           complete: final_post_done
         })
     }
 }
