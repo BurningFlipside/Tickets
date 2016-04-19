@@ -119,6 +119,13 @@ $page->body .= '
                             </div>
                             <div class="clearfix visible-sm visible-md visible-lg"></div>
                             <div class="form-group">
+                                <label for="earlyEntryWindow" class="col-sm-2 control-label">Entry Window:</label>
+                                <div class="col-sm-10">
+                                    <input class="form-control" type="text" name="earlyEntryWindow" id="earlyEntryWindow"/>
+                                </div>
+                            </div>
+                            <div class="clearfix visible-sm visible-md visible-lg"></div>
+                            <div class="form-group">
                                  <label for="comments" class="col-sm-2 control-label">Comments:</label>
                                  <div class="col-sm-10">
                                     <textarea class="form-control" rows="5" name="comments" id="comments"></textarea>

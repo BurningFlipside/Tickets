@@ -1,5 +1,6 @@
 var ticket_data = null;
 var ticketTypes = null;
+var earlyEntry = null;
 
 function short_hash(data, type, row, meta)
 {
@@ -69,6 +70,7 @@ function show_ticket_from_data(data)
     $('#type').val(ticket.type);
     $('#guardian_first').val(ticket.guardian_first);
     $('#guardian_last').val(ticket.guardian_last);
+    $('#earlyEntryWindow').val(ticket.earlyEntryWindow);
     if(ticket.sold == 1)
     {
         $('#sold').prop('checked', true);
@@ -230,6 +232,7 @@ function save_ticket()
     set_if_value_different(ticket, obj, 'sold');
     set_if_value_different(ticket, obj, 'used');
     set_if_value_different(ticket, obj, 'void');
+    set_if_value_different(ticket, obj, 'earlyEntryWindow');
     if(Object.keys(obj).length > 0)
     {
         $.ajax({
@@ -346,6 +349,24 @@ function gotTicketTypes(jqXHR)
     $('#type').replaceWith('<select id="type" name="type" class="form-control">'+options+'</select>');
 }
 
+function gotEarlyEntry(jqXHR)
+{
+    if(jqXHR.status !== 200 || jqXHR.responseJSON === undefined)
+    {
+        console.log(jqXHR);
+        return;
+    }
+    var data = jqXHR.responseJSON;
+    var options = '';
+    earlyEntry = {};
+    for(i = 0; i < data.length; i++)
+    {
+        options+='<option value="'+data[i].earlyEntrySetting+'">'+data[i].earlyEntryDescription+'</option>';
+        earlyEntry[data[i].earlyEntrySetting] = data[i].earlyEntryDescription;
+    }
+    $('#earlyEntryWindow').replaceWith('<select id="earlyEntryWindow" name="earlyEntryWindow" class="form-control">'+options+'</select>');
+}
+
 function init_page()
 {
     $('#tickets').dataTable({
@@ -367,6 +388,11 @@ function init_page()
         type: 'get',
         dataType: 'json',
         complete: gotTicketTypes});
+    $.ajax({
+        url: '../api/v1/earlyEntry',
+        type: 'get',
+        dataType: 'json',
+        complete: gotEarlyEntry});
 
     $('#tickets').on('search.dt', table_searched);
 }
