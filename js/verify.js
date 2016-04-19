@@ -9,7 +9,7 @@ function verifyCodeDone(jqXHR)
         return;
     }
     var data = jqXHR.responseJSON;
-    if(data.verified)
+    if(data)
     {
             $('#verified').html('<span class="fa fa-check"></span>');
             $('#verified').css('background-color', 'GreenYellow');
