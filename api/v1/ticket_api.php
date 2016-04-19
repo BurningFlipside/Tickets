@@ -385,7 +385,7 @@ function verifyShortCode($code)
     }
     $count++;
     FlipSession::setVar('TicketVerifyCount', $count);
-    $filter = new \Data\Filter('substring(hash, "'.$code.'"');
+    $filter = new \Data\Filter('contains(hash,'.$code);
     $ticket_data_table = \Tickets\DB\TicketsDataTable::getInstance();
     $res = $ticket_data_table->read($filter);
     if($res === false) echo 'false';
