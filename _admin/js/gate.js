@@ -18,7 +18,7 @@ function process_ticket()
     var hash = $('#hash').val();
     var data = {};
     data.firstName = $('#firstName').val();
-    data.lastName  = $('#lastNamie').val();
+    data.lastName  = $('#lastName').val();
     if($('#void:checked').length === 0)
     {
         data['void'] = 0;
