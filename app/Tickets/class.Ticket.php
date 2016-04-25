@@ -102,11 +102,7 @@ class Ticket extends \SerializableObject
         {
             $email = $this->email;
         }
-        $mail = new TicketEmail($this, $email, $attachment);
-        if($message)
-        {
-            $mail->set_private_message($message);
-        }
+        $mail = new TicketEmail($this, $message);
         $email_provider = \EmailProvider::getInstance();
         return $email_provider->sendEmail($mail);
     }
