@@ -22,7 +22,9 @@ function list_ticket_history()
     }
     $ticket_data_set = DataSetFactory::get_data_set('tickets');
     $ticket_data_table = $ticket_data_set['TicketsHistory'];
-    $tickets = $ticket_data_table->read($app->odata->filter, $app->odata->select, $app->odata->top, $app->odata->skip, $app->odata->orderby);
+    $tmp = $app->odata->filter->to_sql_string();
+    $sql = 'SELECT * from tblTicketsHistory WHERE '.$tmp.' UNION SELECT * FROM tickets.tblTickets WHERE '.$tmp;
+    $tickets = $ticket_data_table->raw_query($sql);
     if($tickets === false)
     {
         $tickets = array();
