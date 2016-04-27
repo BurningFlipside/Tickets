@@ -97,6 +97,7 @@ class TicketAdminPage extends FlipAdminPage
             $aar_menu = array(
                 'Critical Volunteers' => 'critvols.php',
                 'Discretionary Management' => 'discretionary.php',
+                'Gate Control' => 'gateControl.php',
                 'Pool Management' => 'pools.php'
             );
             $this->add_link('<span class="fa fa-fire"></span> AAR', '#', $aar_menu);
