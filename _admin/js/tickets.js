@@ -233,6 +233,7 @@ function save_ticket()
     set_if_value_different(ticket, obj, 'used');
     set_if_value_different(ticket, obj, 'void');
     set_if_value_different(ticket, obj, 'earlyEntryWindow');
+    set_if_value_different(ticket, obj, 'comments');
     if(Object.keys(obj).length > 0)
     {
         $.ajax({
