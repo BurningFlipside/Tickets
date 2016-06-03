@@ -2,12 +2,15 @@ var out_of_window = false;
 var test_mode = false;
 var ticket_year = false;
 var font_face_support = undefined;
+var basic_button_options = {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', 'data-html': true};
 
 function tableDrawComplete()
 {
     $("#ticket_set").show();
     if($("#ticketList").DataTable().data().length !== 0)
     {
+        //Table contains nothing, just return
+        return;
     }
     if($(window).width() < 768)
     {
@@ -153,7 +156,7 @@ function transfer_ticket(control)
         alert('Cannot find ticket');
         return;
     }
-    window.location = 'transfer.php?id='+ticket.hash;
+    window.location.assign('transfer.php?id='+ticket.hash);
 }
 
 function short_hash(data, type, row, meta)
@@ -194,9 +197,31 @@ function makeTextLink(options, linkText)
     return getOuterHTML(link);
 }
 
-function getViewButton()
+function createButtonOptions(title, forData, onClick)
 {
-    var view_options = {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'View Ticket Code', 'for': data, onclick: 'view_ticket(this)'};
+    var ret = basic_button_options;
+    ret.title   = title;
+    ret['for']  = forData;
+    ret.onclick = onClick;
+    return ret;
+}
+
+function createLinkOptions(title, forData, href, target)
+{
+    var ret = basic_button_options;
+    ret.title   = title;
+    ret['for']  = forData;
+    ret.href    = href;
+    if(target !== undefined)
+    {
+        ret.target = target;
+    }
+    return ret;
+}
+
+function getViewButton(data)
+{
+    var view_options = createButtonOptions('View Ticket Code', data, 'view_ticket(this)');
     if(font_face_support === true)
     {
         return makeGlyphButton(view_options, 'fa fa-search');
@@ -204,9 +229,9 @@ function getViewButton()
     return makeTextLink(view_options, 'View')+'|';
 }
 
-function getEditButton()
+function getEditButton(data)
 {
-    var edit_options = {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Edit Ticket<br/>Use this option to keep the ticket<br/>on your account but<br/>change the legal name.', 'data-html': true, 'for': data, onclick: 'edit_ticket(this)'};
+    var edit_options = createButtonOptions('Edit Ticket<br/>Use this option to keep the ticket<br/>on your account but<br/>change the legal name.', data, 'edit_ticket(this)');
     if(font_face_support === true)
     {
         return makeGlyphButton(edit_options, 'fa fa-pencil');
@@ -214,9 +239,9 @@ function getEditButton()
     return makeTextLink(edit_options, 'Edit')+'|';
 }
 
-function getPDFButton()
+function getPDFButton(data)
 {
-    var pdf_options =  {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Download PDF', 'for': data, href: 'api/v1/tickets/'+data+'/pdf', target: '_blank'};
+    var pdf_options = createLinkOptions('Download PDF', data, 'api/v1/tickets/'+data+'/pdf', '_blank');
     if(font_face_support === true)
     {
         return makeGlyphLink(pdf_options, 'fa fa-download');
@@ -224,9 +249,9 @@ function getPDFButton()
     return makeTextLink(pdf_options, 'Download')+'|';
 }
 
-function getTransferButton()
+function getTransferButton(data)
 {
-    var transfer_options = {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Transfer Ticket<br/>Use this option to send<br/>the ticket to someone else', 'data-html': true, 'for': data, onclick: 'transfer_ticket(this)'};
+    var transfer_options = createButtonOptions('Transfer Ticket<br/>Use this option to send<br/>the ticket to someone else', data, 'transfer_ticket(this)');
     if(font_face_support === true)
     {
         return makeGlyphButton(transfer_options, 'fa fa-send');
@@ -243,11 +268,11 @@ function make_actions(data, type, row, meta)
     }
     if($(window).width() < 768)
     {
-        res += getViewButton();
+        res += getViewButton(data);
     }
-    res += getEditButton();
-    res += getPDFButton();
-    res += getTransferButton();
+    res += getEditButton(data);
+    res += getPDFButton(data);
+    res += getTransferButton(data);
     return res;
 }
 
@@ -275,7 +300,7 @@ function edit_request(control)
     var jq = $(control);
     var tmp = jq.attr('for');
     var ids = tmp.split('_');
-    window.location = 'request.php?request_id='+ids[0]+'&year='+ids[1];
+    window.location.assign('request.php?request_id='+ids[0]+'&year='+ids[1]);
 }
 
 function email_request_done(data)
@@ -300,7 +325,7 @@ function download_request(control)
     var jq = $(control);
     var tmp = jq.attr('for');
     var ids = tmp.split('_');
-    location = 'api/v1/request/'+ids[0]+'/'+ids[1]+'/pdf';
+    window.location.assign('api/v1/request/'+ids[0]+'/'+ids[1]+'/pdf');
 }
 
 function add_buttons_to_row(row, id, year)
@@ -310,9 +335,9 @@ function add_buttons_to_row(row, id, year)
         font_face_support = browser_supports_font_face();
     }
     var cell = $('<td/>', {style: 'white-space: nowrap;'});
-    var edit_options = {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Edit Request', 'for': id+'_'+year, onclick: 'edit_request(this)'};
-    var mail_options = {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Resend Request Email', 'for': id+'_'+year, onclick: 'email_request(this)'};
-    var pdf_options =  {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Download PDF', 'for': id+'_'+year, onclick: 'download_request(this)'};
+    var edit_options = createButtonOptions('Edit Request', id+'_'+year, 'edit_request(this)');
+    var mail_options = createButtonOptions('Resend Request Email', id+'_'+year, 'email_request(this)'); 
+    var pdf_options = createButtonOptions('Download Request PDF', id+'_'+year, 'download_request(this)');
     var html;
     if(font_face_support === true)
     {
@@ -357,7 +382,7 @@ function toggle_hidden_requests(e)
 function copy_request(e)
 {
     var request = $(e.currentTarget).data('request');
-    location = 'copy_request.php?id='+request.request_id+'&year='+request.year;
+    window.location.assign('copy_request.php?id='+request.request_id+'&year='+request.year);
 }
 
 function add_old_request_to_table(tbody, request)
@@ -602,17 +627,20 @@ function init_window()
 
 function panel_heading_click(e)
 {
-    if($(this).hasClass('panel-collapsed'))
+    var panel = $(this);
+    var panelBody = panel.parents('.panel').find('.panel-body');
+    var glyph = panel.find('i');
+    if(panel.hasClass('panel-collapsed'))
     {
-        $(this).parents('.panel').find('.panel-body').slideDown();
-        $(this).removeClass('panel-collapsed');
-        $(this).find('i').removeClass('fa-chevron-down').addClass('fa-chevron-up');
+        panelBody.slideDown();
+        panel.removeClass('panel-collapsed');
+        glpyh.removeClass('fa-chevron-down').addClass('fa-chevron-up');
     }
     else
     {
-        $(this).parents('.panel').find('.panel-body').slideUp();
-        $(this).addClass('panel-collapsed');
-        $(this).find('i').removeClass('fa-chevron-up').addClass('fa-chevron-down');
+        panelBody.slideUp();
+        panel.addClass('panel-collapsed');
+        glyph.removeClass('fa-chevron-up').addClass('fa-chevron-down');
     }
 }
 
