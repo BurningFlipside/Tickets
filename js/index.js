@@ -1,6 +1,7 @@
 var out_of_window = false;
 var test_mode = false;
 var ticket_year = false;
+var font_face_support = undefined;
 
 function tableDrawComplete()
 {
@@ -42,7 +43,7 @@ function get_ticket_data_by_hash(hash)
     var i;
     for(i = 0; i < json.data.length; i++)
     {
-        if(json.data[i].hash == hash)
+        if(json.data[i].hash === hash)
         {
             ticket = json.data[i];
         }
@@ -52,7 +53,7 @@ function get_ticket_data_by_hash(hash)
         json = $('#discretionary').DataTable().ajax.json();
         for(i = 0; i < json.data.length; i++)
         {
-            if(json.data[i].hash == hash)
+            if(json.data[i].hash === hash)
             {
                 ticket = json.data[i];
             }
@@ -160,94 +161,93 @@ function short_hash(data, type, row, meta)
     return '<a href="#" onclick="show_long_id(\''+data+'\')">'+data.substring(0,8)+'</a>';
 }
 
+function getOuterHTML(button)
+{
+    if(button.prop('outerHTML') === undefined)
+    {
+        return new XMLSerializer().serializeToString(button[0]);
+    }
+    return button.prop('outerHTML');
+}
+
+function makeGlyphButton(options, glyphClass)
+{
+    options.type = 'button';
+    var button = $('<button/>', options);
+    var glyph = $('<span/>', {'class': glyphClass});
+    glyph.appendTo(button);
+    return getOuterHTML(button);
+}
+
+function makeGlyphLink(options, glyphClass)
+{
+    var link = $('<a/>', options);
+    var glyph = $('<span/>', {'class': glyphClass});
+    glyph.appendTo(link);
+    return getOuterHTML(link);
+}
+
+function makeTextLink(options, linkText)
+{
+    var link = $('<a/>', options);
+    link.append(linkText);
+    return getOuterHTML(link);
+}
+
+function getViewButton()
+{
+    var view_options = {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'View Ticket Code', 'for': data, onclick: 'view_ticket(this)'};
+    if(font_face_support === true)
+    {
+        return makeGlyphButton(view_options, 'fa fa-search');
+    }
+    return makeTextLink(view_options, 'View')+'|';
+}
+
+function getEditButton()
+{
+    var edit_options = {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Edit Ticket<br/>Use this option to keep the ticket<br/>on your account but<br/>change the legal name.', 'data-html': true, 'for': data, onclick: 'edit_ticket(this)'};
+    if(font_face_support === true)
+    {
+        return makeGlyphButton(edit_options, 'fa fa-pencil');
+    }
+    return makeTextLink(edit_options, 'Edit')+'|';
+}
+
+function getPDFButton()
+{
+    var pdf_options =  {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Download PDF', 'for': data, href: 'api/v1/tickets/'+data+'/pdf', target: '_blank'};
+    if(font_face_support === true)
+    {
+        return makeGlyphLink(pdf_options, 'fa fa-download');
+    }
+    return makeTextLink(pdf_options, 'Download')+'|';
+}
+
+function getTransferButton()
+{
+    var transfer_options = {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Transfer Ticket<br/>Use this option to send<br/>the ticket to someone else', 'data-html': true, 'for': data, onclick: 'transfer_ticket(this)'};
+    if(font_face_support === true)
+    {
+        return makeGlyphButton(transfer_options, 'fa fa-send');
+    }
+    return makeTextLink(transfer_options, 'Transfer');
+}
+
 function make_actions(data, type, row, meta)
 {
     var res = '';
-    var view_options = {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'View Ticket Code', 'for': data, onclick: 'view_ticket(this)'};
-    var edit_options = {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Edit Ticket<br/>Use this option to keep the ticket<br/>on your account but<br/>change the legal name.', 'data-html': true, 'for': data, onclick: 'edit_ticket(this)'};
-    var pdf_options =  {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Download PDF', 'for': data, href: 'api/v1/tickets/'+data+'/pdf', target: '_blank'};
-    var transfer_options = {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Transfer Ticket<br/>Use this option to send<br/>the ticket to someone else', 'data-html': true, 'for': data, onclick: 'transfer_ticket(this)'};
-    var link;
-    if(browser_supports_font_face())
+    if(font_face_support === undefined)
     {
-        var button;
-        var glyph;
-        if($(window).width() < 768)
-        {
-            view_options.type = 'button';
-            button = $('<button/>', view_options);
-            glyph = $('<span/>', {'class': 'fa fa-search'});
-            glyph.appendTo(button);
-            if(button.prop('outerHTML') === undefined)
-            {
-                res += new XMLSerializer().serializeToString(button[0]);
-            }
-            else
-            {
-                res += button.prop('outerHTML');
-            }
-        }
-        edit_options.type = 'button';
-        button = $('<button/>', edit_options);
-        glyph = $('<span/>', {'class': 'fa fa-pencil'});
-        glyph.appendTo(button);
-        if(button.prop('outerHTML') === undefined)
-        {
-            res += new XMLSerializer().serializeToString(button[0]);
-        }
-        else
-        {
-            res += button.prop('outerHTML');
-        }
-
-	link = $('<a/>', pdf_options);
-        glyph = $('<span/>', {'class': 'fa fa-download'});
-        glyph.appendTo(link);
-        if(link.prop('outerHTML') === undefined)
-        {
-            res += new XMLSerializer().serializeToString(link[0]);
-        }
-        else
-        {
-            res += link.prop('outerHTML');
-        }
-
-        transfer_options.type = 'button';
-        button = $('<button/>', transfer_options);
-        glyph = $('<span/>', {'class': 'fa fa-send'});
-        glyph.appendTo(button);
-        if(button.prop('outerHTML') === undefined)
-        {
-            res += new XMLSerializer().serializeToString(button[0]);
-        }
-        else
-        {
-            res += button.prop('outerHTML');
-        }
+        font_face_support = browser_supports_font_face();
     }
-    else
+    if($(window).width() < 768)
     {
-        if($(window).width() < 768)
-        {
-            link = $('<a/>', view_options);
-            link.append("View");
-            res += link.prop('outerHTML');
-            res += '|';
-        }
-        link = $('<a/>', edit_options);
-        link.append("Edit");
-        res += link.prop('outerHTML');
-        res += '|';
-
-        link = $('<a/>', pdf_options);
-        link.append("Download");
-        res += link.prop('outerHTML');
-        res += '|';
-
-        link = $('<a/>', transfer_options);
-        link.append("Transfer");
-        res += link.prop('outerHTML');
+        res += getViewButton();
     }
+    res += getEditButton();
+    res += getPDFButton();
+    res += getTransferButton();
     return res;
 }
 
@@ -305,46 +305,38 @@ function download_request(control)
 
 function add_buttons_to_row(row, id, year)
 {
+    if(font_face_support === undefined)
+    {
+        font_face_support = browser_supports_font_face();
+    }
     var cell = $('<td/>', {style: 'white-space: nowrap;'});
     var edit_options = {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Edit Request', 'for': id+'_'+year, onclick: 'edit_request(this)'};
     var mail_options = {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Resend Request Email', 'for': id+'_'+year, onclick: 'email_request(this)'};
     var pdf_options =  {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Download PDF', 'for': id+'_'+year, onclick: 'download_request(this)'};
-    var button;
-    var link;
-    var glyph;
-    if(browser_supports_font_face())
+    var html;
+    if(font_face_support === true)
     {
-        edit_options.type = 'button';
-        button = $('<button/>', edit_options);
-        glyph = $('<span/>', {'class': 'fa fa-pencil'});
-        glyph.appendTo(button);
-        button.appendTo(cell);
+        html = makeGlyphButton(edit_options, 'fa fa-pencil');
+        cell.append(html);
 
-        mail_options.type = 'button';
-        button = $('<button/>', mail_options);
-        glyph = $('<span/>', {'class': 'fa fa-envelope'});
-        glyph.appendTo(button);
-        button.appendTo(cell);
+        html = makeGlyphButton(mail_options, 'fa fa-envelope');
+        cell.append(html);
 
-        pdf_options.type = 'button';
-        button = $('<button/>', pdf_options);
-        glyph = $('<span/>', {'class': 'fa fa-download'});
-        glyph.appendTo(button);
-        button.appendTo(cell);
+        html = makeGlyphButton(pdf_options, 'fa fa-download');
+        cell.append(html);
     }
     else
     {
-        link = $('<a/>', edit_options);
-        link.append("Edit");
-        link.appendTo(cell);
+        html = makeTextLink(edit_options, 'Edit');
+        cell.append(html);
         cell.append("|");
-        link = $('<a/>', mail_options);
-        link.append("Resend");
-        link.appendTo(cell);
+
+        html = makeTextLink(mail_options, 'Resend');
+        cell.append(html);
         cell.append("|");
-        link = $('<a/>', pdf_options);
-        link.append("Download");
-        link.appendTo(cell);
+
+        html = makeTextLink(pdf_options, 'Download');
+        cell.append(html);
     }
     cell.appendTo(row);
 }
@@ -522,22 +514,70 @@ function init_request()
         complete: get_requests_done});
 }
 
+function getDateInCentralTime(date)
+{
+    var ret = new Date(date+" GMT-0600");
+    //You can't replace this with <
+    if(!(ret.getYear() > 2000))
+    {
+        ret = new Date(date+"T06:00:00.000Z");
+    }
+    return ret;
+}
+
+function proccessOutOfWindow(now, start, end, my_window)
+{
+    if(now < start || now > end)
+    {
+        var message = 'The request window is currently closed. No new ticket requests are accepted at this time.';
+        if(my_window.test_mode === '1')
+        {
+            message += ' But test mode is enabled. Any requests created will be deleted before ticketing starts!';
+            test_mode = true;
+        }
+        else
+        {
+            $('[href="request.php"]').hide();
+        }
+        add_notification($('#request_set'), message);
+        out_of_window = true;
+        if(!test_mode)
+        {
+            $('#requestList th:nth-child(4)').html("Request Status");
+        }
+    }
+}
+
+function processMailInWindow(now, mail_start, end)
+{
+    if(now > mail_start && now < end)
+    {
+        var days = Math.floor(end/(1000*60*60*24) - now/(1000*60*60*24));
+        var message = 'The mail in window is currently open! ';
+        if(days === 1)
+        {
+            message += 'You have 1 day left to mail your request!';
+        }
+        else if(days === 0)
+        {
+            message += 'Today is the last day to mail your request!';
+        }
+        else
+        {
+            message += 'You have '+days+' days left to mail your request!';
+        }
+        add_notification($('#request_set'), message, NOTIFICATION_WARNING);
+    }
+}
+
 function get_window_done(data)
 {
     var my_window = data;
     var now = new Date(Date.now());
-    var start = new Date(my_window.request_start_date+" GMT-0600");
-    var end = new Date(my_window.request_stop_date+" GMT-0600");
-    var mail_start = new Date(my_window.mail_start_date+" GMT-0600");
-    var server_now = new Date(my_window.current+" GMT-0600");
-    //You can't replace this with < 
-    if(!(start.getYear() > 2000))
-    {
-        start = new Date(my_window.request_start_date+"T06:00:00.000Z");
-        end   = new Date(my_window.request_stop_date+"T06:00:00.000Z");
-        mail_start = new Date(my_window.mail_start_date+"T06:00:00.000Z");
-        server_now = new Date(my_window.current+"T06:00:00.000Z");
-    }
+    var start = getDateInCentralTime(my_window.request_start_date);
+    var end = getDateInCentralTime(my_window.request_stop_date);
+    var mail_start = getDateInCentralTime(my_window.mail_start_date);
+    var server_now = getDateInCentralTime(my_window.current);
     end.setHours(23);
     end.setMinutes(59);
     ticket_year = data.year;
@@ -545,48 +585,8 @@ function get_window_done(data)
     {
         now = server_now;
     }
-    var alert_div;
-    if(now < start || now > end)
-    {
-        alert_div = $('<div/>', {'class': 'alert alert-info', role: 'alert'});
-        $('<strong/>').html('Notice: ').appendTo(alert_div);
-        alert_div.append('The request window is currently closed. No new ticket requests are accepted at this time.');
-        if(my_window.test_mode == '1')
-        {
-            alert_div.append(' But test mode is enabled. Any requests created will be deleted before ticketing starts!');
-            $('#request_set').prepend(alert_div);
-            test_mode = true;
-        }
-        else
-        {
-            $('#request_set').prepend(alert_div);
-            $('[href="request.php"]').hide();
-        }
-        out_of_window = true;
-        if(!test_mode)
-        {
-            $('#requestList th:nth-child(4)').html("Request Status");
-        }
-    }
-    if(now > mail_start && now < end)
-    {
-        var days = Math.floor(end/(1000*60*60*24) - now/(1000*60*60*24));
-        alert_div = $('<div/>', {'class': 'alert alert-warning', role: 'alert'});
-        $('<strong/>').html('Notice: ').appendTo(alert_div);
-        if(days === 1)
-        {
-            alert_div.append('The mail in window is currently open! You have '+days+' day left to mail your request!');
-        }
-        else if(days === 0)
-        {
-            alert_div.append('The mail in window is currently open! Today is the last day to mail your request!');
-        }
-        else
-        {
-            alert_div.append('The mail in window is currently open! You have '+days+' days left to mail your request!');
-        }
-        $('#request_set').prepend(alert_div);
-    }
+    proccessOutOfWindow(now, start, end, my_window);
+    processMailInWindow(now, mail_start, end);
     init_request();
     init_table();
 }
