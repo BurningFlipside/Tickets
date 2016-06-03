@@ -1,7 +1,7 @@
 var out_of_window = false;
 var test_mode = false;
 var ticket_year = false;
-var font_face_support = undefined;
+var font_face_support;
 var basic_button_options = {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', 'data-html': true};
 
 function tableDrawComplete()
@@ -39,28 +39,26 @@ function show_long_id(hash)
     $('#ticket_id_modal').modal('show');
 }
 
-function get_ticket_data_by_hash(hash)
+function findTicketInTableByHash(table, hash)
 {
-    var json = $("#ticketList").DataTable().ajax.json();
-    var ticket = null;
+    var json = table.DataTable().ajax.json();
     var i;
     for(i = 0; i < json.data.length; i++)
     {
         if(json.data[i].hash === hash)
         {
-            ticket = json.data[i];
+            return json.data[i];
         }
     }
+    return null;
+}
+
+function get_ticket_data_by_hash(hash)
+{
+    var ticket = findTicketInTableByHash($("#ticketList"), hash);
     if(ticket === null)
     {
-        json = $('#discretionary').DataTable().ajax.json();
-        for(i = 0; i < json.data.length; i++)
-        {
-            if(json.data[i].hash === hash)
-            {
-                ticket = json.data[i];
-            }
-        }
+        ticket = findTicketInTableByHash($("#discretionary"), hash);
     }
     return ticket;
 }
@@ -410,7 +408,7 @@ function add_old_request_to_table(tbody, request)
 
 function add_request_to_table(tbody, request, old_request_only)
 {
-    if(request.year != ticket_year)
+    if(request.year !== ticket_year)
     {
         add_old_request_to_table(tbody, request);
         return;
@@ -419,17 +417,15 @@ function add_request_to_table(tbody, request, old_request_only)
     var row = $('<tr/>');
     row.append('<td>'+request.request_id+'</td>');
     row.append('<td>'+request.year+'</td>');
-    if(request.tickets !== null)
+    if(request.tickets === null)
     {
-        row.append('<td>'+request.tickets.length+'</td>');
+        request.tickets = [];
     }
-    else
-    {
-        row.append('<td>0</td>');
-    }
+    row.append('<td>'+request.tickets.length+'</td>');
     if(!out_of_window || test_mode)
     {
         row.append('<td>$'+request.total_due+'</td>');
+        add_buttons_to_row(row, request.request_id, request.year);
     }
     else
     {
@@ -440,13 +436,6 @@ function add_request_to_table(tbody, request, old_request_only)
         cell.attr('data-placement', 'top');
         cell.html(request.status.name);
         cell.appendTo(row);
-    }
-    if(!out_of_window || test_mode)
-    {
-        add_buttons_to_row(row, request.request_id, request.year);
-    }
-    else
-    {
         row.append('<td></td>');
     }
     row.appendTo(tbody);
@@ -462,29 +451,14 @@ function process_requests(requests)
     {
         add_request_to_table(tbody, requests[i], old_request_only);
     }
-    if(old_request_only.value)
+    if(out_of_window === false)
     {
-        if(out_of_window === false)
-        {
-            tbody.append('<tr><td colspan="5" style="text-align: center;"><a href="request.php"><span class="fa fa-plus-square"></span> Create a new request</a></td></tr>');
-            $('#fallback').hide();
-        }
-        else
-        {
-            tbody.append('<tr><td colspan="5" style="text-align: center;"></td></tr>');
-        }
+        tbody.append('<tr><td colspan="5" style="text-align: center;"><a href="request.php"><span class="fa fa-plus-square"></span> Create a new request</a></td></tr>');
+        $('#fallback').hide();
     }
     else
     {
-        if(out_of_window === false)
-        {
-            tbody.append('<tr><td colspan="5" style="text-align: center;"><a href="request.php"><span class="fa fa-plus-square"></span> Create a new request</a></td></tr>');
-            $('#fallback').hide();
-        }
-        else
-        {
-            tbody.append('<tr><td colspan="5" style="text-align: center;"></td></tr>');
-        }
+        tbody.append('<tr><td colspan="5" style="text-align: center;"></td></tr>');
     }
     if($('[title]').length > 0)
     {
