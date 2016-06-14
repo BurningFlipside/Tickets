@@ -1,0 +1,13 @@
+{
+    "name": "BurningFlipside/Tickets",
+    "version": "1.0.0",
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/BurningFlipside/SecureFramework.git"
+        }
+    ],
+    "require": {
+        "BurningFlipside/SecureFramework": "dev-master"
+    }
+}
