@@ -12,6 +12,7 @@
         }
     ],
     "require": {
-        "BurningFlipside/SecureFramework": "dev-master"
+        "BurningFlipside/SecureFramework": "dev-master",
+        "BurningFlipside/CommonCode": "dev-master"
     }
 }
