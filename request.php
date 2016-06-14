@@ -4,11 +4,11 @@ error_reporting(E_ALL);
 require_once('class.TicketPage.php');
 $page = new TicketPage('Burning Flipside - Tickets');
 
-$page->add_js(JS_DATATABLE);
-$page->add_js(JS_BOOTSTRAP_FH, false);
-$page->add_css(CSS_DATATABLE);
-$page->add_css(CSS_BOOTSTRAP_FH);
-$page->add_js_from_src('js/request.js');
+$page->addWellKnownJS(JS_DATATABLE);
+$page->addWellKnownJS(JS_BOOTSTRAP_FH, false);
+$page->addWellKnownCSS(CSS_DATATABLE);
+$page->addWellKnownCSS(CSS_BOOTSTRAP_FH);
+$page->addJSByURI('js/request.js');
 
 $email = '';
 if($page->user)
@@ -169,5 +169,4 @@ if($page->user)
 
 $page->print_page();
 // vim: set tabstop=4 shiftwidth=4 expandtab:
-?>
 

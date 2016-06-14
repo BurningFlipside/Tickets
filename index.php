@@ -4,14 +4,14 @@ error_reporting(E_ALL);
 require_once('class.TicketPage.php');
 $page = new TicketPage('Burning Flipside - Tickets');
 
-$page->add_js(JS_DATATABLE, false);
-$page->add_css(CSS_DATATABLE);
-$page->add_js_from_src('js/index.js', false);
+$page->addWellKnownJS(JS_DATATABLE, false);
+$page->addWellKnownCSS(CSS_DATATABLE);
+$page->addJSByURI('js/index.js', false);
 
 $discretionary = '';
 if($page->user !== false && $page->user !== null && ($page->user->isInGroupNamed('AAR') || $page->user->isInGroupNamed('AFs')))
 {
-    $page->add_js_from_src('js/discretionary.js');
+    $page->addJSByURI('js/discretionary.js');
     $discretionary = '
         <div class="row" id="discretionary_set" style="display: none;">
             <div class="col-sm-1"></div>
@@ -180,5 +180,4 @@ if($page->user !== false && $page->user !== null && ($page->user->isInGroupNamed
 
 $page->print_page();
 // vim: set tabstop=4 shiftwidth=4 expandtab:
-?>
 
