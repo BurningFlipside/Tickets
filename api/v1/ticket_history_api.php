@@ -20,7 +20,7 @@ function list_ticket_history()
     {
         throw new Exception('Must be a ticket admin to view history', ACCESS_DENIED);
     }
-    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
     $ticket_data_table = $ticket_data_set['TicketsHistory'];
     $tmp = $app->odata->filter->to_sql_string();
     $sql = 'SELECT * from tblTicketsHistory WHERE '.$tmp.' UNION SELECT * FROM tickets.tblTickets WHERE '.$tmp;
@@ -64,4 +64,3 @@ function show_ticket_history($hash)
     echo $ticket->serializeObject($app->fmt, $select);
 }
 
-?>

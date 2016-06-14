@@ -4,9 +4,9 @@ error_reporting(E_ALL);
 require_once('class.TicketAdminPage.php');
 $page = new TicketAdminPage('Burning Flipside - Tickets');
 
-$page->add_js_from_src('js/index.js');
+$page->addJSByURI('js/index.js');
 
-$data_set = DataSetFactory::get_data_set('tickets');
+$data_set = DataSetFactory::getDataSetByName('tickets');
 $data_table = $data_set['Problems'];
 $settings = \Tickets\DB\TicketSystemSettings::getInstance();
 $year = $settings['year'];
@@ -40,5 +40,4 @@ $page->body.='</div>';
 
 $page->print_page();
 // vim: set tabstop=4 shiftwidth=4 expandtab:
-?>
 

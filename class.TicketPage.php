@@ -31,34 +31,34 @@ class TicketPage extends SecurePage
         {
              if($this->is_admin)
              {
-                 $this->add_notification('The ticket system is operating in test mode. Any entries made will be deleted before ticketing starts. To change modes turn off Test Mode on <a href="/tickets/_admin/vars.php" class="alert-link">this page</a>.',
-                                         self::NOTIFICATION_WARNING);
+                 $this->addNotification('The ticket system is operating in test mode. Any entries made will be deleted before ticketing starts. To change modes turn off Test Mode on <a href="/tickets/_admin/vars.php" class="alert-link">this page</a>.',
+                                        self::NOTIFICATION_WARNING);
              }
              else
              {
-                 $this->add_notification('The ticket system is operating in test mode. Any entries made will be deleted before ticketing starts.', 
-                                         self::NOTIFICATION_WARNING);
+                 $this->addNotification('The ticket system is operating in test mode. Any entries made will be deleted before ticketing starts.', 
+                                        self::NOTIFICATION_WARNING);
              }
         }
-        $this->add_js_from_src($this->ticket_root.'/js/tickets.js', false);
+        $this->addJSByURI($this->ticket_root.'/js/tickets.js', false);
     }
 
     function add_links()
     {
         if($this->is_admin)
         {
-            $this->add_link('Admin', $this->ticket_root.'/_admin/');
+            $this->addLink('Admin', $this->ticket_root.'/_admin/');
         }
         if($this->is_data)
         {
-            $this->add_link('Data Entry', $this->ticket_root.'/_admin/data.php');
+            $this->addLink('Data Entry', $this->ticket_root.'/_admin/data.php');
         }
         parent::add_links();
     }
 
     function add_tickets_css()
     {
-        $this->add_css_from_src($this->ticket_root.'/css/tickets.css');
+        $this->addCSSByURI($this->ticket_root.'/css/tickets.css');
     }
 
     function print_page($header=true)
@@ -67,11 +67,11 @@ class TicketPage extends SecurePage
         {
             $this->body = '
 <div id="content">
-    <h1>You must <a href="https://profiles.burningflipside.com/login.php?return='.$this->current_url().'">log in <span class="fa fa-sign-in"></span></a> to access the Burning Flipside Ticket system!</h1>
+    <h1>You must <a href="https://profiles.burningflipside.com/login.php?return='.$this->currentURL().'">log in <span class="fa fa-sign-in"></span></a> to access the Burning Flipside Ticket system!</h1>
 </div>';
             $this->add_login_form();
         }
-        parent::print_page($header);
+        parent::printPage($header);
     }
 }
 ?>

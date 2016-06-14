@@ -22,22 +22,22 @@ class TicketAdminPage extends FlipAdminPage
         {
              if($this->is_admin)
              {
-                 $this->add_notification('The ticket system is operating in test mode. Any entries made will be deleted before ticketing starts. To change modes turn off Test Mode on <a href="/tickets/_admin/vars.php" class="alert-link">this page</a>.',
-                                         self::NOTIFICATION_WARNING);
+                 $this->addNotification('The ticket system is operating in test mode. Any entries made will be deleted before ticketing starts. To change modes turn off Test Mode on <a href="/tickets/_admin/vars.php" class="alert-link">this page</a>.',
+                                        self::NOTIFICATION_WARNING);
              }
              else
              {
-                 $this->add_notification('The ticket system is operating in test mode. Any entries made will be deleted before ticketing starts.', 
-                                         self::NOTIFICATION_WARNING);
+                 $this->addNotification('The ticket system is operating in test mode. Any entries made will be deleted before ticketing starts.', 
+                                        self::NOTIFICATION_WARNING);
              }
         }
-        $this->add_js(JS_METISMENU);
-        $this->add_js_from_src('js/admin.js');
+        $this->addWellKnownJS(JS_METISMENU);
+        $this->addJSByURI('js/admin.js');
     }
 
     function add_tickets_css()
     {
-	$this->add_css_from_src('../css/tickets.css');
+	$this->addCSSByURI('../css/tickets.css');
     }
 
     function add_links()
@@ -48,11 +48,11 @@ class TicketAdminPage extends FlipAdminPage
         }
         if(!$this->is_admin)
         {
-            $this->add_link('<span class="fa fa-pencil"></span> Data Entry', 'data.php');
+            $this->addLink('<span class="fa fa-pencil"></span> Data Entry', 'data.php');
             return;
         }
         $probs = '';
-        $data_set = DataSetFactory::get_data_set('tickets');
+        $data_set = DataSetFactory::getDataSetByName('tickets');
         $data_table = $data_set['Problems'];
         $year = $this->settings['year'];
         $count = $data_table->count(new \Data\Filter('year eq '.$year));
@@ -85,13 +85,13 @@ class TicketAdminPage extends FlipAdminPage
             'Edit Ticket PDF'    => 'ticket_pdf.php',
             'Data Entry Users'   => 'users.php'
         );
-        $this->add_link('<span class="fa fa-tachometer"></span> Dashboard', 'index.php');
-        $this->add_link('<span class="fa fa-bar-chart"></span> Charts', '#', $charts_menu);
-        $this->add_link('<span class="fa fa-file"></span> Requests', '#', $request_menu);
-        $this->add_link('<span class="fa fa-ticket"></span> Tickets', '#', $ticket_menu);
-        $this->add_link('<span class="fa fa-pencil"></span> Data Entry', 'data.php');
-        $this->add_link('<span class="fa fa-usd"></span> Sales', 'pos.php');
-        $this->add_link('<span class="fa fa-sign-in"></span> Gate', 'gate.php');
+        $this->addLink('<span class="fa fa-tachometer"></span> Dashboard', 'index.php');
+        $this->addLink('<span class="fa fa-bar-chart"></span> Charts', '#', $charts_menu);
+        $this->addLink('<span class="fa fa-file"></span> Requests', '#', $request_menu);
+        $this->addLink('<span class="fa fa-ticket"></span> Tickets', '#', $ticket_menu);
+        $this->addLink('<span class="fa fa-pencil"></span> Data Entry', 'data.php');
+        $this->addLink('<span class="fa fa-usd"></span> Sales', 'pos.php');
+        $this->addLink('<span class="fa fa-sign-in"></span> Gate', 'gate.php');
         if($this->user->isInGroupNamed('AAR'))
         {
             $aar_menu = array(
@@ -100,9 +100,9 @@ class TicketAdminPage extends FlipAdminPage
                 'Gate Control' => 'gateControl.php',
                 'Pool Management' => 'pools.php'
             );
-            $this->add_link('<span class="fa fa-fire"></span> AAR', '#', $aar_menu);
+            $this->addLink('<span class="fa fa-fire"></span> AAR', '#', $aar_menu);
         }
-        $this->add_link('<span class="fa fa-cog"></span> Admin', '#', $admin_menu);
+        $this->addLink('<span class="fa fa-cog"></span> Admin', '#', $admin_menu);
     }
 
     function print_page($header = true)
@@ -112,7 +112,7 @@ class TicketAdminPage extends FlipAdminPage
             $this->body = '
         <div class="row">
             <div class="col-lg-12">
-                <h1 class="page-header">You must <a href="https://profiles.burningflipside.com/login.php?return='.$this->current_url().'">log in <span class="fa fa-sign-in"></span></a> to access the Burning Flipside Ticket system!</h1>
+                <h1 class="page-header">You must <a href="https://profiles.burningflipside.com/login.php?return='.$this->currentURL().'">log in <span class="fa fa-sign-in"></span></a> to access the Burning Flipside Ticket system!</h1>
             </div>
         </div>';
         }
@@ -125,7 +125,7 @@ class TicketAdminPage extends FlipAdminPage
             </div>
         </div>';
         }
-        parent::print_page($header);
+        parent::printPage($header);
     }
 }
 ?>

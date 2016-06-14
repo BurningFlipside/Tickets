@@ -84,7 +84,7 @@ function list_requests()
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
     $params = $app->request->params();
-    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
     $request_data_table = $ticket_data_set['TicketRequest'];
     $filter = false;
     $show_children = false;
@@ -150,7 +150,7 @@ function getCritVols()
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
     $settings = \Tickets\DB\TicketSystemSettings::getInstance();
     $year = $settings['year'];
     $types = $ticket_data_set->raw_query('SELECT crit_vol,protected,COUNT(*) as count FROM tickets.tblTicketRequest WHERE year='.$year.' GROUP BY crit_vol,protected;');
@@ -164,7 +164,7 @@ function get_request($request_id, $year = false)
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
     $request_data_table = $ticket_data_set['TicketRequest'];
     $filter = false;
     if($year === 'current')
@@ -252,7 +252,7 @@ function make_request()
     {
         throw new Exception('Too many tickets for request', INVALID_PARAM);
     }
-    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
     $request_id_table = $ticket_data_set['RequestIDs'];
     $filter = new \Data\Filter('mail eq \''.$app->user->getEmail().'\'');
     $request_ids = $request_id_table->read($filter);
@@ -321,7 +321,7 @@ function return_request_id()
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
     $request_id_table = $ticket_data_set['RequestIDs'];
     $filter = new \Data\Filter('mail eq \''.$app->user->getEmail().'\'');
     $request_ids = $request_id_table->read($filter);
@@ -448,7 +448,7 @@ function setCritVols()
     }
     $settings = \Tickets\DB\TicketSystemSettings::getInstance();
     $year = $settings['year'];
-    $data_set = DataSetFactory::get_data_set('tickets');
+    $data_set = DataSetFactory::getDataSetByName('tickets');
     $data_table = $data_set['TicketRequest'];
     for($i = 0; $i < $count; $i++)
     {
@@ -495,7 +495,7 @@ function get_request_donations($request_id, $year)
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
     $donation_data_table = $ticket_data_set['RequestDonation'];
     $filter = false;
     if($request_id === 'me')
@@ -529,7 +529,7 @@ function get_request_tickets($request_id, $year)
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
     $tickets_data_table = $ticket_data_set['RequestedTickets'];
     $filter = false;
     if($request_id === 'me')
@@ -626,7 +626,7 @@ function editRequest($request_id, $year=false)
         {
             throw new Exception('Too many tickets for request', INVALID_PARAM);
         }
-        $ticket_data_set = DataSetFactory::get_data_set('tickets');
+        $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
         $request_id_table = $ticket_data_set['RequestIDs'];
         $filter = new \Data\Filter('mail eq \''.$app->user->getEmail().'\'');
         $request_ids = $request_id_table->read($filter);
@@ -736,7 +736,7 @@ function getProblems($view = false)
     {
         throw new Exception('Must be Ticket Admin or Ticket Lead', ACCESS_DENIED);
     }
-    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
     if($view === false)
     {
         $view = 'vProblems';
@@ -753,4 +753,3 @@ function getProblems($view = false)
     echo safe_json_encode($data);
 }
 
-?>

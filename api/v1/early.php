@@ -19,7 +19,7 @@ function listEarlyEntryWindows()
     {
         throw new Exception('Must be member of TicketAdmins group', ACCESS_DENIED);
     }
-    $dataSet = DataSetFactory::get_data_set('tickets');
+    $dataSet = DataSetFactory::getDataSetByName('tickets');
     $dataTable = $dataSet['EarlyEntryMap'];
     $pools = $dataTable->read($app->odata->filter, $app->odata->select, $app->odata->top, $app->odata->skip, $app->odata->orderby);
     if($pools === false)
@@ -40,4 +40,3 @@ function listEarlyEntryWindows()
     }
     echo json_encode($pools);
 }
-?>

@@ -37,7 +37,7 @@ function show_constraints()
     $settings = \Tickets\DB\TicketSystemSettings::getInstance();
     $constraints = array();
     $constraints['max_tickets_per_request'] = $settings['max_tickets_per_request'];
-    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
     $ticket_type_data_table = $ticket_data_set['TicketTypes'];
     $ticket_types = $ticket_type_data_table->search();
     if($ticket_types === false)
@@ -59,7 +59,7 @@ function show_donation_types()
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
     $donation_type_data_table = $ticket_data_set['DonationTypes'];
     $donation_types = $donation_type_data_table->read();
     echo json_encode($donation_types);
@@ -73,7 +73,7 @@ function createDonationType()
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
     $data = $app->getJsonBody();
-    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
     $donation_type_data_table = $ticket_data_set['DonationTypes'];
     $res = $donation_type_data_table->create($data);
     if($res === false)
@@ -91,7 +91,7 @@ function deleteDonationType($id)
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
     $donation_type_data_table = $ticket_data_set['DonationTypes'];
     $filter = new \Data\Filter("entityName eq '$id'");
     $res = $donation_type_data_table->delete($filter);
@@ -105,7 +105,7 @@ function showTicketTypes()
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
     $ticket_type_data_table = $ticket_data_set['TicketTypes'];
     $ticket_types = $ticket_type_data_table->search();
     if($ticket_types === false)
@@ -127,7 +127,7 @@ function createTicketType()
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
     $data = $app->getJsonBody();
-    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
     $ticket_type_data_table = $ticket_data_set['TicketTypes'];
     $res = $ticket_type_data_table->create($data);
     if($res === false)
@@ -145,7 +145,7 @@ function deleteTicketType($id)
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
     $ticket_type_data_table = $ticket_data_set['TicketTypes'];
     $filter = new \Data\Filter("typeCode eq '$id'");
     $res = $ticket_type_data_table->delete($filter);
@@ -202,7 +202,7 @@ function list_statuses()
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
     $params = $app->request->params();
-    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
     $status_data_table = $ticket_data_set['RequestStatus'];
     $statuses = $status_data_table->read($app->odata->filter, $app->odata->select);
     if($statuses === false)
@@ -284,7 +284,7 @@ function getAllLongText()
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
     $table = $ticket_data_set['LongText'];
     $longText = $table->read();
     echo json_encode($longText);    
@@ -297,7 +297,7 @@ function getLongText($name)
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
     $table = $ticket_data_set['LongText'];
     $longText = $table->read(new \Data\Filter("name eq '$name'"));
     if(isset($longText[0]) && isset($longText[0]['value']))
@@ -317,7 +317,7 @@ function setLongText($name)
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
     $table = $ticket_data_set['LongText'];
     $filter = new \Data\Filter("name eq '$name'");
     $body = $app->request->getBody();
@@ -400,7 +400,7 @@ function getYears()
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
     $table = $ticket_data_set['TicketRequest'];
     $res = $table->raw_query('SELECT DISTINCT(year) from tblTicketRequest');
     $count = count($res);
@@ -417,4 +417,3 @@ function getYears()
     echo json_encode($res);
 }
 
-?>

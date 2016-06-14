@@ -181,7 +181,7 @@ function list_ticket_types()
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
     $ticket_type_data_table = $ticket_data_set['TicketTypes'];
     $ticket_types = $ticket_type_data_table->search($app->odata->filter, $app->odata->select, $app->odata->top, $app->odata->skip, $app->odata->orderby);
     if($ticket_types === false)
@@ -425,7 +425,7 @@ function generateTickets()
     }
     if($autoPopulate)
     {
-        $dataSet = DataSetFactory::get_data_set('tickets');
+        $dataSet = DataSetFactory::getDataSetByName('tickets');
         $requestDataTable = $dataSet['TicketRequest'];
         $requestedTicketsDataTable = $dataSet['RequestedTickets'];
         $unTicketedRequests = $requestDataTable->read(new \Data\Filter("year eq $year and private_status eq 1"));
@@ -470,4 +470,3 @@ function generateTickets()
     }
 }
 
-?>

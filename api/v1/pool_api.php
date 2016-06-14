@@ -17,7 +17,7 @@ function getPoolHelper($id, $dataTable = false)
 {
     if($dataTable === false)
     {
-        $dataSet = DataSetFactory::get_data_set('tickets');
+        $dataSet = DataSetFactory::getDataSetByName('tickets');
         $dataTable = $dataSet['PoolMap'];
     }
     $filter = new \Data\Filter('pool_id eq '.$id);
@@ -46,7 +46,7 @@ function listPools()
     {
         throw new Exception('Must be member of TicketAdmins group', ACCESS_DENIED);
     }
-    $dataSet = DataSetFactory::get_data_set('tickets');
+    $dataSet = DataSetFactory::getDataSetByName('tickets');
     $dataTable = $dataSet['PoolMap'];
     $pools = $dataTable->read($app->odata->filter, $app->odata->select, $app->odata->top, $app->odata->skip, $app->odata->orderby);
     if($pools === false)
@@ -79,7 +79,7 @@ function createPool()
     {
         throw new Exception('Must be member of TicketAdmins group', ACCESS_DENIED);
     }
-    $dataSet = DataSetFactory::get_data_set('tickets');
+    $dataSet = DataSetFactory::getDataSetByName('tickets');
     $dataTable = $dataSet['PoolMap'];
     $obj = $app->getJsonBody(true);
     if(isset($obj['pool_id']))
@@ -96,7 +96,7 @@ function listPoolsForUser()
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $dataSet = DataSetFactory::get_data_set('tickets');
+    $dataSet = DataSetFactory::getDataSetByName('tickets');
     $groups = $app->user->getGroups();
     $count = count($groups);
     for($i = 0; $i < $count; $i++)
@@ -139,7 +139,7 @@ function updatePool($id)
     {
         throw new Exception('Must be member of TicketAdmins group', ACCESS_DENIED);
     }
-    $dataSet = DataSetFactory::get_data_set('tickets');
+    $dataSet = DataSetFactory::getDataSetByName('tickets');
     $dataTable = $dataSet['PoolMap'];
     $pool = getPoolHelper($id, $dataTable);
     if($pool === false)
@@ -175,11 +175,10 @@ function deletePool($id)
     {
         $app->notFound();
     }
-    $dataSet = DataSetFactory::get_data_set('tickets');
+    $dataSet = DataSetFactory::getDataSetByName('tickets');
     $dataTable = $dataSet['PoolMap'];
     $filter = new \Data\Filter('pool_id eq '.$pool['pool_id']);
     echo json_encode($dataTable->delete($filter));
 }
 
 
-?>

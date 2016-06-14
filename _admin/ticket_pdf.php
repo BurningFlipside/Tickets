@@ -4,9 +4,9 @@ error_reporting(E_ALL);
 require_once('class.TicketAdminPage.php');
 $page = new TicketAdminPage('Burning Flipside - Tickets');
 
-$page->add_js_from_src('//cdn.ckeditor.com/4.4.5/full/ckeditor.js', false);
-$page->add_js_from_src('//cdn.ckeditor.com/4.4.5/full/adapters/jquery.js', false);
-$page->add_js_from_src('js/ticket_pdf.js');
+$page->addJSByURI('//cdn.ckeditor.com/4.4.5/full/ckeditor.js', false);
+$page->addJSByURI('//cdn.ckeditor.com/4.4.5/full/adapters/jquery.js', false);
+$page->addJSByURI('js/ticket_pdf.js');
 
     $page->body .= '
 <div class="row">
@@ -35,5 +35,4 @@ $page->add_js_from_src('js/ticket_pdf.js');
 
 $page->print_page();
 // vim: set tabstop=4 shiftwidth=4 expandtab:
-?>
 

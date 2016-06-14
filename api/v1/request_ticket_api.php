@@ -15,7 +15,7 @@ function list_request_w_tickets()
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
     $request_data_table = $ticket_data_set['RequestWTickets'];
     $filter = false;
     if($app->user->isInGroupNamed('TicketAdmins') && $app->odata->filter != false)
@@ -50,7 +50,7 @@ function get_request_w_tickets($request_id, $year = false)
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
     $params = $app->request->params();
-    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
     $request_data_table = $ticket_data_set['RequestWTickets'];
     $filter = false;
     $select = false;
@@ -89,7 +89,7 @@ function get_requested_types()
     }
     $settings = \Tickets\DB\TicketSystemSettings::getInstance();
     $year = $settings['year'];
-    $ticket_data_set = DataSetFactory::get_data_set('tickets');
+    $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
     $types = $ticket_data_set->raw_query('SELECT tblTicketTypes.description,COUNT(*) as count FROM tickets.vRequestWTickets INNER JOIN tblTicketTypes ON tblTicketTypes.typeCode=vRequestWTickets.type  WHERE vRequestWTickets.year='.$year.' GROUP BY type;');
     $received = $ticket_data_set->raw_query('SELECT COUNT(*) as count FROM tickets.vRequestWTickets WHERE vRequestWTickets.year='.$year.' AND private_status IN (1,6) GROUP BY type;');
     if($types !== false && $received !== false)
@@ -103,4 +103,3 @@ function get_requested_types()
     echo json_encode($types);
 }
 
-?>

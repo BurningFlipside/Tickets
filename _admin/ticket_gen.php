@@ -5,7 +5,7 @@ require_once('class.TicketAdminPage.php');
 require_once('../app/TicketAutoload.php');
 $page = new TicketAdminPage('Burning Flipside - Tickets');
 
-$page->add_js_from_src('js/ticket_gen.js');
+$page->addJSByURI('js/ticket_gen.js');
 
 $type_table = '<table class="table" id="current"><thead><th colspan="2">Current Counts</th></thead><tbody></tbody></table>';
 
@@ -38,5 +38,4 @@ $page->body .= '
 
 $page->print_page();
 // vim: set tabstop=4 shiftwidth=4 expandtab:
-?>
 

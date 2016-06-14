@@ -4,7 +4,7 @@ error_reporting(E_ALL);
 require_once('class.TicketAdminPage.php');
 $page = new TicketAdminPage('Burning Flipside - Tickets');
 
-$page->add_js_from_src('js/ticket_type.js');
+$page->addJSByURI('js/ticket_type.js');
 
     $page->body .= '
 <div id="content">
@@ -18,5 +18,4 @@ $page->add_js_from_src('js/ticket_type.js');
 
 $page->print_page();
 // vim: set tabstop=4 shiftwidth=4 expandtab:
-?>
 
