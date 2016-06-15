@@ -20,7 +20,7 @@ class TicketType extends \SerializableObject
 
     static function getDataTable()
     {
-        $dataSet = \DataSetFactory::get_data_set('tickets');
+        $dataSet = \DataSetFactory::getDataSetByName('tickets');
         static::$dataTable = $dataSet['TicketTypes'];
     }
 

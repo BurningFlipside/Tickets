@@ -11,7 +11,7 @@ class Ticket extends \SerializableObject
     {
         if(static::$data_set === false)
         {
-            static::$data_set = \DataSetFactory::get_data_set('tickets');
+            static::$data_set = \DataSetFactory::getDataSetByName('tickets');
         }
         return static::$data_set;
     }
@@ -445,4 +445,3 @@ class Ticket extends \SerializableObject
         return true;
     }
 }
-?>

@@ -16,7 +16,7 @@ class FlipsideTicketRequest extends \SerializableObject
 
     function update()
     {
-        $dataSet = \DataSetFactory::get_data_set('tickets');
+        $dataSet = \DataSetFactory::getDataSetByName('tickets');
         $requestDataTable = $dataSet['TicketRequest'];
         $filter = new FlipsideRequestDefaultFilter($this->request_id, $this->year);
         $copy = (array)$this;
@@ -44,7 +44,7 @@ class FlipsideTicketRequest extends \SerializableObject
          }
          catch(\Exception $e) {}
          $request->total_due = 0;
-         $dataSet = \DataSetFactory::get_data_set('tickets');
+         $dataSet = \DataSetFactory::getDataSetByName('tickets');
          $donationDataTable = $dataSet['RequestDonation'];
          if(isset($request->donations) && count((array)$request->donations) > 0)
          {
@@ -117,7 +117,7 @@ class FlipsideTicketRequest extends \SerializableObject
             $new_request->year = $settings['year'];
         }
         $new_request->test = $settings['test_mode'];
-        $dataSet = \DataSetFactory::get_data_set('tickets');
+        $dataSet = \DataSetFactory::getDataSetByName('tickets');
         if(isset($new_request->donations) && count((array)$new_request->donations) > 0)
         {
             if(!isset($old_request->donations) || $old_request->donations === false)
@@ -321,7 +321,7 @@ class FlipsideTicketRequest extends \SerializableObject
     static function getByIDAndYear($request_id, $year)
     {
          $filter = new FlipsideRequestDefaultFilter($request_id, $year);
-         $dataSet = \DataSetFactory::get_data_set('tickets');
+         $dataSet = \DataSetFactory::getDataSetByName('tickets');
          $requestDataTable = $dataSet['TicketRequest'];
          $donationDataTable = $dataSet['RequestDonation'];
          $requestedTicketDataTable = $dataSet['RequestedTickets'];
