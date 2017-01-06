@@ -358,6 +358,10 @@ function donations_ajax_done(jqXHR)
         }
         table.appendTo(div);
     }
+    else
+    {
+       div.hide();
+    }
 }
 
 function get_ticket_count(type)

@@ -84,6 +84,11 @@ class RequestPDF extends \PDF\PDF
         $email          = $this->request->mail;
         $phone          = $this->request->mobile;
         $request_date   = $this->request->modifiedOn;
+        $envelopeArtText = '';
+        if(isset($this->request->envelopeArt) && $this->request->envelopeArt === '1')
+        {
+            $envelopeArtText = 'AAR, LLC may use my envelope art in the Survival Guide or on the Burning Flipside Website with credit given to the name provided on the envelope\'s return address label.';
+        }
         $vars           = array(
             '{$ticket_count}'   => $ticket_count,
             '{$barcode}'        => $barcode,
@@ -99,7 +104,8 @@ class RequestPDF extends \PDF\PDF
             '{$email}'          => $email,
             '{$phone}'          => $phone,
             '{$request_date}'   => $request_date,
-            '{$last}'           => $last
+            '{$last}'           => $last,
+            '{$envelopeArtText}'=> $envelopeArtText
         );
         $html           = strtr($this->source, $vars);
         $this->setPDFFromHTML($html);

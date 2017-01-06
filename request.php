@@ -111,6 +111,10 @@ if($page->user)
             <legend>Donation</legend>
         </fieldset>
         <fieldset>
+            <legend>Envelope Art</legend>
+            <input id="envelopeArt" name="envelopeArt" type="checkbox"/><label for="envelopeArt">Allow AAR to use my envelope art in the Survival Guide or Website. It will be credited by the name on the return address.</label>
+        </fieldset>
+        <fieldset>
             <legend>Mailing Lists</legend>
             It is highly recommended that all Burning Flipside participants sign up for one or more email lists to allow
             AAR, LLC to communicate important details about Burning Flipside before and after the event.<br/>
