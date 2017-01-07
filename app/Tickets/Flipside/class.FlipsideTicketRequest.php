@@ -34,6 +34,10 @@ class FlipsideTicketRequest extends \SerializableObject
               $request->year = $settings['year'];
          }
          $request->test = $settings['test_mode'];
+         if(isset($request->envelopeArt) && $request->envelopeArt === 'on')
+         {
+             $request->envelopeArt = 1;
+         }
          try
          {
              $old_request = static::getByIDAndYear($request->request_id, $request->year);

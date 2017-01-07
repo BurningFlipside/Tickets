@@ -197,7 +197,7 @@ function makeTextLink(options, linkText)
 
 function createButtonOptions(title, forData, onClick)
 {
-    var ret = basic_button_options;
+    var ret = JSON.parse(JSON.stringify(basic_button_options));
     ret.title   = title;
     ret['for']  = forData;
     ret.onclick = onClick;
