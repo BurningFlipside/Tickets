@@ -453,7 +453,7 @@ function process_requests(requests)
     }
     if(out_of_window === false)
     {
-        tbody.append('<tr><td colspan="5" style="text-align: center;"><a href="request.php"><span class="fa fa-plus-square"></span> Create a new request</a></td></tr>');
+        tbody.append('<tr><td></td><td colspan="4" style="text-align: center;"><a href="request.php"><span class="fa fa-plus-square"></span> Create a new request</a></td></tr>');
         $('#fallback').hide();
     }
     else
