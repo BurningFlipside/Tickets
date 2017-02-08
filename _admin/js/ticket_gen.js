@@ -60,7 +60,7 @@ function gotTicketTypes(jqXHR)
         current.append('<tr><td>'+jqXHR.responseJSON[i].description+'</td><td id="'+jqXHR.responseJSON[i].typeCode+'Current"></td></tr>');
         additional.append('<tr><td>'+jqXHR.responseJSON[i].description+'</td><td><input type="number" id="'+jqXHR.responseJSON[i].typeCode+'" value="0"/></td></tr>');
         $.ajax({
-            url: '../api/v1/tickets?$filter=year%20eq%202016%20and%20type%20eq%20%27'+jqXHR.responseJSON[i].typeCode+'%27&$count=true&$select=@odata.count',
+            url: '../api/v1/tickets?$filter=year%20eq%202017%20and%20type%20eq%20%27'+jqXHR.responseJSON[i].typeCode+'%27&$count=true&$select=@odata.count',
             type: 'get',
             context: jqXHR.responseJSON[i].typeCode,
             complete: gotTicketType
