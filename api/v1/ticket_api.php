@@ -36,7 +36,7 @@ function list_tickets()
     }
     else
     {
-        $filter = new \Tickets\DB\TicketDefaultFilter($app->user->getEmail());
+        $filter = new \Tickets\DB\TicketDefaultFilter($app->user->mail);
     }
     $ticket_data_table = \Tickets\DB\TicketsDataTable::getInstance();
     $tickets = $ticket_data_table->read($filter, $app->odata->select, $app->odata->top, $app->odata->skip, $app->odata->orderby);
@@ -161,7 +161,7 @@ function list_discretionary_tickets()
         throw new Exception('Must be member of AAR group', ACCESS_DENIED);
     }
     $ticket_data_table = \Tickets\DB\TicketsDataTable::getInstance();
-    $filter = new \Tickets\DB\TicketDefaultFilter($app->user->getEmail(), true);
+    $filter = new \Tickets\DB\TicketDefaultFilter($app->user->mail, true);
     $tickets = $ticket_data_table->read($filter, $app->odata->select, $app->odata->top, $app->odata->skip, $app->odata->orderby);
     if($tickets === false)
     {
@@ -225,7 +225,7 @@ function claimTicket($hash)
         $app->notFound();
         return;
     }
-    $ticket->email = $app->user->getEmail();
+    $ticket->email = $app->user->mail;
     $array = $app->get_json_body(true);
     if(isset($array['firstName']))
     {
