@@ -1,7 +1,7 @@
 <?php
 namespace Tickets\DB;
 
-class SingletonDataTable extends \Data\DataTable
+abstract class SingletonDataTable extends \Data\DataTable
 {
     protected static $data_set = false;
 

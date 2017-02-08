@@ -7,7 +7,7 @@ class TicketPage extends SecurePage
     private $is_admin;
     private $is_data;
     public  $ticket_root;
-    public  $settings;
+    public  $ticketSettings;
 
     function __construct($title)
     {
@@ -26,8 +26,8 @@ class TicketPage extends SecurePage
             $this->is_data  = false;
         }
         $this->add_tickets_css();
-        $this->settings = \Tickets\DB\TicketSystemSettings::getInstance();
-        if($this->settings->isTestMode())
+        $this->ticketSettings = \Tickets\DB\TicketSystemSettings::getInstance();
+        if($this->ticketSettings->isTestMode())
         {
              if($this->is_admin)
              {

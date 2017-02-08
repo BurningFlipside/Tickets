@@ -104,7 +104,7 @@ function list_requests()
     }
     else
     {
-        $filter = new \Data\Filter('mail eq \''.$app->user->getEmail().'\'');
+        $filter = new \Data\Filter('mail eq \''.$app->user->mail.'\'');
         $show_children = true;
     }
     $search = $app->request->params('$search');
@@ -126,14 +126,21 @@ function list_requests()
         $ticket_data_table   = $ticket_data_set['RequestedTickets'];
         $donation_data_table = $ticket_data_set['RequestDonation'];
         $status_data_table   = $ticket_data_set['RequestStatus'];
-        $status_data_table->prefetch_all();
+        $statuses_data       = $status_data_table->read(false);
+        $statuses            = array();
+        $status_count        = count($statuses_data);
+        for($i = 0; $i < $status_count; $i++)
+        {
+            $status_id = $statuses_data[$i]['status_id'];
+            $statuses[$status_id] = $statuses_data[$i];
+        }
         $request_count = count($requests);
         for($i = 0; $i < $request_count; $i++)
         {
             $filter = new \Data\Filter('request_id eq \''.$requests[$i]['request_id'].'\' and year eq '.$requests[$i]['year']);
             $requests[$i]['tickets']   = $ticket_data_table->read($filter);
             $requests[$i]['donations'] = $donation_data_table->read($filter);
-            $requests[$i]['status'] = $status_data_table[$requests[$i]['status']];
+            $requests[$i]['status'] = $statuses[$requests[$i]['status']];
         }
     }
     if($app->odata->count)
@@ -174,7 +181,7 @@ function get_request($request_id, $year = false)
     }
     if($request_id === 'me')
     {
-        $email = $app->user->getEmail();
+        $email = $app->user->mail;
         if($year === false)
         {
             $filter = new \Data\Filter("mail eq '$email'");
@@ -199,11 +206,11 @@ function get_request($request_id, $year = false)
     {
         if($year === false)
         {
-            $filter = new \Data\Filter('mail eq \''.$app->user->getEmail().'\' and request_id eq \''.$request_id.'\'');
+            $filter = new \Data\Filter('mail eq \''.$app->user->mail.'\' and request_id eq \''.$request_id.'\'');
         }
         else
         {
-            $filter = new \Data\Filter('mail eq \''.$app->user->getEmail().'\' and request_id eq \''.$request_id.'\' and year eq '.$year);
+            $filter = new \Data\Filter('mail eq \''.$app->user->mail.'\' and request_id eq \''.$request_id.'\' and year eq '.$year);
         }
     }
     $requests = $request_data_table->read($filter, $app->odata->select, $app->odata->top, $app->odata->skip, $app->odata->orderby);
@@ -254,7 +261,7 @@ function make_request()
     }
     $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
     $request_id_table = $ticket_data_set['RequestIDs'];
-    $filter = new \Data\Filter('mail eq \''.$app->user->getEmail().'\'');
+    $filter = new \Data\Filter('mail eq \''.$app->user->mail.'\'');
     $request_ids = $request_id_table->read($filter);
     if($request_ids === false && !isset($request_ids[0]) && !isset($request_ids[0]['request_id']))
     {
@@ -323,7 +330,7 @@ function return_request_id()
     }
     $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
     $request_id_table = $ticket_data_set['RequestIDs'];
-    $filter = new \Data\Filter('mail eq \''.$app->user->getEmail().'\'');
+    $filter = new \Data\Filter('mail eq \''.$app->user->mail.'\'');
     $request_ids = $request_id_table->read($filter);
     if($request_ids !== false && isset($request_ids[0]) && isset($request_ids[0]['request_id']))
     {
@@ -336,7 +343,7 @@ function return_request_id()
         $id = $request_ids[0]['MAX(request_id)'];
         $id++;
     }
-    $data = array('mail'=>$app->user->getEmail(), 'request_id'=>$id);
+    $data = array('mail'=>$app->user->mail, 'request_id'=>$id);
     $request_id_table->create($data);
     return $id;
 }
@@ -628,7 +635,7 @@ function editRequest($request_id, $year=false)
         }
         $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
         $request_id_table = $ticket_data_set['RequestIDs'];
-        $filter = new \Data\Filter('mail eq \''.$app->user->getEmail().'\'');
+        $filter = new \Data\Filter('mail eq \''.$app->user->mail.'\'');
         $request_ids = $request_id_table->read($filter);
         if($request_ids === false && !isset($request_ids[0]) && !isset($request_ids[0]['request_id']))
         {
