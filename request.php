@@ -13,7 +13,7 @@ $page->addJSByURI('js/request.js');
 $email = '';
 if($page->user)
 {
-    $email = $page->user->getEmail();
+    $email = $page->user->mail;
 }
 
     $page->body .= '

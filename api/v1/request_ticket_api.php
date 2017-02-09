@@ -24,7 +24,7 @@ function list_request_w_tickets()
     }
     else
     {
-        $filter = new \Data\Filter('mail eq \''.$app->user->getEmail().'\'');
+        $filter = new \Data\Filter('mail eq \''.$app->user->mail.'\'');
     }
     $requests = $request_data_table->search($filter, $app->odata->select);
     if($requests === false)
@@ -65,7 +65,7 @@ function get_request_w_tickets($request_id, $year = false)
     }
     if(!$app->user->isInGroupNamed('TicketAdmins'))
     {
-        $filter_str += ' and mail eq '+$app->user->getEmail();
+        $filter_str += ' and mail eq '+$app->user->mail;
     }
     $filter = new \Data\Filter($filter_str);
     $requests = $request_data_table->search($filter, $select);
