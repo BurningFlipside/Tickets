@@ -287,6 +287,10 @@ function backend_search_done(data)
 function table_searched()
 {
     var dt_api = $('#tickets').DataTable();
+    if(dt_api.search() === '')
+    {
+        return;
+    }
     if(dt_api.rows({'search':'applied'})[0].length == 0)
     {
         $.ajax({

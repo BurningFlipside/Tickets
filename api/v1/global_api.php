@@ -352,9 +352,9 @@ function getTicketUsers()
     $context = [ 'http' => [ 'method' => 'GET' ], 'ssl' => [ 'verify_peer' => false, 'allow_self_signed'=> true, 'verify_peer_name'=>false] ];
     $context = stream_context_create($context);
     $full = array();
-    $res = file_get_contents('https://profiles.test.burningflipside.com/api/v1/groups/TicketAdmins?$expand=member&$select=member.givenName,member.sn,member.mail,member.uid,cn', false, $context);
+    $res = file_get_contents('https://profiles.burningflipside.com/api/v1/groups/TicketAdmins?$expand=member&$select=member.givenName,member.sn,member.mail,member.uid,cn', false, $context);
     $full[0] = json_decode($res, true);
-    $res = file_get_contents('https://profiles.test.burningflipside.com/api/v1/groups/TicketTeam?$expand=member&$select=member.givenName,member.sn,member.mail,member.uid,cn', false, $context);
+    $res = file_get_contents('https://profiles.burningflipside.com/api/v1/groups/TicketTeam?$expand=member&$select=member.givenName,member.sn,member.mail,member.uid,cn', false, $context);
     $full[1] = json_decode($res, true);
     $res = array();
     foreach($full[0]['member'] as $member)
@@ -362,6 +362,10 @@ function getTicketUsers()
         $found = false;
         foreach($res as $existing)
         {
+            if(!isset($member['uid']))
+            {
+               continue;
+            }
             if($member['uid'] === $existing['uid'])
             {
                $found = true;
@@ -379,6 +383,10 @@ function getTicketUsers()
         $found = false;
         foreach($res as $existing)
         {
+            if(!isset($member['uid']) || !isset($existing['uid']))
+            {
+               continue;
+            }
             if($member['uid'] === $existing['uid'])
             {
                $found = true;
@@ -387,6 +395,7 @@ function getTicketUsers()
         }
         if(!$found)
         {
+            $member['admin'] = false;
             array_push($res, $member);
         }
     }

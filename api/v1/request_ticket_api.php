@@ -97,6 +97,11 @@ function get_requested_types()
         $count = count($types);
         for($i = 0; $i < $count; $i++)
         {
+            if(!isset($received[$i]))
+            {
+                $types[$i]['receivedCount'] = 0;
+                continue;
+            }
             $types[$i]['receivedCount'] = $received[$i]['count'];
         }
     }

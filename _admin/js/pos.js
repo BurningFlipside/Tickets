@@ -266,15 +266,18 @@ function get_tickets_done(data)
         }
         tickets[pool_id][data[i].type].push(data[i]);
     }
-    var options = $('#pool option');
-    for(i = 0; i < options.length; i++)
+    if(tickets !== null)
     {
-        if(tickets[options[i].value*1] === undefined)
-        {
-            $(options[i]).prop('disabled', true);
+    	var options = $('#pool option');
+	for(i = 0; i < options.length; i++)
+    	{
+            if(tickets[options[i].value*1] === undefined)
+            {
+                $(options[i]).prop('disabled', true);
+            }
         }
+        poolChanged($('#pool')[0]);
     }
-    poolChanged($('#pool')[0]);
 }
 
 function get_ticket_done(data)

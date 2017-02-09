@@ -192,7 +192,7 @@ class Ticket extends \SerializableObject
 
     static function get_tickets_for_user($user, $filter=false, $select=false, $count=false)
     {
-        $user_filter = new \Data\Filter('email eq \''.$user->getEmail().'\'');
+        $user_filter = new \Data\Filter('email eq \''.$user->mail.'\'');
         if($filter === false)
         {
             $filter = $user_filter;
@@ -237,7 +237,7 @@ class Ticket extends \SerializableObject
     static function getDiscretionaryTicketsForUser($user, $criteria = false, $count=false)
     {
         $settings = \Tickets\DB\TicketSystemSettings::getInstance();
-        $filter = new \Tickets\DB\TicketDefaultFilter($user->getEmail(), true);
+        $filter = new \Tickets\DB\TicketDefaultFilter($user->mail, true);
         if($criteria !== false)
         {
             $filter->appendChild('and');
