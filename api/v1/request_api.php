@@ -304,7 +304,7 @@ function make_request()
             }
         }
     }
-    $obj->modifiedBy = $app->user->getUid();
+    $obj->modifiedBy = $app->user->uid;
     $obj->modifiedByIP = $_SERVER['REMOTE_ADDR'];
     if(isset($obj->minor_confirm))
     {
@@ -701,7 +701,7 @@ function editRequest($request_id, $year=false)
             }
         }
     }
-    $obj->modifiedBy = $app->user->getUid();
+    $obj->modifiedBy = $app->user->uid;
     $obj->modifiedByIP = $_SERVER['REMOTE_ADDR'];
     if(isset($obj->minor_confirm))
     {
