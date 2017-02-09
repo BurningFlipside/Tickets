@@ -5,7 +5,7 @@ require_once('app/TicketAutoload.php');
 class TicketAdminPage extends FlipAdminPage
 {
     private $is_data;
-    public  $settings;
+    public  $ticketSettings;
 
     function __construct($title)
     {
@@ -17,8 +17,8 @@ class TicketAdminPage extends FlipAdminPage
         }
         $this->add_tickets_css();
         $this->add_links();
-        $this->settings = \Tickets\DB\TicketSystemSettings::getInstance();
-        if($this->settings->isTestMode())
+        $this->ticketSettings = \Tickets\DB\TicketSystemSettings::getInstance();
+        if($this->ticketSettings->isTestMode())
         {
              if($this->is_admin)
              {
@@ -54,7 +54,7 @@ class TicketAdminPage extends FlipAdminPage
         $probs = '';
         $data_set = DataSetFactory::getDataSetByName('tickets');
         $data_table = $data_set['Problems'];
-        $year = $this->settings['year'];
+        $year = $this->ticketSettings['year'];
         $count = $data_table->count(new \Data\Filter('year eq '.$year));
         if($count > 0)
         {
