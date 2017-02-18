@@ -1,5 +1,4 @@
 <?php
-require_once('class.SecurePage.php');
 require_once('class.FlipSession.php');
 require_once('app/TicketAutoload.php');
 class TicketAdminPage extends FlipAdminPage
@@ -27,7 +26,7 @@ class TicketAdminPage extends FlipAdminPage
              }
              else
              {
-                 $this->addNotification('The ticket system is operating in test mode. Any entries made will be deleted before ticketing starts.', 
+                 $this->addNotification('The ticket system is operating in test mode. Any entries made will be deleted before ticketing starts.',
                                         self::NOTIFICATION_WARNING);
              }
         }

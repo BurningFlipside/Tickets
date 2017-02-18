@@ -1,5 +1,5 @@
 <?php
-require_once('class.SecurePage.php');
+require_once('../class.SecurePage.php');
 require_once('class.FlipSession.php');
 require_once('app/TicketAutoload.php');
 class TicketPage extends SecurePage
