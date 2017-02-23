@@ -67,7 +67,7 @@ class TicketPage extends SecurePage
         {
             $this->body = '
 <div id="content">
-    <h1>You must <a href="https://profiles.burningflipside.com/login.php?return='.$this->currentURL().'">log in <span class="fa fa-sign-in"></span></a> to access the Burning Flipside Ticket system!</h1>
+    <h1>You must <a href="'.$this->loginUrl.'?return='.$this->currentURL().'">log in <span class="fa fa-sign-in"></span></a> to access the Burning Flipside Ticket system!</h1>
 </div>';
             $this->add_login_form();
         }

@@ -27,7 +27,7 @@ class TicketEmail extends \Email\Email
     private function getBodyFromDB($html=true)
     {
         $barcode        = '<barcode code="'.$this->ticket->hash.'" type="C93"/>';
-        $transfer_url   = 'https://secure.burningflipside.com/tickets/transfer.php?id='.$this->ticket->hash;
+        $transfer_url   = $this->secureURL.'/tickets/transfer.php?id='.$this->ticket->hash;
         $transfer_qr    = '<barcode code="'.$transfer_url.'" type="QR" class="barcode" size="1" error="M" />';
         $year           = $this->ticket->year;
         $ticket_id      = $this->ticket->hash;

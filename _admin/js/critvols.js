@@ -166,7 +166,7 @@ function allCritvolsObtained(jqXHR)
 function auto_critvol()
 {
     $.ajax({
-        url: 'https://profiles.burningflipside.com/api/v1/leads?$select=mail',
+        url: window.profilesUrl+'/api/v1/leads?$select=mail',
         type: 'get',
         dataType: 'json',
         xhrFields: {withCredentials: true},

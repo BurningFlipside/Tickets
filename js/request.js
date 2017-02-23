@@ -624,7 +624,7 @@ function request_id_done(jqXHR)
     if(browser_supports_cors())
     {
         $.ajax({
-            url: 'https://profiles.burningflipside.com/api/v1/users/me',
+            url: window.profilesUrl+'/api/v1/users/me',
             type: 'get',
             dataType: 'json',
             xhrFields: {withCredentials: true},

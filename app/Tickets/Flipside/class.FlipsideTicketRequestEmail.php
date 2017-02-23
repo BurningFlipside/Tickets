@@ -41,7 +41,7 @@ class FlipsideTicketRequestEmail extends \Email\Email
                 Reminder:  The dates for mailing your ticket request envelope are '.$this->settings['mail_start_date'].' through '
                 .$this->settings['request_stop_date'].'. Your postmark must be within that date range.<br><br>
                 If you need to update your ticket registration before mailing in your ticket request, return to 
-                <a href="https://secure.burningflipside.com/tickets/">secure.burningflipside.com/tickets/</a>.<br><br>
+                <a href="'.$this->secureUrl.'/tickets/">secure.burningflipside.com/tickets/</a>.<br><br>
                 You will receive a confirmation message each time you save your online ticket registration. Be sure to mail in the most recent 
                 Ticket Request form.<br><br>
                 Caution: We recommend that you use a form of payment you can easily return for a refund if necessary. <br><br>
@@ -60,7 +60,7 @@ class FlipsideTicketRequestEmail extends \Email\Email
                 Reminder:  The dates for mailing your ticket request envelope are ".$this->settings['mail_start_date']." through "
                 .$this->settings['request_stop_date'].". Your postmark must be within that date range.\n\n
                 If you need to update your ticket registration before mailing in your ticket request, return to
-                https://secure.burningflipside.com/tickets/.\n\n
+                '.$this->secureUrl.'/tickets/.\n\n
                 You will receive a confirmation message each time you save your online ticket registration. Be sure to mail in the most recent
                 Ticket Request form.\n\n
                 Caution: We recommend that you use a form of payment you can easily return for a refund if necessary.\n\n

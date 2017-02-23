@@ -57,7 +57,7 @@ function gotDiscretionaryTickets(jqXHR)
             disc[email] = {};
             calls.push(
                 $.ajax({
-                url: 'https://profiles.burningflipside.com/api/v1/users?$filter=mail eq '+email,
+                url: window.profilesUrl+'/api/v1/users?$filter=mail eq '+email,
                 type: 'get',
                 dataType: 'json',
                 xhrFields: {withCredentials: true},
@@ -123,7 +123,7 @@ function initPage()
         dataType: 'json',
         complete: gotTicketYear});
     $.ajax({
-        url: 'https://profiles.burningflipside.com/api/v1/groups?$select=cn',
+        url: window.profilesUrl+'/api/v1/groups?$select=cn',
         type: 'get',
         dataType: 'json',
         xhrFields: {withCredentials: true},

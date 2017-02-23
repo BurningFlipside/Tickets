@@ -42,7 +42,7 @@ class TicketPDF extends \PDF\PDF
         //}
         $barcode_hash   = $tmp;
         $barcode        = '<barcode code="'.$barcode_hash.'" type="C128B"/>';
-        $transfer_qr    = '<barcode code="https://secure.burningflipside.com/tickets/transfer.php?id='.$this->ticket->hash.'" type="QR" class="barcode" size="1" error="M" />';
+        $transfer_qr    = '<barcode code="'.$this->secureURL.'/tickets/transfer.php?id='.$this->ticket->hash.'" type="QR" class="barcode" size="1" error="M" />';
         $year           = $this->ticket->year;
         $ticket_id      = $this->ticket->hash;
         $short_id       = substr($this->ticket->hash, 0, 8);
