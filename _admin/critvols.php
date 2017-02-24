@@ -23,12 +23,12 @@ $page->body .= '
                     <div id="single" class="panel-collapse collapse in">
                         <div class="panel-body">
                             <form class="form-inline" role="form">
-                                Search Type: <select id="search_type" name="search_type" class="form-control" onchange="search_type_changed(this)">
+                                Search Type: <select id="search_type" name="search_type" class="form-control">
                                     <option value="*">All</option>
                                     <option value="request_id">Request ID</option>
-                                    <option value="email">Email</option>
-                                    <option value="first">First Name</option>
-                                    <option value="last">Last Name</option>
+                                    <option value="mail">Email</option>
+                                    <option value="givenName">First Name</option>
+                                    <option value="sn">Last Name</option>
                                 </select>
                                 <input type="text" id="search" name="search" class="form-control"/>
                                 <button class="btn btn-default" id="search_btn">Search</button>
