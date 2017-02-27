@@ -43,13 +43,13 @@ abstract class KeyValueSingletonDataTable extends SingletonDataTable implements 
     function update($filter, $data)
     {
         $this->cache = array();
-        return $this->data_table($filter, $data);
+        return $this->data_table->update($filter, $data);
     }
 
     function delete($filter)
     {
         $this->cache = array();
-        return $this->data_table($filter);
+        return $this->data_table->delete($filter);
     }
 
     public function toArray()
