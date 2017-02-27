@@ -225,14 +225,21 @@ function get_request($request_id, $year = false)
     $ticket_data_table   = $ticket_data_set['RequestedTickets'];
     $donation_data_table = $ticket_data_set['RequestDonation'];
     $status_data_table   = $ticket_data_set['RequestStatus'];
-    $status_data_table->prefetch_all();
+    $statuses_data       = $status_data_table->read(false);
+    $statuses            = array();
+    $status_count        = count($statuses_data);
+    for($i = 0; $i < $status_count; $i++)
+    {
+        $status_id = $statuses_data[$i]['status_id'];
+        $statuses[$status_id] = $statuses_data[$i];
+    }
     $request_count = count($requests);
     for($i = 0; $i < $request_count; $i++)
     {
         $filter = new \Data\Filter('request_id eq \''.$requests[$i]['request_id'].'\' and year eq '.$requests[$i]['year']);
         $requests[$i]['tickets']   = $ticket_data_table->read($filter);
         $requests[$i]['donations'] = $donation_data_table->read($filter);
-        $requests[$i]['status'] = $status_data_table[$requests[$i]['status']];
+        $requests[$i]['status'] = $statuses_data[$requests[$i]['status']];
     }
     echo json_encode($requests);
 }
