@@ -13,15 +13,6 @@ class FlipsideTicketRequestEmail extends \Email\Email
         $this->settings = \Tickets\DB\TicketSystemSettings::getInstance();
         $pdf = new \Tickets\Flipside\RequestPDF($request);
         $this->addAttachmentFromBuffer('Flipside '.$this->request->year.' Ticket Request Form.pdf', $pdf->toPDFBuffer(), 'application/pdf');
-        if($source === false)
-        {
-            $vars = \Tickets\DB\LongTextStringsDataTable::getInstance();
-            $this->source = $vars['request_email_source'];
-        }
-        else
-        {
-            $this->source = $source;
-        }
     }
 
     public function getFromAddress()
