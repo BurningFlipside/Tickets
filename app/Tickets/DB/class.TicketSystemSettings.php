@@ -28,10 +28,5 @@ class TicketSystemSettings extends KeyValueSingletonDataTable
     {
         return count((array)$this);
     }
-
-    public function search($filter = false, $select = false, $count = false, $skip = false, $sort = false, $params = false)
-    {
-        return array();
-    }
 }
 ?>

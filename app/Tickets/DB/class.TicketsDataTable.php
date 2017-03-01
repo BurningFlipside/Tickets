@@ -41,11 +41,6 @@ class TicketsDataTable extends SingletonDataTable
         return $this->data_table->create($data);
     }
 
-    function search($filter=false, $select=false, $count=false, $skip=false, $sort=false, $params=false)
-    {
-        return $this->read($filter, $select, $count, $skip, $sort, $params);
-    }
-
     function read($filter=false, $select=false, $count=false, $skip=false, $sort=false, $params=false)
     {
         $this->modify_filter($filter);
