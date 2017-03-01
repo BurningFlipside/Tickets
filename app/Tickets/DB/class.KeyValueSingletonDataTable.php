@@ -118,10 +118,5 @@ abstract class KeyValueSingletonDataTable extends SingletonDataTable implements 
     {
         return $this->data_table->count($filter);
     }
-
-    public function search($filter = false, $select = false, $count = false, $skip = false, $sort = false, $params = false)
-    {
-        return $this->read($filter, $select, $count, $skip, $sort, $params);
-    }
 }
 ?>

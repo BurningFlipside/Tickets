@@ -183,7 +183,7 @@ function list_ticket_types()
     }
     $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
     $ticket_type_data_table = $ticket_data_set['TicketTypes'];
-    $ticket_types = $ticket_type_data_table->search($app->odata->filter, $app->odata->select, $app->odata->top, $app->odata->skip, $app->odata->orderby);
+    $ticket_types = $ticket_type_data_table->read($app->odata->filter, $app->odata->select, $app->odata->top, $app->odata->skip, $app->odata->orderby);
     if($ticket_types === false)
     {
         $ticket_types = array();

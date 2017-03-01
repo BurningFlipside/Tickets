@@ -39,7 +39,7 @@ function show_constraints()
     $constraints['max_tickets_per_request'] = $settings['max_tickets_per_request'];
     $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
     $ticket_type_data_table = $ticket_data_set['TicketTypes'];
-    $ticket_types = $ticket_type_data_table->search();
+    $ticket_types = $ticket_type_data_table->read();
     if($ticket_types === false)
     {
         $ticket_types = array();
@@ -107,7 +107,7 @@ function showTicketTypes()
     }
     $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
     $ticket_type_data_table = $ticket_data_set['TicketTypes'];
-    $ticket_types = $ticket_type_data_table->search();
+    $ticket_types = $ticket_type_data_table->read();
     if($ticket_types === false)
     {
         $ticket_types = array();

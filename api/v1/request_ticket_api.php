@@ -26,7 +26,7 @@ function list_request_w_tickets()
     {
         $filter = new \Data\Filter('mail eq \''.$app->user->mail.'\'');
     }
-    $requests = $request_data_table->search($filter, $app->odata->select);
+    $requests = $request_data_table->read($filter, $app->odata->select);
     if($requests === false)
     {
         $requests = array();
@@ -68,7 +68,7 @@ function get_request_w_tickets($request_id, $year = false)
         $filter_str += ' and mail eq '+$app->user->mail;
     }
     $filter = new \Data\Filter($filter_str);
-    $requests = $request_data_table->search($filter, $select);
+    $requests = $request_data_table->read($filter, $select);
     if($requests === false)
     {
         $requests = array();

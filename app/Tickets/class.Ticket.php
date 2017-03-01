@@ -212,7 +212,7 @@ class Ticket extends \SerializableObject
         {
             $filter = new \Data\Filter("previous_hash eq '$hash'");
             $history_table = self::get_history_data_table();
-            $ticket_data = $history_table->search($filter);
+            $ticket_data = $history_table->read($filter);
             if($ticket_data === false)
             {
                 return false;
