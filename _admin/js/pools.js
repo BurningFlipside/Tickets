@@ -217,7 +217,7 @@ function initTable()
 function initPage()
 {
     $.ajax({
-        url: 'https://profiles.burningflipside.com/api/v1/groups?$select=cn',
+        url: window.profilesUrl+'/api/v1/groups?$select=cn',
         type: 'get',
         dataType: 'json',
         xhrFields: {withCredentials: true},

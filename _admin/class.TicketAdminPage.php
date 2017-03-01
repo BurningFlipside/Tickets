@@ -112,7 +112,7 @@ class TicketAdminPage extends FlipAdminPage
             $this->body = '
         <div class="row">
             <div class="col-lg-12">
-                <h1 class="page-header">You must <a href="https://profiles.burningflipside.com/login.php?return='.$this->currentURL().'">log in <span class="fa fa-sign-in"></span></a> to access the Burning Flipside Ticket system!</h1>
+                <h1 class="page-header">You must <a href="'.$this->loginUrl.'?return='.$this->currentURL().'">log in <span class="fa fa-sign-in"></span></a> to access the Burning Flipside Ticket system!</h1>
             </div>
         </div>';
         }

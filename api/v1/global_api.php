@@ -349,12 +349,16 @@ function getTicketUsers()
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
+    $settings = \Settings::getInstance();
+    $profilesUrl = $settings->getGlobalSetting('profiles_url', 'https://profiles.burningflipside.com/');
+
+
     $context = [ 'http' => [ 'method' => 'GET' ], 'ssl' => [ 'verify_peer' => false, 'allow_self_signed'=> true, 'verify_peer_name'=>false] ];
     $context = stream_context_create($context);
     $full = array();
-    $res = file_get_contents('https://profiles.burningflipside.com/api/v1/groups/TicketAdmins?$expand=member&$select=member.givenName,member.sn,member.mail,member.uid,cn', false, $context);
+    $res = file_get_contents($profilesUrl.'/api/v1/groups/TicketAdmins?$expand=member&$select=member.givenName,member.sn,member.mail,member.uid,cn', false, $context);
     $full[0] = json_decode($res, true);
-    $res = file_get_contents('https://profiles.burningflipside.com/api/v1/groups/TicketTeam?$expand=member&$select=member.givenName,member.sn,member.mail,member.uid,cn', false, $context);
+    $res = file_get_contents($profilesUrl.'/api/v1/groups/TicketTeam?$expand=member&$select=member.givenName,member.sn,member.mail,member.uid,cn', false, $context);
     $full[1] = json_decode($res, true);
     $res = array();
     foreach($full[0]['member'] as $member)
