@@ -105,27 +105,9 @@ class TicketAdminPage extends FlipAdminPage
         $this->addLink('<span class="fa fa-cog"></span> Admin', '#', $admin_menu);
     }
 
-    function print_page($header = true)
+    public function isAdmin()
     {
-        if($this->user === false)
-        {
-            $this->body = '
-        <div class="row">
-            <div class="col-lg-12">
-                <h1 class="page-header">You must <a href="'.$this->loginUrl.'?return='.$this->currentURL().'">log in <span class="fa fa-sign-in"></span></a> to access the Burning Flipside Ticket system!</h1>
-            </div>
-        </div>';
-        }
-        else if($this->is_admin == FALSE && $this->is_data == FALSE)
-        {
-            $this->body = '
-        <div class="row">
-            <div class="col-lg-12">
-                <h1 class="page-header">You must log in to access the Burning Flipside Ticket system!</h1>
-            </div>
-        </div>';
-        }
-        parent::printPage($header);
+        return ($this->is_admin === true || $this->is_data === true);
     }
 }
 ?>
