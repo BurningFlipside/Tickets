@@ -1,8 +1,8 @@
 <?php
-require_once('../class.SecurePage.php');
+require_once('../class.SecureLoginRequiredPage.php');
 require_once('class.FlipSession.php');
 require_once('app/TicketAutoload.php');
-class TicketPage extends SecurePage
+class TicketPage extends SecureLoginRequiredPage
 {
     private $is_admin;
     private $is_data;
@@ -59,19 +59,6 @@ class TicketPage extends SecurePage
     function add_tickets_css()
     {
         $this->addCSSByURI($this->ticket_root.'/css/tickets.css');
-    }
-
-    function print_page($header=true)
-    {
-        if($this->user === false || $this->user === null)
-        {
-            $this->body = '
-<div id="content">
-    <h1>You must <a href="'.$this->loginUrl.'?return='.$this->currentURL().'">log in <span class="fa fa-sign-in"></span></a> to access the Burning Flipside Ticket system!</h1>
-</div>';
-            $this->add_login_form();
-        }
-        parent::printPage($header);
     }
 }
 ?>
