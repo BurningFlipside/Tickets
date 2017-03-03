@@ -58,6 +58,17 @@ $page->body .= '
                 <tbody></tbody>
             </table>
         </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <h2>Status is Received, but there are comments <a href="#" onclick="exportCSV(\'vProblemReceivedWComments\')"><i class="fa fa-file-excel-o"></i></a></h2>
+            </div>
+            <table class="table" id="vProblemReceivedWComments">
+                <thead>
+                    <tr><th>Request Id</th><th>Status</th><th>Total Due</th><th>Total Received</th><th>Comments</th><th>Critical</th></tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
     </div>
 </div>
 ';
