@@ -133,6 +133,12 @@ $page->body .= '
                                 </thead>
                                 <tbody></tbody>
                             </table>
+                            <div class="form-group">
+                                <label for="envelopeArt" class="col-sm-2 control-label">Envelope Art Consent:</label>
+                                <div class="col-sm-10">
+                                    <input type="checkbox" id="envelopeArt" name="envelopeArt"></input>
+                                </div>
+                            </div>
                             <div class="clearfix visible-sm visible-md visible-lg"></div>
                             <div class="form-group">
                                 <label for="critvol" class="col-sm-2 control-label">Critical Volunteer:</label>
