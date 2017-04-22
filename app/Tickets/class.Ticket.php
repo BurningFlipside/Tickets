@@ -428,14 +428,21 @@ class Ticket extends \SerializableObject
             }
             else
             {
-               $filter = new \Data\Filter("sold eq 0 and type eq '$type' and pool_id eq $pool");
+               $filter = new \Data\Filter("sold eq 0 and type eq '$type' and pool_id eq $pool and year='2017'");
                $tickets = self::get_tickets($filter, false, $qty);
             }
             $sold = 0;
             $count = count($tickets);
             for($i = 0; $sold < $qty; $i++)
             {
-                if($i >= $count) return false;
+                if($i === $count)
+                {
+                    break;
+                }
+                if($i > $count)
+                {
+                    return false;
+                }
                 if($tickets[$i]->sellTo($email, $message, $firstName, $lastName, $datatable))
                 {
                     $sold++;
