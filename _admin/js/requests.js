@@ -280,6 +280,15 @@ function row_clicked()
     $('#comments').val(data.comments);
     $('#bucket').val(data.bucket);
     console.log(data);
+    if(data.envelopeArt != '0')
+    {
+        $('#envelopeArt').prop('checked', true);
+    }
+    else
+    {
+        $('#envelopeArt').prop('checked', false);
+    }
+
     if(data.crit_vol != '0')
     {
         $('#critvol').prop('checked', true);

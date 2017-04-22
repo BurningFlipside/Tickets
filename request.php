@@ -112,7 +112,10 @@ if($page->user)
         </fieldset>
         <fieldset>
             <legend>Envelope Art</legend>
-            <input id="envelopeArt" name="envelopeArt" type="checkbox"/><label for="envelopeArt">Allow AAR to use my envelope art in the Survival Guide or Website. It will be credited by the name on the return address.</label>
+            <input id="envelopeArt" name="envelopeArt" type="checkbox"/>&nbsp;
+            <label for="envelopeArt">
+                Allow AAR to use my envelope art in the Survival Guide or Website. It will be credited by the name on the return address.
+            </label>
         </fieldset>
         <fieldset>
             <legend>Mailing Lists</legend>
