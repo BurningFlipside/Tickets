@@ -1,6 +1,8 @@
 var history_data = null;
 var year;
 var earlyEntry;
+var scanner;
+var myCameras;
 
 function finish_processing_ticket(data)
 {
@@ -559,6 +561,53 @@ function gotEarlyEntry(jqXHR)
     earlyEntry = jqXHR.responseJSON*1;
 }
 
+function error(err) {
+    alert('Error: '+err);
+}
+
+function selectCamera() {
+    var videoSource = $('#videoSource :selected')[0].value;
+    for(var i = 0; i < myCameras.length; i++) {
+        if(myCameras[i].id == videoSource) {
+            scanner.start(myCameras[i]);
+        }
+    }
+}
+
+function gotCameras(cameras) {
+    var haveVideo = false;
+    myCameras = cameras;
+    for(var i = 0; i < cameras.length; i++) {
+        var option = document.createElement('option');
+	option.text = cameras[i].name;
+	option.value = cameras[i].id;
+	$('#videoSource').append(option);
+	haveVideo = true;
+	if(cameras[i].name.indexOf('Rear') !== -1 || cameras[i].name.indexOf('rear') !== -1 ||
+	   cameras[i].name.indexOf('back') !== -1) {
+            option.selected = true;
+        }
+    }
+    if(haveVideo) {
+        $('#videoSource').on('change', selectCamera);
+        selectCamera();
+    }
+    else {
+        $('#ticketCodeScan').hide();
+    }
+}
+
+function enumError(err) {
+    $('#ticketCodeScan').hide();
+    console.log(err);
+}
+
+function codeScanned(content) {
+    console.log(content);
+    $('#qrcodeScan').modal('hide');
+    get_ticket(content);
+}
+
 function init_gate_page()
 {
     $.ajax({
@@ -593,6 +642,11 @@ function init_gate_page()
     });
     $('#search_ticket_table').on('click', 'tr', ticket_clicked);
     $('#history_ticket_table').on('click', 'tr', history_clicked);
+    Instascan.Camera.getCameras().then(gotCameras).catch(enumError);
+    scanner = new Instascan.Scanner({video: document.getElementById('v'), mirror: false});
+    scanner.addListener('scan', codeScanned);
 }
 
 $(init_gate_page);
+
+

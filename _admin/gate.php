@@ -7,6 +7,7 @@ $page = new TicketAdminPage('Burning Flipside - Tickets');
 $page->addWellKnownJS(JS_DATATABLE);
 $page->addWellKnownCSS(CSS_DATATABLE);
 $page->addWellKnownJS(JS_BOOTBOX);
+$page->addJSByURI('../js/instascan.min.js', false);
 $page->addJSByURI('js/gate.js');
 
 $page->body .= '
@@ -21,8 +22,11 @@ $page->body .= '
     <div class="row">
         <div class="form-group">
             <label for="ticket_search" class="col-sm-2 control-label">Search:</label>
-            <div class="col-sm-10">
-                <input class="form-control" type="text" name="ticket_search" id="ticket_search"/>
+            <div class="col-sm-10 input-group">
+		<input class="form-control" type="text" name="ticket_search" id="ticket_search"/>
+		<span class="input-group-btn">
+                    <button class="btn btn-default" id="ticketCodeScan" type="button" data-toggle="modal" data-target="#qrcodeScan"><i class="fa fa-qrcode" aria-hidden="true"></i></button>
+                </span>
             </div>
         </div>
     </div>
@@ -266,6 +270,29 @@ $page->body .= '
                             <tbody>
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" aria-hidden="true" id="qrcodeScan" style="display: none;" data-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title" id="modal_title">Scan QR Code</h4>
+                </div>
+                <div class="modal-body">
+		    <div class="container-fluid">
+			<div class="form-group">
+                            <label class="col-sm-2 control-label">Video Source: </label>
+                            <div class="col-sm-10">
+			        <select class="form-control" id="videoSource"></select>
+                            </div>
+			</div>
+			<div class="col-sm-10 embed-responsive embed-responsive-4by3">
+                            <video id="v" class="embed-responsive-item" width="1024" height="768"></video>
+                        </div>
                     </div>
                 </div>
             </div>
