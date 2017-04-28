@@ -583,6 +583,14 @@ function gotCameras(cameras) {
 	option.value = cameras[i].id;
 	$('#videoSource').append(option);
 	haveVideo = true;
+	if(cameras[i].name === null) {
+            option.text = 'Camera '+i;
+            if(i === 1) {
+                //The back camera is almost always the second
+                option.selected = true;
+            }
+            continue;
+	}
 	if(cameras[i].name.indexOf('Rear') !== -1 || cameras[i].name.indexOf('rear') !== -1 ||
 	   cameras[i].name.indexOf('back') !== -1) {
             option.selected = true;
@@ -598,6 +606,7 @@ function gotCameras(cameras) {
 }
 
 function enumError(err) {
+    alert(err.stack+':'+err.lineNumber+':'+err);
     $('#ticketCodeScan').hide();
     console.log(err);
 }
