@@ -606,7 +606,6 @@ function gotCameras(cameras) {
 }
 
 function enumError(err) {
-    alert(err.stack+':'+err.lineNumber+':'+err);
     $('#ticketCodeScan').hide();
     console.log(err);
 }
