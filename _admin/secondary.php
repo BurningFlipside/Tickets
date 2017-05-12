@@ -8,24 +8,20 @@ $page->addWellKnownJS(JS_DATATABLE, false);
 $page->addWellKnownJS(JS_BOOTSTRAP_FH);
 $page->addWellKnownCSS(CSS_DATATABLE);
 $page->addWellKnownCSS(CSS_BOOTSTRAP_FH);
-$page->addJSByURI('js/requests.js');
+$page->addJSByURI('js/secondary.js');
 
 $page->body .= '
         <div class="row">
             <div class="col-lg-12">
-                <h1 class="page-header">Ticket Requests</h1>
+                <h1 class="page-header">Secondary Ticket Requests</h1>
             </div>
         </div>
         <div class="row">
             Request Year: <select id="year" onchange="change_year(this)">
             </select>
-            Request Status: <select id="statusFilter" onchange="changeStatusFilter(this)">
-                <option value="*">All</option>
-            </select>
             <a onclick="getCSV();" title="Export CSV"><i class="fa fa-file-excel-o"></i></a>
             <table class="table" id="requests">
                 <thead>
-                    <th></th>
                     <th>Request ID</th>
                     <th>First Name</th>
                     <th>Last Name</th>
@@ -80,13 +76,6 @@ $page->body .= '
                             </div>
                             <div class="clearfix visible-sm visible-md visible-lg"></div>
                             <div class="form-group">
-                                <label for="mobile" class="col-sm-2 control-label">Cell Number:</label>
-                                <div class="col-sm-10">
-                                    <input id="mobile" name="mobile" type="text" class="form-control bfh-phone" data-country="c">
-                                </div>
-                            </div>
-                            <div class="clearfix visible-sm visible-md visible-lg"></div>
-                            <div class="form-group">
                                 <label for="street" class="col-sm-2 control-label">Street Address:</label>
                                 <div class="col-sm-10">
                                     <textarea class="form-control" id="street" name="street" rows="2"></textarea>
@@ -124,35 +113,6 @@ $page->body .= '
                                 </thead>
                                 <tbody></tbody>
                             </table>
-                            <table id="donation_table" class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Entity</th>
-                                        <th>Amount</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                            <div class="form-group">
-                                <label for="envelopeArt" class="col-sm-2 control-label">Envelope Art Consent:</label>
-                                <div class="col-sm-10">
-                                    <input type="checkbox" id="envelopeArt" name="envelopeArt"></input>
-                                </div>
-                            </div>
-                            <div class="clearfix visible-sm visible-md visible-lg"></div>
-                            <div class="form-group">
-                                <label for="critvol" class="col-sm-2 control-label">Critical Volunteer:</label>
-                                <div class="col-sm-10">
-                                    <input type="checkbox" id="critvol" name="critvol"></input>
-                                </div>
-                            </div>
-                            <div class="clearfix visible-sm visible-md visible-lg"></div>
-                            <div class="form-group">
-                                <label for="protected" class="col-sm-2 control-label">Protected:</label>
-                                <div class="col-sm-10">
-                                    <input type="checkbox" id="protected" name="protected"></input>
-                                </div>
-                            </div>
                             <div class="clearfix visible-sm visible-md visible-lg"></div>
                             <div class="form-group">
                             <label for="total_due" class="col-sm-2 control-label">Total Due:</label>
@@ -168,31 +128,10 @@ $page->body .= '
                             </div>
                         </div>
                         <div class="clearfix visible-sm visible-md visible-lg"></div>
-                        <div class="form-group">
-                            <label for="status" class="col-sm-2 control-label">Status:</label>
-                            <div class="col-sm-10">
-                                <select class="form-control" name="status" id="status"></select>
-                            </div>
-                        </div>
-                        <div class="clearfix visible-sm visible-md visible-lg"></div>
-                        <div class="form-group">
-                            <label for="comments" class="col-sm-2 control-label">Comments:</label>
-                            <div class="col-sm-10">
-                                <textarea class="form-control" name="comments" id="comments"></textarea>
-                            </div>
-                        </div>
-                        <div class="clearfix visible-sm visible-md visible-lg"></div>
-                        <div class="form-group">
-                            <label for="bucket" class="col-sm-2 control-label">Bucket:</label>
-                            <div class="col-sm-10">
-                                <input type="text" class="form-control" name="bucket" id="bucket" readonly/>
-                            </div>
-                        </div>
                        </form>
                   </div>
                   <div class="modal-footer">
-                      <button type="button" class="btn btn-default" onclick="save_request(this)">Ok</button>
-                      <button type="button" class="btn btn-default" onclick="edit_request(this)">Edit Tickets/Donations</button>
+                      <button type="button" class="btn btn-default" onclick="saveRequest(this)" id="ticketButton">Ticket</button>
                       <button type="button" class="btn btn-default" onclick="getPDF(this)">Get PDF</button>
                       <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
                   </div>

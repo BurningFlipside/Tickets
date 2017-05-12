@@ -68,7 +68,8 @@ class TicketAdminPage extends FlipAdminPage
             'All Requests'      => 'requests.php',
             'Requested Tickets' => 'request_tickets.php',
             'Problem Requests '.$probs => 'problems.php',
-            'Invalid Requests' => 'requests_invalid.php'
+            'Invalid Requests' => 'requests_invalid.php',
+            'Secondary Requests' => 'secondary.php'
         );
         $ticket_menu = array(
             'All Tickets'      => 'tickets.php',

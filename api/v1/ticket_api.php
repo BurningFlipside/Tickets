@@ -252,6 +252,10 @@ function transferTicket($hash)
         throw new \Exception('Missing Required Parameter email!');
     }
     $ticket = \Tickets\Ticket::get_ticket_by_hash($hash);
+    if($ticket === false || $ticket->void == 1)
+    {
+        $app->notFound();
+    }
     $email_msg = new \Tickets\TicketTransferEmail($ticket, $array['email']);
     $email_provider = EmailProvider::getInstance();
     if($email_provider->sendEmail($email_msg) === false)
@@ -385,7 +389,7 @@ function verifyShortCode($code)
     }
     $count++;
     FlipSession::setVar('TicketVerifyCount', $count);
-    $filter = new \Data\Filter('contains(hash,'.$code);
+    $filter = new \Data\Filter('contains(hash,'.$code.') and void eq 0');
     $ticket_data_table = \Tickets\DB\TicketsDataTable::getInstance();
     $res = $ticket_data_table->read($filter);
     if($res === false) echo 'false';

@@ -178,6 +178,8 @@ if($page->user !== false && $page->user !== null && ($page->user->isInGroupNamed
 </div>
 ';
 
+//$page->addNotification('Miss out on the initial ticket request window? Just need more tickets? You can request more tickets <a href="secondary.php" class="alert-link">here</a>!');
+
 $page->print_page();
 // vim: set tabstop=4 shiftwidth=4 expandtab:
 

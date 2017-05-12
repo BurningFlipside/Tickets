@@ -36,6 +36,27 @@ if($issuedTicketCount != 0)
     $page->add_card('fa-ticket', '<div id="unsoldCount">?</div>', 'Unsold Tickets', 'unsold_tickets.php');
     $page->add_card('fa-check', '<div id="usedCount">?</div>', 'Used Tickets', 'used_tickets.php', $page::CARD_GREEN);
 }
+$secondaryTable = \DataSetFactory::getDataTableByNames('tickets', 'SecondaryRequests');
+$secondaryTotalCount = 0;
+$validTicketArray = $secondaryTable->read(false, array('valid_tickets'));
+$proccessedTicketArray = $secondaryTable->read(new \Data\Filter('ticketed eq 1'), array('valid_tickets'));
+$validTicketArrayCount = count($validTicketArray);
+for($i = 0; $i < $validTicketArrayCount; $i++)
+{
+    $tmp = json_decode($validTicketArray[$i]['valid_tickets']);
+    $secondaryTotalCount += count($tmp);
+}
+$page->add_card('fa-ticket', '<div>'.$secondaryTotalCount.'</div>', 'Requested Secondary Tickets', 'secondary.php');
+
+
+$secondaryTotalCount = 0;
+$proccessedTicketArrayCount = count($proccessedTicketArray);
+for($i = 0; $i < $proccessedTicketArrayCount; $i++)
+{
+    $tmp = json_decode($proccessedTicketArray[$i]['valid_tickets']);
+    $secondaryTotalCount += count($tmp);
+}
+$page->add_card('fa-ticket', '<div>'.$secondaryTotalCount.'</div>', 'Processed Secondary Tickets', 'secondary.php', $page::CARD_GREEN);
 $page->body.='</div>';
 
 $page->print_page();

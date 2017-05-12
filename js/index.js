@@ -538,7 +538,7 @@ function proccessOutOfWindow(now, start, end, my_window)
         {
             $('[href="request.php"]').hide();
         }
-        add_notification($('#request_set'), message);
+        //add_notification($('#request_set'), message);
         out_of_window = true;
         if(!test_mode)
         {

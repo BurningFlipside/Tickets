@@ -5,7 +5,7 @@ require_once('../app/TicketAutoload.php');
 
 $settings = \Tickets\DB\TicketSystemSettings::getInstance();
 $year = $settings['year'];
-$filter = new \Data\Filter("year eq $year and assigned eq 0");
+$filter = new \Data\Filter("year eq $year and assigned eq 0 and sold eq 1");
 
 $ticketDataTable = \Tickets\DB\TicketsDataTable::getInstance();
 $unProcessedTickets = $ticketDataTable->read($filter, false, 10);
