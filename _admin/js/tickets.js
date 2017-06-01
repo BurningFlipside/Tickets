@@ -302,18 +302,36 @@ function table_searched()
     }
 }
 
+function requeryTable()
+{
+    var year = $('#ticket_year').val();
+    var sold = $('#ticketSold').val();
+    var used = $('#ticketUsed').val();
+    var filter = 'year eq '+year;
+    if(sold !== '*')
+    {
+        filter+=' and sold eq '+sold;
+    }
+    if(used !== '*')
+    {
+        filter+=' and used eq '+used;
+    }
+    $('#tickets').DataTable().ajax.url('../api/v1/tickets?filter='+filter+'&fmt=data-table').load();
+}
+
+function soldChanged()
+{
+    requeryTable();
+}
+
+function usedChanged()
+{
+    requeryTable();
+}
+
 function yearChanged(e)
 {
-    var year;
-    if(e === undefined)
-    {
-        year = $('#ticket_year').value;
-    }
-    else
-    {
-        year = e.currentTarget.value;
-    }
-    $('#tickets').DataTable().ajax.url('../api/v1/tickets?filter=year eq '+year+'&fmt=data-table').load();
+    requeryTable();
 }
 
 function gotTicketYears(jqXHR)
@@ -374,6 +392,17 @@ function gotEarlyEntry(jqXHR)
 
 function init_page()
 {
+    var sold = getParameterByName('sold');
+    if(sold !== null)
+    {
+        $('#ticketSold').val(sold);
+    }
+    var used = getParameterByName('used');
+    if(used !== null)
+    {
+        $('#ticketUsed').val(used);
+    }
+
     $('#tickets').dataTable({
         columns: [
             {'data': 'hash', 'render':short_hash},
@@ -400,6 +429,8 @@ function init_page()
         complete: gotEarlyEntry});
 
     $('#tickets').on('search.dt', table_searched);
+    $('#ticketSold').on('change', soldChanged);
+    $('#ticketUsed').on('change', usedChanged);
 }
 
 $(init_page)

@@ -15,7 +15,19 @@ $page->body .= '
             </div>
         </div>
         <div class="row">
-            Ticket Year: <select id="ticket_year"></select>
+            Year: <select id="ticket_year"></select>
+            Sold: 
+            <select id="ticketSold">
+                <option selected value="*">Both</option>
+                <option value="1">Yes</option>
+                <option value="0">No</option>
+            </select>
+            Used: 
+            <select id="ticketUsed">
+                <option selected value="*">Both</option>
+                <option value="1">Yes</option>
+                <option value="0">No</option>
+            </select>
         </div>
         <div class="row">
             <table class="table" id="tickets">
