@@ -54,22 +54,6 @@ else
                 $page->body .= '<div id="content">
                                     <input class="form-control" type="hidden" name="hash" id="hash" value="'.$hash.'"/>
                                     <formset>
-                                        <legend>Change Name</legend>
-                                        <div class="form-group">
-                                            <label for="firstName" class="col-sm-2 control-label">First Name:</label>
-                                            <div class="col-sm-10">
-                                                <input class="form-control" type="text" name="firstName" id="firstName" data-toggle="tooltip" data-placement="top" title="The first name that matches the legal photo ID that will be presented at the Burning Flipside gate." value="'.$ticket->firstName.'"/>
-                                            </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="lastName" class="col-sm-2 control-label">Last Name:</label>
-                                            <div class="col-sm-10">
-                                                <input class="form-control" type="text" name="lastName" id="lastName" data-toggle="tooltip" data-placement="top" title="The last name that matches the legal photo ID that will be presented at the Burning Flipside gate." value="'.$ticket->lastName.'"/>
-                                            </div>
-                                        </div>
-                                        <button type="button" class="btn btn-primary" onclick="change_name()">Change Name</button>
-                                    </formset>
-                                    <formset>
                                         <legend>Change Ownership</legend>
                                         <div class="form-group">
                                             <label for="email" class="col-sm-2 control-label">Email:</label>
