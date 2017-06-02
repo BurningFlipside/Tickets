@@ -4,7 +4,7 @@ require_once('app/TicketAutoload.php');
 
 if(!class_exists('Httpful\Request'))
 {
-    require '/var/www/common/libs/httpful/bootstrap.php';
+    require '/var/www/common/vendor/autoload.php';
 }
 
 $expectedAnswerCount = 5;
@@ -428,7 +428,6 @@ function ticketSecondaryRequest($request_id, $year)
         $first = $request['ticket_first_'.$valid_tickets[$i]];
         $last = $request['ticket_last_'.$valid_tickets[$i]];
         $type = $valid_tickets[$i][0];
-
         $res = \Tickets\Ticket::do_sale($app->user, $email, array($type=>1), false, $first, $last, 1);
         if($res === false)
         {
