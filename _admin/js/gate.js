@@ -36,7 +36,8 @@ function process_ticket()
     else
     {
         data.used = 1;
-        data.used_dt = new Date();
+        var date = new Date();
+        data.used_dt = date.toISOString().slice(0,19).replace('T', ' ');
     }
     if($('#guardian_first').val().length > 0)
     {
@@ -650,9 +651,14 @@ function init_gate_page()
     });
     $('#search_ticket_table').on('click', 'tr', ticket_clicked);
     $('#history_ticket_table').on('click', 'tr', history_clicked);
-    Instascan.Camera.getCameras().then(gotCameras).catch(enumError);
-    scanner = new Instascan.Scanner({video: document.getElementById('v'), mirror: false});
-    scanner.addListener('scan', codeScanned);
+    if(navigator.getUserMedia !== undefined) {
+        Instascan.Camera.getCameras().then(gotCameras).catch(enumError);
+        scanner = new Instascan.Scanner({video: document.getElementById('v'), mirror: false});
+        scanner.addListener('scan', codeScanned);
+    }
+    else {
+        enumError(null);
+    }
 }
 
 $(init_gate_page);

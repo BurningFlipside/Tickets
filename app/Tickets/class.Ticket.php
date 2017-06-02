@@ -77,7 +77,13 @@ class Ticket extends \SerializableObject
             $this->previous_hash = $this->hash;
             $this->generate_hash($datatable);
         }
-        $res = $datatable->create($this->jsonSerialize());
+        $array = $this->jsonSerialize();
+        unset($array['used_dt']);
+        if($array['soldDT'] === '')
+        {
+            $array['soldDT'] = null;
+        }
+        $res = $datatable->create($array);
         if($res !== false && (isset($this->previous_hash) && $this->previous_hash !== false && $this->previous_hash !== null))
         {
             $filter = new \Tickets\DB\TicketHashFilter($this->previous_hash);
@@ -136,6 +142,7 @@ class Ticket extends \SerializableObject
         {
             $this->lastName = $lastName;
         }
+        $this->soldDT = date("Y-m-d H:i:s");
         if($this->insert_to_db($db) === false)
         {
             return FALSE;
