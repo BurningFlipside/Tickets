@@ -30,11 +30,11 @@ if($issuedTicketCount == 0)
     $page->add_card('fa-tag',  '<div id="requestedTicketCount">?</div>', 'Requested Tickets', 'request_tickets.php', $page::CARD_GREEN);
 }
 $page->add_card('fa-fire', $data_table->count($yearFilter), 'Problem Requests', 'problems.php', $page::CARD_RED);
-$page->add_card('fa-usd',  '<div id="soldTicketCount">?</div>', 'Sold Tickets', 'sold_tickets.php', $page::CARD_YELLOW);
+$page->add_card('fa-usd',  '<div id="soldTicketCount">?</div>', 'Sold Tickets', 'tickets.php?sold=1', $page::CARD_YELLOW);
 if($issuedTicketCount != 0)
 {
-    $page->add_card('fa-ticket', '<div id="unsoldCount">?</div>', 'Unsold Tickets', 'unsold_tickets.php');
-    $page->add_card('fa-check', '<div id="usedCount">?</div>', 'Used Tickets', 'used_tickets.php', $page::CARD_GREEN);
+    $page->add_card('fa-ticket', '<div id="unsoldCount">?</div>', 'Unsold Tickets', 'tickets.php?sold=0');
+    $page->add_card('fa-check', '<div id="usedCount">?</div>', 'Used Tickets', 'tickets.php?used=1', $page::CARD_GREEN);
 }
 $secondaryTable = \DataSetFactory::getDataTableByNames('tickets', 'SecondaryRequests');
 $secondaryTotalCount = 0;
