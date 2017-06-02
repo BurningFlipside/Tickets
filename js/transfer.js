@@ -68,6 +68,10 @@ function claim_ticket()
 function init_page()
 {
     $('[title]').tooltip();
+    if(browser_supports_input_type('email'))
+    {
+        $('#email').attr({type:"email"});
+    }
 }
 
 $(init_page);
