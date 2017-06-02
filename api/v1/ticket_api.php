@@ -239,6 +239,14 @@ function claimTicket($hash)
     return $ticket->insert_to_db(); 
 }
 
+function endswith($string, $test)
+{
+    $strlen = strlen($string);
+    $testlen = strlen($test);
+    if ($testlen > $strlen) return false;
+    return substr_compare($string, $test, $strlen - $testlen, $testlen) === 0;
+}
+
 function transferTicket($hash)
 {
     global $app;
@@ -255,6 +263,14 @@ function transferTicket($hash)
     if($ticket === false || $ticket->void == 1)
     {
         $app->notFound();
+    }
+    if(filter_var($array['email'], FILTER_VALIDATE_EMAIL) === false)
+    {
+        throw new \Exception('Invalid value for required parameter email!');
+    }
+    if(endswith($array['email'], 'gmail') || endswith($array['email'], 'yahoo') || endswith($array['email'], 'hotmail') || endswith($array['email'], 'outlook'))
+    {
+        $array['email'] = $array['email'].'.com';
     }
     $email_msg = new \Tickets\TicketTransferEmail($ticket, $array['email']);
     $email_provider = EmailProvider::getInstance();
