@@ -73,8 +73,9 @@ class TicketAdminPage extends FlipAdminPage
         );
         $ticket_menu = array(
             'All Tickets'      => 'tickets.php',
-            'Sold Tickets'     => 'sold_tickets.php',
-            'Unsold Tickets'   => 'unsold_tickets.php',
+            'Sold Tickets'     => 'tickets.php?sold=1',
+            'Unsold Tickets'   => 'tickets.php?sold=0',
+            'Used Tickets'     => 'tickets.php?used=1',
             'Generate Tickets' => 'ticket_gen.php'
         );
         $admin_menu = array(
