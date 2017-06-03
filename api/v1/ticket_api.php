@@ -126,6 +126,11 @@ function update_ticket($id)
     if(count($copy) > 0)
     {
         $hash = $id;
+        //Make sure all tickets are getting marked used at gate
+        if(isset($array['physical_ticket_id']) && strlen($array['physical_ticket_id']) > 0)
+        {
+            $array['used'] = 1;
+        }
         $res = $ticket_data_table->update($filter, $array);
     }
     else
