@@ -421,6 +421,7 @@ class Ticket extends \SerializableObject
 
     static function do_sale($user, $email, $types, $message = false, $firstName = false, $lastName = false, $pool = false)
     {
+        $settings = \Tickets\DB\TicketSystemSettings::getInstance();
         $datatable = self::get_data_table();
         foreach($types as $type=>$qty)
         {
@@ -435,7 +436,7 @@ class Ticket extends \SerializableObject
             }
             else
             {
-               $filter = new \Data\Filter("sold eq 0 and type eq '$type' and pool_id eq $pool and year='2017'");
+               $filter = new \Data\Filter("sold eq 0 and type eq '$type' and pool_id eq $pool and year=".$settings['year']);
                $tickets = self::get_tickets($filter, false, $qty);
             }
             $sold = 0;

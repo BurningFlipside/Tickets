@@ -33,6 +33,12 @@ function list_tickets()
     if($app->user->isInGroupNamed('TicketAdmins') && $app->odata->filter !== false)
     {
         $filter = $app->odata->filter;
+        if($filter->contains('year eq current'))
+        {
+            $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+            $clause = $filter->getClause('year');
+            $clause->var2 = $settings['year'];
+        }
     }
     else
     {
