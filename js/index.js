@@ -395,7 +395,12 @@ function add_old_request_to_table(tbody, request)
     var row = $('<tr class="old_request" style="display: none;">');
     row.append('<td/>');
     row.append('<td>'+request.year+'</td>');
-    row.append('<td>'+request.tickets.length+'</td>');
+    if(request.tickets === null) {
+        row.append('<td>0</td>');
+    }
+    else {
+        row.append('<td>'+request.tickets.length+'</td>');
+    }
     row.append('<td>$'+request.total_due+'</td>');
     var cell = $('<td>');
     //var button = $('<button class="btn btn-link btn-sm" data-toggle="tooltip" data-placement="top" title="Copy Old Request"><span class="fa fa-clipboard"></span></button>');

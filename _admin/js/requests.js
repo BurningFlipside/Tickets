@@ -1,16 +1,24 @@
+function requeryTable()
+{
+    var year = $('#year').val();
+    var status = $('#statusFilter').val();
+    var filter = 'year eq '+year;
+    if(status !== '*')
+    {
+        filter+=' and private_status eq '+status;
+    }
+    var table = $('#requests').DataTable();
+    table.ajax.url('../api/v1/requests?filter='+filter+'&fmt=data-table').load();
+}
+
 function change_year(control)
 {
-    var data = 'filter=year eq '+$(control).val()+'&fmt=data-table';
-    var table = $('#requests').DataTable();
-    table.ajax.url('../api/v1/requests?'+data).load();
+    requeryTable();
 }
 
 function changeStatusFilter(control)
 {
-   var year = $('#year').val();
-   var data = 'filter=year eq '+year+' and private_status eq '+$(control).val()+'&fmt=data-table';
-   var table = $('#requests').DataTable();
-   table.ajax.url('../api/v1/requests?'+data).load();
+   requeryTable();
 }
 
 function total_due(row, type, val, meta)
@@ -183,7 +191,7 @@ function save_request(control)
     }
     obj.minor_confirm = true;
     $.ajax({
-        url: '../api/v1/requests/'+$('#request_id').val(),
+        url: '../api/v1/requests/'+$('#request_id').val()+'/'+$('#year').val(),
         data: JSON.stringify(obj),
         processData: false,
         dataType: 'json',
