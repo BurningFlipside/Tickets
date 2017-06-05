@@ -3,20 +3,19 @@
 function request_ticket_api_group()
 {
     global $app;
-    $app->get('', 'list_request_w_tickets');
+    $app->get('(/)', 'listRequestWTickets');
     $app->get('/types', 'get_requested_types');
     $app->get('/:request_id(/:year)', 'get_request_w_tickets');
 }
 
-function list_request_w_tickets()
+function listRequestWTickets()
 {
     global $app;
     if(!$app->user)
     {
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
-    $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
-    $request_data_table = $ticket_data_set['RequestWTickets'];
+    $requestDataTable = \Tickets\DB\RequestDataTable::getInstance();
     $filter = false;
     if($app->user->isInGroupNamed('TicketAdmins') && $app->odata->filter != false)
     {
@@ -26,15 +25,31 @@ function list_request_w_tickets()
     {
         $filter = new \Data\Filter('mail eq \''.$app->user->mail.'\'');
     }
-    $requests = $request_data_table->read($filter, $app->odata->select);
+    $requests = $requestDataTable->read($filter);
     if($requests === false)
     {
         $requests = array();
     }
-    else if(!is_array($requests))
+    $count = count($requests);
+    $returnArray = array();
+    for($i = 0; $i < $count; $i++)
     {
-        $requests = array($requests);
+        if($requests[$i]['tickets'] === null)
+        {
+            continue;
+        }
+        $count2 = count($requests[$i]['tickets']);
+        for($j = 0; $j < $count2; $j++)
+        {
+            $tmp = (array)$requests[$i];
+            unset($tmp['tickets']);
+            $tmp['first'] = $requests[$i]['tickets'][$j]->first;
+            $tmp['last'] = $requests[$i]['tickets'][$j]->last;
+            $tmp['type'] = $requests[$i]['tickets'][$j]->type;
+            array_push($returnArray, $tmp);
+        }
     }
+    $requests = $app->odata->filterArrayPerSelect($returnArray);
     if($app->odata->count)
     {
         $requests = array('@odata.count'=>count($requests), 'value'=>$requests);
@@ -50,15 +65,9 @@ function get_request_w_tickets($request_id, $year = false)
         throw new Exception('Must be logged in', ACCESS_DENIED);
     }
     $params = $app->request->params();
-    $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
-    $request_data_table = $ticket_data_set['RequestWTickets'];
+    $requestDataTable = \Tickets\DB\RequestDataTable::getInstance();
     $filter = false;
-    $select = false;
-    if(isset($params['select']))
-    {
-        $select = explode(',',$params['select']);
-    }
-    $filter_str = 'request_id eq '+$request_id;
+    $filter_str = "request_id eq '$request_id'";
     if($year !== false)
     {
         $filter_str += ' and year eq '+$year;
@@ -68,14 +77,34 @@ function get_request_w_tickets($request_id, $year = false)
         $filter_str += ' and mail eq '+$app->user->mail;
     }
     $filter = new \Data\Filter($filter_str);
-    $requests = $request_data_table->read($filter, $select);
+    $requests = $requestDataTable->read($filter);
     if($requests === false)
     {
         $requests = array();
     }
-    else if(!is_array($requests))
+    $count = count($requests);
+    $returnArray = array();
+    for($i = 0; $i < $count; $i++)
     {
-        $requests = array($requests);
+        if($requests[$i]['tickets'] === null)
+        {
+            continue;
+        }
+        $count2 = count($requests[$i]['tickets']);
+        for($j = 0; $j < $count2; $j++)
+        {
+            $tmp = (array)$requests[$i];
+            unset($tmp['tickets']);
+            $tmp['first'] = $requests[$i]['tickets'][$j]->first;
+            $tmp['last'] = $requests[$i]['tickets'][$j]->last;
+            $tmp['type'] = $requests[$i]['tickets'][$j]->type;
+            array_push($returnArray, $tmp);
+        }
+    }
+    $requests = $app->odata->filterArrayPerSelect($returnArray);
+    if($app->odata->count)
+    {
+        $requests = array('@odata.count'=>count($requests), 'value'=>$requests);
     }
     echo @json_encode($requests);
 }
@@ -89,21 +118,38 @@ function get_requested_types()
     }
     $settings = \Tickets\DB\TicketSystemSettings::getInstance();
     $year = $settings['year'];
-    $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
-    $types = $ticket_data_set->raw_query('SELECT tblTicketTypes.description,COUNT(*) as count FROM tickets.vRequestWTickets INNER JOIN tblTicketTypes ON tblTicketTypes.typeCode=vRequestWTickets.type  WHERE vRequestWTickets.year='.$year.' GROUP BY type;');
-    $received = $ticket_data_set->raw_query('SELECT COUNT(*) as count FROM tickets.vRequestWTickets WHERE vRequestWTickets.year='.$year.' AND private_status IN (1,6) GROUP BY type;');
-    if($types !== false && $received !== false)
+    
+    $requestDataTable = \Tickets\DB\RequestDataTable::getInstance();
+    $requests = $requestDataTable->read(new \Data\Filter('year eq '.$year), array('tickets,private_status'));
+    $tmp = array();
+
+    $requestCount = count($requests);
+    for($i = 0; $i < $requestCount; $i++)
     {
-        $count = count($types);
-        for($i = 0; $i < $count; $i++)
+        $request = $requests[$i];
+        $ticketCount = count($request['tickets']);
+        for($j = 0; $j < $ticketCount; $j++)
         {
-            if(!isset($received[$i]))
+            $ticket = $request['tickets'][$j];
+            if(!isset($tmp[$ticket->type]))
             {
-                $types[$i]['receivedCount'] = 0;
-                continue;
+                $tmp[$ticket->type] = array('count'=>0, 'receivedCount'=>0);
             }
-            $types[$i]['receivedCount'] = $received[$i]['count'];
+            if($request['private_status'] === 6 || $request['private_status'] === 1)
+            {
+                $tmp[$ticket->type]['receivedCount']++;
+            }
+            $tmp[$ticket->type]['count']++;
         }
+    }
+    $typeDataTable = DataSetFactory::getDataTableByNames('tickets', 'TicketTypes');
+    $types = $typeDataTable->read(false, array('typeCode', 'description'));
+    $count = count($types);
+    for($i = 0; $i < $count; $i++)
+    {
+        $typeCode = $types[$i]['typeCode'];
+        $types[$i]['count'] = $tmp[$typeCode]['count'];
+        $types[$i]['receivedCount'] = $tmp[$typeCode]['receivedCount'];
     }
     echo json_encode($types);
 }
