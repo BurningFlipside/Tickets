@@ -41,27 +41,27 @@ function gotUsedTicketCount(jqXHR)
 function init_index()
 {
     $.ajax({
-        url: '../api/v1/requests?$filter=year eq 2017&$count=true&$select=@odata.count',
+        url: '../api/v1/requests?$filter=year eq current&$count=true&$select=@odata.count',
         type: 'get',
         dataType: 'json',
         complete: gotRequestCount});
     $.ajax({
-        url: '../api/v1/requests_w_tickets?$filter=year eq 2017&$count=true&$select=@odata.count',
+        url: '../api/v1/requests_w_tickets?$filter=year eq current&$count=true&$select=@odata.count',
         type: 'get',
         dataType: 'json',
         complete: gotRequestedTicketCount});
     $.ajax({
-        url: '../api/v1/tickets?$filter=year eq 2017 and sold eq 1&$count=true&$select=@odata.count',
+        url: '../api/v1/tickets?$filter=year eq current and sold eq 1&$count=true&$select=@odata.count',
         type: 'get',
         dataType: 'json',
         complete: gotSoldTicketCount});
     $.ajax({
-        url: '../api/v1/tickets?$filter=year eq 2017 and sold eq 0&$count=true&$select=@odata.count',
+        url: '../api/v1/tickets?$filter=year eq current and sold eq 0&$count=true&$select=@odata.count',
         type: 'get',
         dataType: 'json',
         complete: gotUnsoldTicketCount});
     $.ajax({
-        url: '../api/v1/tickets?$filter=year eq 2017 and used eq 1&$count=true&$select=@odata.count',
+        url: '../api/v1/tickets?$filter=year eq current and used eq 1&$count=true&$select=@odata.count',
         type: 'get',
         dataType: 'json',
         complete: gotUsedTicketCount});
