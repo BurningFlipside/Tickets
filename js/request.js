@@ -1,3 +1,5 @@
+var ticketSystem = new TicketSystem('api/v1');
+
 var ticket_constraints = null;
 var table_row = 0;
 
@@ -425,36 +427,26 @@ function lists_ajax_done(jqXHR)
     }
 }
 
-function request_submit_done(jqXHR)
-{
-    if(jqXHR.status === 200)
-    {
-        var data = jqXHR.responseJSON;
-        console.log(jqXHR);
-        if(data.need_minor_confirm != undefined && data.need_minor_confirm == '1')
-        {
-            $('#minor_dialog').modal({
+function requestSubmitDone(data, err) {
+    if(err !== null) {
+        if(err.jsonResp !== undefined && err.jsonResp.message !== undefined) {
+            alert(err.jsonResp.message);
+        }
+        else {
+            alert('Unable to submit request!');
+            console.log(err);
+        }
+        return;
+    }
+    if(data.need_minor_confirm !== undefined && (data.need_minor_confirm === '1' || data.need_minor_confirm === true)) {
+        $('#minor_dialog').modal({
                 'backdrop': 'static',
                 'keyboard': false
-            });
-            $('[title]').tooltip('hide');
-        }
-        else
-        {
-            location = 'index.php';
-        }
+        });
+        $('[title]').tooltip('hide');
     }
-    else
-    {
-        if(jqXHR.responseJSON !== undefined)
-        {
-            alert(jqXHR.responseJSON.message);
-        }
-        else
-        {
-            alert('Unable to submit request!');
-            console.log(jqXHR);
-        }
+    else {
+        window.location = 'index.php';
     }
 }
 
@@ -542,14 +534,7 @@ function request_data_submitted()
         }
     }
 
-    $.ajax({
-        url: 'api/v1/request',
-        data: JSON.stringify(obj),
-        type: 'POST',
-        dataType: 'json',
-        processData: false,
-        complete: request_submit_done});
-
+    ticketSystem.createRequest(obj, requestSubmitDone);
     $('[id^=donation_amount_]').each(revert_donation_form);
     return false;
 }
@@ -567,45 +552,33 @@ function minor_affirm_clicked()
    $('#minor_dialog_continue').on('click', resubmit_form);
 }
 
-function current_request_done(jqXHR)
-{
-    var request = jqXHR.responseJSON;
-    if(request.length === 0)
-    {
-        $.ajax({
-            url: 'api/v1/requests/Actions/Requests.GetRequestID',
-            type: 'POST',
-            dataType: 'json',
-            complete: request_id_done})
+function currentRequestDone(request, err) {
+    if(request === null) {
+        ticketSystem.getTicketRequestIdForCurrentUser(requestIdDone);
     }
-    else
-    {
-        request = request[0];
+    else {
         var tbody = $('#ticket_table tbody');
-        for(var propertyName in request)
-        {
-            switch(propertyName)
-            {
+        for(var propertyName in request) {
+            switch(propertyName) {
                 case 'tickets':
-                    for(var i = 0; i < request[propertyName].length; i++)
-                    {
+                    for(var i = 0; i < request[propertyName].length; i++) {
                         addRowToTable(tbody, request.tickets[i].first, request.tickets[i].last, request.tickets[i].type, table_row++);
                     }
                     break;
                 case 'donations':
-                    for(var i = 0; i < request[propertyName].length; i++)
-                    {
+                    if(request[propertyName] === null) {
+                        continue;
+                    }
+                    for(var i = 0; i < request[propertyName].length; i++) {
                         var id = 'donation_amount_'+request.donations[i].type;
                         var dropdown = $('#'+id);
                         dropdown.val(request.donations[i].amount);
-                        if(dropdown.val() == null)
-                        {
+                        if(dropdown.val() == null) {
                             dropdown.val('other');
                             var box = $('<input/>', {name: id, id: id+'_text', type: 'text', value: request.donations[i].amount});
                             box.appendTo(dropdown.parent());
                         }
-                        if(request.donations[i].disclose !== undefined && request.donations[i].disclose == '1')
-                        {
+                        if(request.donations[i].disclose !== undefined && request.donations[i].disclose == '1') {
                             $('#donation_disclose_'+request.donations[i].type).prop('checked', true);
                         }
                     }
@@ -618,11 +591,13 @@ function current_request_done(jqXHR)
     }
 }
 
-function request_id_done(jqXHR)
-{
-    $('#request_id').val(jqXHR.responseJSON);
-    if(browser_supports_cors())
-    {
+function requestIdDone(data, err) {
+    if(err !== null) {
+        alert('Unable to obtain request ID!');
+        return;
+    }
+    $('#request_id').val(data);
+    if(browser_supports_cors()) {
         $.ajax({
             url: window.profilesUrl+'/api/v1/users/me',
             type: 'get',
@@ -630,9 +605,7 @@ function request_id_done(jqXHR)
             xhrFields: {withCredentials: true},
             success: request_ajax_done});
     }
-    else
-    {
-        //TODO Get email from backend...
+    else {
         add_notification($('#request_set'), 'Your browser is out of date. Due to this some data may be missing from your request. Please make sure it is complete');
     }
 }
@@ -641,24 +614,7 @@ function init_request()
 {
     var request_id  = getParameterByName('request_id');
     var year        = getParameterByName('year');
-    var request_url = 'api/v1/requests/me/current';
-    if(request_id != null && year != null)
-    {
-        request_url = 'api/v1/requests/'+request_id+'/'+year;
-    }
-    else if(request_id != null)
-    {
-        request_url = 'api/v1/requests/'+request_id+'/current';
-    }
-    else
-    {
-        request_url = 'api/v1/requests/me/'+year;
-    }
-    $.ajax({
-        url: request_url,
-        type: 'get',
-        dataType: 'json',
-        complete: current_request_done})
+    ticketSystem.getRequest(currentRequestDone, request_id, year);
     var request = $('#request').data('request');
     $('#add_new_ticket').on('click', add_new_ticket);
     if(request != undefined)

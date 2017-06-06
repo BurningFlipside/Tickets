@@ -1,7 +1,8 @@
+var ticketSystem = new TicketSystem('api/v1');
+
 var out_of_window = false;
 var test_mode = false;
 var ticket_year = false;
-var font_face_support;
 var basic_button_options = {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', 'data-html': true};
 
 function tableDrawComplete()
@@ -171,19 +172,23 @@ function getOuterHTML(button)
     return button.prop('outerHTML');
 }
 
-function makeGlyphButton(options, glyphClass)
+function makeGlyphButton(options, glyphClass, onClick)
 {
     options.type = 'button';
     var button = $('<button/>', options);
     var glyph = $('<span/>', {'class': glyphClass});
+    button.on('click', onClick);
     glyph.appendTo(button);
-    return getOuterHTML(button);
+    return button;
 }
 
-function makeGlyphLink(options, glyphClass)
+function makeGlyphLink(options, glyphClass, ref)
 {
     var link = $('<a/>', options);
     var glyph = $('<span/>', {'class': glyphClass});
+    if(ref !== undefined) {
+        link.attr('href', ref);
+    }
     glyph.appendTo(link);
     return getOuterHTML(link);
 }
@@ -195,12 +200,16 @@ function makeTextLink(options, linkText)
     return getOuterHTML(link);
 }
 
-function createButtonOptions(title, forData, onClick)
+function createButtonOptions(title, onClick, forData)
 {
     var ret = JSON.parse(JSON.stringify(basic_button_options));
     ret.title   = title;
-    ret['for']  = forData;
-    ret.onclick = onClick;
+    if(forData !== undefined) {
+        ret['for']  = forData;
+    }
+    if(onClick !== undefined) {
+        ret.onclick = onClick;
+    }
     return ret;
 }
 
@@ -219,58 +228,38 @@ function createLinkOptions(title, forData, href, target)
 
 function getViewButton(data)
 {
-    var view_options = createButtonOptions('View Ticket Code', data, 'view_ticket(this)');
-    if(font_face_support === true)
-    {
-        return makeGlyphButton(view_options, 'fa fa-search');
-    }
-    return makeTextLink(view_options, 'View')+'|';
+    var view_options = createButtonOptions('View Ticket Code', 'view_ticket(this)', data);
+    return makeGlyphButton(view_options, 'fa fa-search');
 }
 
 function getEditButton(data)
 {
-    var edit_options = createButtonOptions('Edit Ticket<br/>Use this option to keep the ticket<br/>on your account but<br/>change the legal name.', data, 'edit_ticket(this)');
-    if(font_face_support === true)
-    {
-        return makeGlyphButton(edit_options, 'fa fa-pencil');
-    }
-    return makeTextLink(edit_options, 'Edit')+'|';
+    var edit_options = createButtonOptions('Edit Ticket<br/>Use this option to keep the ticket<br/>on your account but<br/>change the legal name.', 'edit_ticket(this)', data);
+    return makeGlyphButton(edit_options, 'fa fa-pencil');
 }
 
 function getPDFButton(data)
 {
     var pdf_options = createLinkOptions('Download PDF', data, 'api/v1/tickets/'+data+'/pdf', '_blank');
-    if(font_face_support === true)
-    {
-        return makeGlyphLink(pdf_options, 'fa fa-download');
-    }
-    return makeTextLink(pdf_options, 'Download')+'|';
+    return makeGlyphLink(pdf_options, 'fa fa-download');
 }
 
 function getTransferButton(data)
 {
-    var transfer_options = createButtonOptions('Transfer Ticket<br/>Use this option to send<br/>the ticket to someone else', data, 'transfer_ticket(this)');
-    if(font_face_support === true)
-    {
-        return makeGlyphButton(transfer_options, 'fa fa-send');
-    }
-    return makeTextLink(transfer_options, 'Transfer');
+    var transfer_options = createButtonOptions('Transfer Ticket<br/>Use this option to send<br/>the ticket to someone else', 'transfer_ticket(this)', data);
+    return makeGlyphButton(transfer_options, 'fa fa-send');
 }
 
 function make_actions(data, type, row, meta)
 {
     var res = '';
-    if(font_face_support === undefined)
-    {
-        font_face_support = browser_supports_font_face();
-    }
     if($(window).width() < 768)
     {
         res += getViewButton(data);
     }
-    res += getEditButton(data);
+    res += getOuterHTML(getEditButton(data));
     res += getPDFButton(data);
-    res += getTransferButton(data);
+    res += getOuterHTML(getTransferButton(data));
     return res;
 }
 
@@ -293,74 +282,20 @@ function init_table()
     $("#ticketList").on('draw.dt', tableDrawComplete);
 }
 
-function edit_request(control)
+function add_buttons_to_row(row, request)
 {
-    var jq = $(control);
-    var tmp = jq.attr('for');
-    var ids = tmp.split('_');
-    window.location.assign('request.php?request_id='+ids[0]+'&year='+ids[1]);
-}
-
-function email_request_done(data)
-{
-    console.log(data);
-}
-
-function email_request(control)
-{
-    var jq = $(control);
-    var tmp = jq.attr('for');
-    var ids = tmp.split('_');
-    $.ajax({
-        url: 'api/v1/request/'+ids[0]+'/'+ids[1]+'/Actions/Requests.SendEmail',
-        type: 'post',
-        dataType: 'json',
-        complete: email_request_done});
-}
-
-function download_request(control)
-{
-    var jq = $(control);
-    var tmp = jq.attr('for');
-    var ids = tmp.split('_');
-    window.location.assign('api/v1/request/'+ids[0]+'/'+ids[1]+'/pdf');
-}
-
-function add_buttons_to_row(row, id, year)
-{
-    if(font_face_support === undefined)
-    {
-        font_face_support = browser_supports_font_face();
-    }
     var cell = $('<td/>', {style: 'white-space: nowrap;'});
-    var edit_options = createButtonOptions('Edit Request', id+'_'+year, 'edit_request(this)');
-    var mail_options = createButtonOptions('Resend Request Email', id+'_'+year, 'email_request(this)'); 
-    var pdf_options = createButtonOptions('Download Request PDF', id+'_'+year, 'download_request(this)');
-    var html;
-    if(font_face_support === true)
-    {
-        html = makeGlyphButton(edit_options, 'fa fa-pencil');
-        cell.append(html);
+    var edit_options = createButtonOptions('Edit Request');
+    var mail_options = createButtonOptions('Resend Request Email');
+    var pdf_options = createButtonOptions('Download Request PDF');
+    var html = makeGlyphLink(edit_options, 'fa fa-pencil', 'request.php?request_id='+request.request_id+'&year='+request.year);
+    cell.append(html);
 
-        html = makeGlyphButton(mail_options, 'fa fa-envelope');
-        cell.append(html);
+    html = makeGlyphButton(mail_options, 'fa fa-envelope', request.sendEmail.bind(request));
+    cell.append(html);
 
-        html = makeGlyphButton(pdf_options, 'fa fa-download');
-        cell.append(html);
-    }
-    else
-    {
-        html = makeTextLink(edit_options, 'Edit');
-        cell.append(html);
-        cell.append("|");
-
-        html = makeTextLink(mail_options, 'Resend');
-        cell.append(html);
-        cell.append("|");
-
-        html = makeTextLink(pdf_options, 'Download');
-        cell.append(html);
-    }
+    html = makeGlyphLink(pdf_options, 'fa fa-download', request.getPdfUri());
+    cell.append(html);
     cell.appendTo(row);
 }
 
@@ -430,7 +365,7 @@ function add_request_to_table(tbody, request, old_request_only)
     if(!out_of_window || test_mode)
     {
         row.append('<td>$'+request.total_due+'</td>');
-        add_buttons_to_row(row, request.request_id, request.year);
+        add_buttons_to_row(row, request);
     }
     else
     {
@@ -447,8 +382,7 @@ function add_request_to_table(tbody, request, old_request_only)
     $('[data-original-title]').tooltip();
 }
 
-function process_requests(requests)
-{
+function processRequests(requests) {
     var tbody = $('#requestList tbody');
     var old_request_only = {};
     old_request_only.value = true;
@@ -476,60 +410,30 @@ function process_requests(requests)
     }
 }
 
-function get_requests_done(jqXHR)
-{
-    if(jqXHR.status === 200)
-    {
-        if(jqXHR.responseJSON === undefined || jqXHR.responseJSON.length === 0)
-        {
-            if(out_of_window)
-            {
-                $('#requestList').empty();
-            }
-            else
-            {
-                $('#request_set').empty();
-                $('#request_set').append("You do not currently have a current or previous ticket request.<br/>");
-                $('#request_set').append('<a href="/tickets/request.php">Create a Ticket Request</a>');
-            }
-        }
-        else
-        {
-            process_requests(jqXHR.responseJSON);
-        }
-        if($('#request_set').length > 0)
-        {
-            $('#request_set').show();
-        }
-    }
-    else
-    {
-        console.log(jqXHR);
+function getRequestsDone(requests, err) {
+    if(err !== null) {
         alert('Error obtaining request!');
+        return;
+    }
+    if(requests === undefined || requests.length === 0) {
+        if(out_of_window) {
+            $('#requestList').empty();
+        }
+        else {
+            $('#request_set').empty();
+            $('#request_set').append("You do not currently have a current or previous ticket request.<br/>");
+            $('#request_set').append('<a href="/tickets/request.php">Create a Ticket Request</a>');
+        }
+    }
+    else {
+        processRequests(requests);
+    }
+    if($('#request_set').length > 0) {
+        $('#request_set').show();
     }
 }
 
-function init_request()
-{
-    $.ajax({
-        url: 'api/v1/request',
-        type: 'get',
-        dataType: 'json',
-        complete: get_requests_done});
-}
-
-function getDateInCentralTime(date)
-{
-    var ret = new Date(date+" GMT-0600");
-    //You can't replace this with <
-    if(!(ret.getYear() > 2000))
-    {
-        ret = new Date(date+"T06:00:00.000Z");
-    }
-    return ret;
-}
-
-function proccessOutOfWindow(now, start, end, my_window)
+function processOutOfWindow(now, start, end, my_window)
 {
     if(now < start || now > end)
     {
@@ -574,34 +478,29 @@ function processMailInWindow(now, mail_start, end)
     }
 }
 
-function get_window_done(data)
-{
-    var my_window = data;
-    var now = new Date(Date.now());
-    var start = getDateInCentralTime(my_window.request_start_date);
-    var end = getDateInCentralTime(my_window.request_stop_date);
-    var mail_start = getDateInCentralTime(my_window.mail_start_date);
-    var server_now = getDateInCentralTime(my_window.current);
-    end.setHours(23);
-    end.setMinutes(59);
-    ticket_year = data.year;
-    if(server_now < now)
-    {
-        now = server_now;
+function getWindowDone(data, err) {
+    if(err !== null) {
+        if(err.jsonResp !== undefined && err.jsonResp.code !== undefined) {
+            switch(err.jsonResp.code) {
+                case 5:
+                    //Not logged in... just silently fail the whole script right here
+                    return;
+                default:
+                    alert(err.jsonResp.message);
+                    break;
+            }
+        }
+        return;
     }
-    proccessOutOfWindow(now, start, end, my_window);
-    processMailInWindow(now, mail_start, end);
-    init_request();
+    var now = new Date(Date.now());
+    if(data.current < now) {
+        now = data.current;
+    }
+    ticket_year = data.year;
+    processOutOfWindow(now, data.request_start_date, data.request_stop_date, data);
+    processMailInWindow(now, data.mail_start_date, data.request_stop_date);
+    ticketSystem.getRequests(getRequestsDone);
     init_table();
-}
-
-function init_window()
-{
-    $.ajax({
-        url: 'api/v1/globals/window',
-        type: 'GET',
-        dataType: 'json',
-        success: get_window_done});
 }
 
 function panel_heading_click(e)
@@ -623,15 +522,13 @@ function panel_heading_click(e)
     }
 }
 
-function init_index()
-{
+function initIndex() {
+    ticketSystem.getWindow(getWindowDone);
     $('.panel-heading span.clickable').on("click", panel_heading_click);
-    init_window();
-    if(getParameterByName('show_transfer_info') === '1')
-    {
+    if(getParameterByName('show_transfer_info') === '1') {
         var body = $('#content');
         add_notification(body, 'You have successfully sent an email with the ticket information. The ticket will be fully transfered when the receipient logs in and claims the ticket', NOTIFICATION_SUCCESS);
     }
 }
 
-$(init_index);
+$(initIndex);

@@ -25,10 +25,10 @@ $page->body .= '
             <a onclick="getCSV();" title="Export CSV"><i class="fa fa-file-excel-o"></i></a>
             <table class="table" id="requests">
                 <thead>
-                    <th></th>
                     <th>Request ID</th>
                     <th>First Name</th>
                     <th>Last Name</th>
+                    <th>Email</th>
                     <th>Total Due</th>
                 </thead>
                 <tbody>

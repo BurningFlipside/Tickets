@@ -1,3 +1,5 @@
+var ticketSystem = new TicketSystem('../api/v1');
+
 function requeryTable()
 {
     var year = $('#year').val();
@@ -8,7 +10,7 @@ function requeryTable()
         filter+=' and private_status eq '+status;
     }
     var table = $('#requests').DataTable();
-    table.ajax.url('../api/v1/requests?filter='+filter+'&fmt=data-table').load();
+    table.ajax.url(ticketSystem.getRequestDataTableUri(filter)).load();
 }
 
 function change_year(control)
@@ -80,67 +82,19 @@ function request_donations_loaded(data)
     this.donations = data;
 }
 
-function show_tickets(data)
-{
-    var ret = '<table class="table">';
-    ret += '<thead>';
-    ret += '<th>Ticket</th>';
-    ret += '<th>First Name</th>';
-    ret += '<th>Last Name</th>';
-    ret += '<th>Type</th>';
-    ret += '</thead>';
-    ret += '<tbody id="'+data.request_id+'">';
-    if(data.tickets === undefined || data.tickets === null)
-    {
-        $.ajax({
-            url: '../api/v1/requests_w_tickets?filter=request_id eq '+data.request_id+' and year eq '+data.year,
-            dataType: 'json',
-            success: request_loaded,
-            context: data
-        });
-    }
-    else
-    {
-        for(i = 0; i < data.tickets.length; i++)
-        {
-            ret += '<tr><td>'+(i*1 + 1)+'</td><td>'+data.tickets[i].first+'</td><td>'+data.tickets[i].last+'</td><td>'+data.tickets[i].type+'</td></tr>';
+function saveRequestDone(data, err) {
+    if(err !== null) {
+        if(err.jsonResp !== undefined && err.jsonResp.message !== undefined) {
+            alert(err.jsonResp.message);
         }
+        else {
+            console.log(err);
+            alert('Unable to update request!');
+        }
+        return;
     }
-    ret += '</tbody>';
-    ret += '</table>';
-    return ret;
-}
-
-function details_clicked()
-{
-    var tr = $(this).closest('tr');
-    var row = $('#requests').DataTable().row(tr);
-    if(row.child.isShown())
-    {
-        row.child.hide();
-        $(this).html('<span class="fa fa-plus"></span>');
-        tr.removeClass('shown');
-    }
-    else
-    {
-        row.child(show_tickets(row.data())).show();
-        $(this).html('<span class="fa fa-minus"></span>');
-        tr.addClass('shown');
-    }
-}
-
-function save_request_done(data)
-{
     $('#modal').modal('hide');
-    if(data.error !== undefined)
-    {
-        alert(data.error);
-        console.log(data);
-    }
-    else
-    {
-        change_year($('#year'));
-    }
+    change_year($('#year'));
 }
 
 function save_request(control)
@@ -190,13 +144,7 @@ function save_request(control)
         }
     }
     obj.minor_confirm = true;
-    $.ajax({
-        url: '../api/v1/requests/'+$('#request_id').val()+'/'+$('#year').val(),
-        data: JSON.stringify(obj),
-        processData: false,
-        dataType: 'json',
-        type: 'patch',
-        success: save_request_done});
+    ticketSystem.updateRequest(obj, saveRequestDone); 
 }
 
 function edit_request(control)
@@ -206,29 +154,22 @@ function edit_request(control)
 
 function getPDF(control)
 {
-    var year = $('#year').val();
-    window.location = '../api/v1/requests/'+$('#request_id').val()+'/'+year+'/pdf';
+    var request = $('#modal').data('request');
+    window.location = request.getPdfUri;
 }
 
 function getCSV()
 {
-    var year = $('#year').val();
-    var status = $('#statusFilter').val();
-    if(status === '*')
-    {
-        window.location = '../api/v1/requests?$format=csv&$filter=year eq '+year;
-    }
-    else
-    {
-        window.location = '../api/v1/requests?$format=csv&$filter=year eq '+year+' and private_status eq '+status;
-    }
+    var uri = $('#requests').DataTable().ajax.url();
+    uri = uri.replace('fmt=data-table', '$format=csv2');
+    window.location = uri;
 }
 
 function row_clicked()
 {
     var tr = $(this).closest('tr');
     var row = $('#requests').DataTable().row(tr);
-    var data = row.data();
+    var data = new TicketRequest(row.data(), ticketSystem);
     $('#modal').modal();
     $('#modal_title').html('Request #'+data.request_id);
     $('#request_id').val(data.request_id);
@@ -242,37 +183,16 @@ function row_clicked()
     $('#l').val(data.l);
     $('#st').val(data.st);
     $('#ticket_table tbody').empty();
-    if(data.tickets === undefined || data.tickets === null)
+    for(i = 0; i < data.tickets.length; i++)
     {
-        $.ajax({
-            url: '../api/v1/requests/'+data.request_id+'/'+data.year+'/tickets',
-            dataType: 'json',
-            success: request_tickets_loaded,
-            context: data
-        });
-    }
-    else
-    {
-        for(i = 0; i < data.tickets.length; i++)
-        {
-            var new_row = $('<tr/>');
-            $('<td/>').html('<input type="text" id="ticket_first_'+i+'" name="ticket_first_'+i+'" class="form-control" value="'+data.tickets[i].first+'"/>').appendTo(new_row);
-            $('<td/>').html('<input type="text" id="ticket_last_'+i+'" name="ticket_last_'+i+'" class="form-control" value="'+data.tickets[i].last+'"/>').appendTo(new_row);
-            $('<td/>').html('<input type="text" id="ticket_type_'+i+'" name="ticket_type_'+i+'" class="form-control" value="'+data.tickets[i].type+'"/>').appendTo(new_row);
-            new_row.appendTo($('#ticket_table tbody'));
-        }
+        var new_row = $('<tr/>');
+        $('<td/>').html('<input type="text" id="ticket_first_'+i+'" name="ticket_first_'+i+'" class="form-control" value="'+data.tickets[i].first+'"/>').appendTo(new_row);
+        $('<td/>').html('<input type="text" id="ticket_last_'+i+'" name="ticket_last_'+i+'" class="form-control" value="'+data.tickets[i].last+'"/>').appendTo(new_row);
+        $('<td/>').html('<input type="text" id="ticket_type_'+i+'" name="ticket_type_'+i+'" class="form-control" value="'+data.tickets[i].type+'"/>').appendTo(new_row);
+        new_row.appendTo($('#ticket_table tbody'));
     }
     $('#donation_table tbody').empty();
-    if(data.donations === undefined)
-    {
-        $.ajax({
-            url: '../api/v1/requests/'+data.request_id+'/'+data.year+'/donations',
-            dataType: 'json',
-            success: request_donations_loaded,
-            context: data
-        });
-    }
-    else if(data.donations !== null)
+    if(data.donations !== null)
     {
         for(i = 0; i < data.donations.length; i++)
         {
@@ -287,7 +207,6 @@ function row_clicked()
     $('#total_received').val(data.total_received);
     $('#comments').val(data.comments);
     $('#bucket').val(data.bucket);
-    console.log(data);
     if(data.envelopeArt != '0')
     {
         $('#envelopeArt').prop('checked', true);
@@ -313,6 +232,7 @@ function row_clicked()
     {
         $('#protected').prop('checked', false);
     }
+    $('#modal').data('request', data);
 }
 
 function status_ajax_done(data)
@@ -350,14 +270,13 @@ function init_page()
     $('#requests').on('draw.dt', draw_done);
     $('#requests').dataTable({
         'columns': [ 
-            {'className':'details-control','data':null,'defaultContent':'','orderable':false},
             {'data': 'request_id'},
             {'data': 'givenName'},
             {'data': 'sn'},
+            {'data': 'mail'},
             {'data': 'total_due'}
         ]
     });
-    $('#requests tbody').on('click', 'td.details-control', details_clicked);
     $('#requests tbody').on('click', 'td:not(.details-control)', row_clicked);
     $.ajax({
         url: '../api/v1/globals/statuses',
