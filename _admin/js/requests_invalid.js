@@ -1,7 +1,9 @@
+var ticketSystem = new TicketSystem('../api/v1');
+
 function init_table()
 {
     $(this).dataTable({
-        'ajax': '../api/v1/requests?fmt=data-table&filter=year eq current and private_status eq 3',
+        'ajax': ticketSystem.getRequestDataTableUri('year eq current and private_status eq 3'),
         'columns': [
             {'data': 'request_id'},
             {'data': 'private_status'},
@@ -43,7 +45,9 @@ function on_print_change(mql)
 
 function exportCSV()
 {
-    window.location = '../api/v1/requests?fmt=csv&filter=year eq current and private_status eq 3';
+    var uri = $('#requests').DataTable().ajax.url();
+    uri = uri.replace('fmt=data-table', '$format=csv2');
+    window.location = uri;
 }
 
 function init_page()

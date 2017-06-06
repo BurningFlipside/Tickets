@@ -1,5 +1,4 @@
 var disc;
-var year;
 
 function drawTable(disc)
 {
@@ -83,22 +82,7 @@ function gotDiscretionaryTickets(jqXHR)
 
 function getCSV()
 {
-    window.location = '../api/v1/tickets?$format=csv&$filter=discretionary eq 1 and year eq '+year;
-}
-
-function gotTicketYear(jqXHR)
-{
-    if(jqXHR.status !== 200 || jqXHR.responseJSON === undefined)
-    {
-        alert('Unable to obtain ticket year!');
-        return;
-    }
-    year = jqXHR.responseJSON;
-    $.ajax({
-        url: '../api/v1/tickets?$filter=discretionary eq 1 and year eq '+jqXHR.responseJSON,
-        type: 'get',
-        dataType: 'json',
-        complete: gotDiscretionaryTickets});
+    window.location = '../api/v1/tickets?$format=csv&$filter=discretionary eq 1 and year eq current';
 }
 
 function gotGroups(jqXHR)
@@ -118,10 +102,10 @@ function gotGroups(jqXHR)
 function initPage()
 {
     $.ajax({
-        url: '../api/v1/globals/vars/year',
+        url: '../api/v1/tickets?$filter=discretionary eq 1 and year eq current',
         type: 'get',
         dataType: 'json',
-        complete: gotTicketYear});
+        complete: gotDiscretionaryTickets});
     $.ajax({
         url: window.profilesUrl+'/api/v1/groups?$select=cn',
         type: 'get',

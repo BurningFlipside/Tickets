@@ -5,14 +5,6 @@ function change_year(control)
     table.ajax.url('../api/v1/secondary/requests?'+data).load();
 }
 
-function changeStatusFilter(control)
-{
-   var year = $('#year').val();
-   var data = 'filter=year eq '+year+' and private_status eq '+$(control).val()+'&fmt=data-table';
-   var table = $('#requests').DataTable();
-   table.ajax.url('../api/v1/requests?'+data).load();
-}
-
 function total_due(row, type, val, meta)
 {
     return '$'+row.total_due;
@@ -135,25 +127,13 @@ function rowClicked()
         $('<td/>').html(type).appendTo(new_row);
         new_row.appendTo($('#ticket_table tbody'));
     }
-    if(data.tickets === undefined || data.tickets === null)
+    for(i = 0; i < data.tickets.length; i++)
     {
-        $.ajax({
-            url: '../api/v1/requests/'+data.request_id+'/'+data.year+'/tickets',
-            dataType: 'json',
-            success: request_tickets_loaded,
-            context: data
-        });
-    }
-    else
-    {
-        for(i = 0; i < data.tickets.length; i++)
-        {
-            var new_row = $('<tr/>');
-            $('<td/>').html('<input type="text" id="ticket_first_'+i+'" name="ticket_first_'+i+'" class="form-control" value="'+data.tickets[i].first+'"/>').appendTo(new_row);
-            $('<td/>').html('<input type="text" id="ticket_last_'+i+'" name="ticket_last_'+i+'" class="form-control" value="'+data.tickets[i].last+'"/>').appendTo(new_row);
-            $('<td/>').html('<input type="text" id="ticket_type_'+i+'" name="ticket_type_'+i+'" class="form-control" value="'+data.tickets[i].type+'"/>').appendTo(new_row);
-            new_row.appendTo($('#ticket_table tbody'));
-        }
+        var new_row = $('<tr/>');
+        $('<td/>').html('<input type="text" id="ticket_first_'+i+'" name="ticket_first_'+i+'" class="form-control" value="'+data.tickets[i].first+'"/>').appendTo(new_row);
+        $('<td/>').html('<input type="text" id="ticket_last_'+i+'" name="ticket_last_'+i+'" class="form-control" value="'+data.tickets[i].last+'"/>').appendTo(new_row);
+        $('<td/>').html('<input type="text" id="ticket_type_'+i+'" name="ticket_type_'+i+'" class="form-control" value="'+data.tickets[i].type+'"/>').appendTo(new_row);
+        new_row.appendTo($('#ticket_table tbody'));
     }
     $('#total_due').val('$'+data.total_due);
     $('#total_received').val(data.total_received);

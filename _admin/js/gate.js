@@ -1,5 +1,4 @@
 var history_data = null;
-var year;
 var earlyEntry;
 var scanner;
 var myCameras;
@@ -335,7 +334,7 @@ function filter_from_mag_stripe(stripe_value)
     var card = process_mag_stripe(stripe_value);
     if(card.first !== undefined && card.last !== undefined)
     {
-        return 'filter=year eq '+year+' and '+
+        return 'filter=year eq current and '+
                  'substringof(firstName,\''+card.first+'\') and '+
                  'substringof(lastName,\''+card.last+'\')';
     }
@@ -346,7 +345,7 @@ function filter_from_mag_stripe(stripe_value)
         if(parts.length > 2)
         {
             var names = parts[1].split('$');
-            return 'filter=year eq '+year+' and '+
+            return 'filter=year eq current and '+
                  'substringof(firstName,\''+names[1]+'\') and '+
                  'substringof(lastName,\''+names[0]+'\')';
         }
@@ -364,13 +363,13 @@ function really_search(jqXHR)
     else if(this.indexOf(' ') > -1)
     {
         var names = this.split(' ');
-        filter = 'filter=year eq '+year+' and '+
+        filter = 'filter=year eq current and '+
                  'substringof(firstName,\''+names[0]+'\') and '+
                  'substringof(lastName,\''+names[1]+'\')';
     }
     else
     {
-        filter = 'filter=year eq '+year+' and '+
+        filter = 'filter=year eq current and '+
                  '(substringof(firstName,\''+this+'\') or '+
                  'substringof(lastName,\''+this+'\') or '+
                  'substringof(hash,\''+this+'\') or '+
@@ -398,13 +397,13 @@ function really_search_history(jqXHR)
     else if(this.indexOf(' ') > -1)
     {
         var names = this.split(' ');
-        filter = 'filter=year eq '+year+' and '+
+        filter = 'filter=year eq current and '+
                  'substringof(firstName,\''+names[0]+'\') and '+
                  'substringof(lastName,\''+names[1]+'\')';
     }
     else
     {
-        filter = 'filter=year eq '+year+' and '+
+        filter = 'filter=year eq current and '+
                  '(substringof(firstName,\''+this+'\') or '+
                  'substringof(lastName,\''+this+'\') or '+
                  'substringof(hash,\''+this+'\') or '+
@@ -542,21 +541,11 @@ function fullscreen()
     $('#screen').html('<span class="fa fa-compress"></span>').attr('title', 'revert').unbind('click', fullscreen).click(revert_screen);
 }
 
-function gotTicketYear(jqXHR)
-{
-    if(jqXHR.status !== 200 || jqXHR.responseJSON === undefined)
-    {
-        alert('Unable to obtain ticket year!');
-        return;
-    }
-    year = jqXHR.responseJSON;
-}
-
 function gotEarlyEntry(jqXHR)
 {
     if(jqXHR.status !== 200 || jqXHR.responseJSON === undefined)
     {
-        alert('Unable to obtain ticket year!');
+        alert('Unable to obtain ticket current EE status!');
         return;
     }
     earlyEntry = jqXHR.responseJSON*1;
@@ -619,11 +608,6 @@ function codeScanned(content) {
 
 function init_gate_page()
 {
-    $.ajax({
-        url: '../api/v1/globals/vars/year',
-        type: 'get',
-        dataType: 'json',
-        complete: gotTicketYear});
     $.ajax({
         url: '../api/v1/globals/vars/currentEarlyEntry',
         type: 'get',

@@ -9,6 +9,19 @@ function TicketRequest(data, ticketSystem) {
     }
 }
 
+TicketSystem.prototype.getCurrentYear = function(callback) {
+    var obj = {
+        callback: callback,
+        parser: integerify
+    };
+    var parseResults = ticketSystemGenericResults.bind(obj);
+    $.ajax({
+        url: this.apiRoot+'/globals/vars/year',
+        type: 'get',
+        dataType: 'json',
+        complete: parseResults});
+}
+
 TicketSystem.prototype.getWindow = function(callback) {
     var obj = {
         callback: callback,
@@ -22,15 +35,19 @@ TicketSystem.prototype.getWindow = function(callback) {
         complete: parseResults});
 }
 
-TicketSystem.prototype.getRequests = function(callback) {
+TicketSystem.prototype.getRequests = function(callback, filter) {
     var obj = {
         callback: callback,
         objectType: TicketRequest,
         ticketSystem: this
     };
+    var url = this.apiRoot+'/request';
+    if(filter !== undefined) {
+        url+='?$filter='+filter;
+    }
     var parseResults = ticketSystemGenericResults.bind(obj);
     $.ajax({
-        url: this.apiRoot+'/request',
+        url: url,
         type: 'GET',
         dataType: 'json',
         complete: parseResults});    
@@ -57,12 +74,77 @@ TicketSystem.prototype.getRequest = function(callback, requestId, year) {
         complete: parseResults});
 }
 
-TicketSystem.prototype.getRequestDataTableUri = function(filter) {
-    var ret = this.apiRoot+'/requests?fmt=data-table'
+TicketSystem.prototype.getRequestAndAssignBucket = function(callback, requestId, year) {
+    var obj = {
+        callback: callback,
+        objectType: TicketRequest,
+        ticketSystem: this
+    };
+    if(requestId === undefined || requestId === null) {
+        requestId = 'me';
+    }
+    if(year === undefined || year === null) {
+        year = 'current';
+    }
+    var parseResults = ticketSystemGenericResults.bind(obj);
+    $.ajax({
+        url: this.apiRoot+'/requests/'+requestId+'/'+year+'/Actions/Requests.GetBucket',
+        type: 'POST',
+        dataType: 'json',
+        complete: parseResults});
+}
+
+TicketSystem.prototype.searchRequest = function(value, callback, year) {
+    var obj = {
+        callback: callback,
+        objectType: TicketRequest,
+        ticketSystem: this
+    };
+    if(year === undefined) {
+        year = 'current';
+    }
+    var parseResults = ticketSystemGenericResults.bind(obj);
+    $.ajax({
+        url: this.apiRoot+'/requests?$search='+value+'&$filter=year eq '+year,
+        type: 'get',
+        dataType: 'json',
+        complete: parseResults});
+}
+
+TicketSystem.prototype.getRequestDataTableUri = function(filter, select) {
+    var ret = this.apiRoot+'/requests?fmt=data-table';
     if(filter !== undefined) {
-        ret+='&filter='+filter;
+        ret+='&$filter='+filter;
+    }
+    if(select !== undefined) {
+        if(Array.isArray(select)) {
+            select = select.join();
+        }
+        ret+='&$select='+select;
     }
     return ret;
+}
+
+TicketSystem.prototype.getRequestedTicketsDataTableUri = function(filter, select) {
+    var ret = this.apiRoot+'/requests_w_tickets?fmt=data-table';
+    if(filter !== undefined) {
+        ret+='&$filter='+filter;
+    }
+    if(select !== undefined) {
+        if(Array.isArray(select)) {
+            select = select.join();
+        }
+        ret+='&$select='+select;
+    }
+    return ret;
+}
+
+TicketSystem.prototype.getProblemRequestDataTableUri = function(view) {
+    var ret = this.apiRoot+'/requests/problems';
+    if(view !== undefined) {
+        ret+='/'+view;
+    }
+    return ret+'?fmt=data-table';
 }
 
 TicketSystem.prototype.getTicketRequestIdForCurrentUser = function(callback) {
@@ -135,6 +217,26 @@ TicketSystem.prototype.getUsedTicketCount = function(callback) {
         complete: parseResults});
 }
 
+TicketSystem.prototype.getTicketRequestCountsByStatus = function(callback) {
+    var obj = {callback: callback};
+    var parseResults = ticketSystemGenericResults.bind(obj);
+    $.ajax({
+        url: this.apiRoot+'/request/countsByStatus',
+        type: 'get',
+        dataType: 'json',
+        complete: parseResults});
+}
+
+TicketSystem.prototype.getRequestedTicketCountsByType = function(callback) {
+    var obj = {callback: callback};
+    var parseResults = ticketSystemGenericResults.bind(obj);
+    $.ajax({
+        url: this.apiRoot+'/requests_w_tickets/types',
+        type: 'get',
+        dataType: 'json',
+        complete: parseResults});
+}
+
 TicketSystem.prototype.createRequest = function(request, callback) {
     var obj = {callback: callback};
     var parseResults = ticketSystemGenericResults.bind(obj);
@@ -156,7 +258,18 @@ TicketSystem.prototype.updateRequest = function(request, callback) {
         processData: false,
         dataType: 'json',
         type: 'patch',
-        success: parseResults});
+        complete: parseResults});
+}
+
+TicketSystem.prototype.bulkSetCritvols = function(critVols, callback) {
+    var obj = {callback: callback};
+    var parseResults = ticketSystemGenericResults.bind(obj);
+    $.ajax({
+        url: this.apiRoot+'/requests/Actions/SetCritVols',
+        type: 'POST',
+        data: critVols,
+        processData: false,
+        complete: parseResults});
 }
 
 TicketRequest.prototype.getPdfUri = function() {
@@ -212,6 +325,10 @@ function unarray(data, callback) {
         return;
     }
     throw 'Not an array!';
+}
+
+function integerify(data, callback) {
+    callback(data*1, null);
 }
 
 function getODataCount(data, callback) {

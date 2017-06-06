@@ -1,8 +1,9 @@
+var ticketSystem = new TicketSystem('../api/v1');
+
 function change_year(control)
 {
-    var data = 'filter=year eq '+$(control).val()+'&select=request_id,first,last,type&fmt=data-table';
     var table = $('#tickets').DataTable();
-    table.ajax.url('../api/v1/requests_w_tickets?'+data).load();
+    table.ajax.url(ticketSystem.getRequestedTicketsDataTableUri('year eq '+$(control).val(), 'request_id,first,last,type')).load();
 }
 
 function gotTicketYears(jqXHR)

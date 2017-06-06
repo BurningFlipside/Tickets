@@ -1,6 +1,5 @@
 var id;
 var pools;
-var year;
 
 function setIfValueDifferent(newObj, origObj, inputname, fieldname)
 {
@@ -132,7 +131,7 @@ function gotPoolTickets(jqXHR)
 function poolStats(_id)
 {
     $.ajax({
-        url: '../api/v1/tickets?$filter=year eq '+year+' and pool_id eq '+_id,
+        url: '../api/v1/tickets?$filter=year eq current and pool_id eq '+_id,
         method: 'get',
         context: _id,
         complete: gotPoolTickets
@@ -200,11 +199,6 @@ function gotGroups(jqXHR)
     $('#group_name_new').typeahead(null, {name: 'group_name', source: group_names});
 }
 
-function gotYear(jqXHR)
-{
-    year = jqXHR.responseJSON;
-}
-
 function initTable()
 {
     $.ajax({
@@ -222,11 +216,6 @@ function initPage()
         dataType: 'json',
         xhrFields: {withCredentials: true},
         complete: gotGroups});
-    $.ajax({
-        url: '../api/v1/globals/vars/year',
-        method: 'get',
-        complete: gotYear
-    }); 
     $("#editModal").modal({"show":false});
     initTable();
 }
