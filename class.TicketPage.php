@@ -41,6 +41,7 @@ class TicketPage extends SecureLoginRequiredPage
              }
         }
         $this->addJSByURI($this->ticket_root.'/js/tickets.js', false);
+        $this->addJSByURI($this->ticket_root.'/js/TicketSystem.js', false);
     }
 
     function add_links()

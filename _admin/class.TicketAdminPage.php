@@ -32,6 +32,7 @@ class TicketAdminPage extends FlipAdminPage
         }
         $this->addWellKnownJS(JS_METISMENU);
         $this->addJSByURI('js/admin.js');
+        $this->addJSByURI('../js/TicketSystem.js');
     }
 
     function add_tickets_css()
