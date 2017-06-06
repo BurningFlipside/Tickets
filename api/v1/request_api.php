@@ -8,6 +8,7 @@ function request_api_group()
     $app->get('(/)', 'listRequests');
     $app->get('/crit_vols', 'getCritVols');
     $app->get('/problems(/:view)', 'getProblems');
+    $app->get('/countsByStatus', 'getCountsByStatus');
     $app->get('/:request_id(/:year)', 'getRequest');
     $app->get('/me/:year', 'getRequest');
     $app->get('/:request_id/:year/pdf', 'get_request_pdf');
@@ -681,3 +682,29 @@ function getProblems($view = false)
     echo safe_json_encode($data);
 }
 
+function getCountsByStatus()
+{
+    global $app;
+    if(!$app->user)
+    {
+        throw new Exception('Must be logged in', ACCESS_DENIED);
+    }
+    else if(!$app->user->isInGroupNamed('TicketAdmins') && !$app->user->isInGroupNamed('TicketTeam'))
+    {
+        throw new Exception('Must be Ticket Admin or Ticket Lead', ACCESS_DENIED);
+    }
+    $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+    $year = $settings['year'];
+    $ticketDataSet = DataSetFactory::getDataSetByName('tickets');
+    $data = $ticketDataSet->raw_query('SELECT count(*),private_status FROM tblTicketRequest WHERE year='.$year.' GROUP BY private_status');
+    $count = count($data);
+    for($i = 0; $i < $count; $i++)
+    {
+        $data[$i]['private_status'] = intval($data[$i]['private_status']);
+        $data[$i]['count'] = intval($data[$i]['count(*)']);
+        unset($data[$i]['count(*)']);
+    }
+    $count = $ticketDataSet->raw_query('SELECT count(*) FROM tblTicketRequest WHERE year='.$year);
+    array_push($data, array('all'=>true, 'count'=>intval($count[0]['count(*)'])));
+    echo json_encode($data);
+}

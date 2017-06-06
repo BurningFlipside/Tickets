@@ -1,5 +1,11 @@
-function tickets_done(data)
-{
+var ticketSystem = new TicketSystem('../api/v1');
+
+function ticketsDone(data, err) {
+    if(err !== null) {
+        console.log(err);
+        alert('Unable to obtain requested ticket counts!');
+        return;
+    }
     var label_array = [];
     var data_array = [];
     var tbody = $('#requestTypesTable tbody');
@@ -55,132 +61,62 @@ function requests_done(data)
     new Chart(ctx).Doughnut(count_data);
 }
 
-function crit_vols_done(data)
-{
-    var total = 0;
-    var normal_count = 0;
-    var protected_count = 0;
-    var critvol_count = 0;
-    var both_count = 0;
-    for(i = 0; i < data.length; i++)
-    {
-        total+= (data[i].count)*1;
-        if(data[i].crit_vol === '0' && data[i].protected === '0')
-        {
-            normal_count = (data[i].count)*1;
-        }
-        else if(data[i].crit_vol === '1' && data[i].protected === '0')
-        {
-            critvol_count = (data[i].count)*1;
-        }
-        else if(data[i].crit_vol === '0' && data[i].protected === '1')
-        {
-            protected_count = (data[i].count)*1;
-        }
-        else
-        {
-            both_count = (data[i].count)*1;
-        }
-    }
-    var rows = $('#critVolTable tbody tr');
-    var row1 = rows.first();
-    var row2 = rows.last();
-    row1.append('<td>'+normal_count+'</td><td>'+critvol_count+'</td><td>'+protected_count+'</td><td>'+both_count+'</td>');
-    normal_count = ((normal_count/total)*100).toFixed(2);
-    critvol_count = ((critvol_count/total)*100).toFixed(2);
-    protected_count = ((protected_count/total)*100).toFixed(2);
-    both_count = ((both_count/total)*100).toFixed(2);
-    row2.append('<td>'+normal_count+'%</td><td>'+critvol_count+'%</td><td>'+protected_count+'%</td><td>'+both_count+'%</td>');
-}
-
-function gotRequestCounts(total, received, problem, rejected)
-{
-    var totalCount = 0;
-    if(total[1] === 'success')
-    {
-        totalCount = total[0]['@odata.count'];
-        $('#requestCount').html(totalCount);
-    }
-    if(received[1] === 'success')
-    {
-        var receivedCount = received[0]['@odata.count'];
-        var receivedText = receivedCount+' ';
-        if(totalCount !== 0)
-        {
-            var percent = ((receivedCount/totalCount)*100).toFixed(2);
-            receivedText+='- '+percent+'%';
-        }
-        $('#receivedRequestCount').html(receivedText);
-    }
-    if(problem[1] === 'success')
-    {
-        var problemCount = problem[0]['@odata.count'];
-        var problemText = problemCount+' ';
-        if(totalCount !== 0)
-        {
-            var percent = ((problemCount/totalCount)*100).toFixed(2);
-            problemText+='- '+percent+'%';
-        }
-        $('#problemRequestCount').html(problemText);
-    }
-    if(rejected[1] === 'success')
-    {
-        var rejectedCount = rejected[0]['@odata.count'];
-        var rejectedText = rejectedCount+' ';
-        if(totalCount !== 0)
-        {
-            var percent = ((rejectedCount/totalCount)*100).toFixed(2);
-            rejectedText+='- '+percent+'%';
-        }
-        $('#rejectedRequestCount').html(rejectedText);
-    }
-}
-
-function yearDone(jqXHR)
-{
-    if(jqXHR.status !== 200 || jqXHR.responseJSON === undefined)
-    {
-        alert('Unable to obtain current ticket request year!');
+function gotRequestCounts(data, err) {
+    if(err !== null) {
+        console.log(err);
+        alert('Unable to obtain request counts!');
         return;
     }
-    var year = jqXHR.responseJSON;
-    $.when(
-    $.ajax({
-        url: '../api/v1/requests?$filter=year eq '+year+'&$count=true&$select=@odata.count',
-        type: 'get',
-        dataType: 'json'}),
-    $.ajax({
-        url: '../api/v1/requests?$filter=year eq '+year+' and private_status eq 1&$count=true&$select=@odata.count',
-        type: 'get',
-        dataType: 'json'}),
-    $.ajax({
-        url: '../api/v1/requests?$filter=year eq '+year+' and private_status eq 2&$count=true&$select=@odata.count',
-        type: 'get',
-        dataType: 'json'}),
-    $.ajax({
-        url: '../api/v1/requests?$filter=year eq '+year+' and private_status eq 3&$count=true&$select=@odata.count',
-        type: 'get',
-        dataType: 'json'})
-    ).then(gotRequestCounts);
+    var totalCount = 0;
+    for(var i = 0; i < data.length; i++) {
+        if(data[i].all === true) {
+            totalCount = data[i].count;
+            data.splice(i, 1);
+        }
+    }
+    $('#requestCount').html(totalCount);
+    var receivedCount = 0;
+    for(var i = 0; i < data.length; i++) {
+        if(data[i].private_status === 3 || data[i].private_status === 6) {
+            receivedCount += data[i].count;
+        }
+    }
+    var receivedText = receivedCount+' ';
+    if(totalCount !== 0) {
+        var percent = ((receivedCount/totalCount)*100).toFixed(2);
+        receivedText+='- '+percent+'%';
+    }
+    $('#receivedRequestCount').html(receivedText);
+    var problemCount = 0;
+    for(var i = 0; i < data.length; i++) {
+        if(data[i].private_status === 2) {
+            problemCount += data[i].count;
+        }
+    }
+    var problemText = problemCount+' ';
+    if(totalCount !== 0) {
+        var percent = ((problemCount/totalCount)*100).toFixed(2);
+        problemText+='- '+percent+'%';
+    }
+    $('#problemRequestCount').html(problemText);
+    var rejectedCount = 0;
+    for(var i = 0; i < data.length; i++) {
+        if(data[i].private_status === 3 || data[i].private_status === 4) {
+            rejectedCount += data[i].count;
+        }
+    }
+    var rejectedText = rejectedCount+' ';
+    if(totalCount !== 0) {
+        var percent = ((rejectedCount/totalCount)*100).toFixed(2);
+        rejectedText+='- '+percent+'%';
+    }
+    $('#rejectedRequestCount').html(rejectedText);
 }
 
 function init_page()
 {
-    $.ajax({
-        url: '../api/v1/globals/vars/year',
-        type: 'get',
-        dataType: 'json',
-        complete: yearDone});
-    $.ajax({
-        url: '../api/v1/requests_w_tickets/types',
-        type: 'get',
-        dataType: 'json',
-        success: tickets_done});
-    $.ajax({
-        url: '../api/v1/requests/crit_vols',
-        type: 'get',
-        dataType: 'json',
-        success: crit_vols_done});
+    ticketSystem.getTicketRequestCountsByStatus(gotRequestCounts);
+    ticketSystem.getRequestedTicketCountsByType(ticketsDone);
 }
 
 $(init_page);

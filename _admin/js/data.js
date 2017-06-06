@@ -1,13 +1,16 @@
-function request_ajax_done(jqXHR)
-{
-    if(jqXHR.responseJSON === undefined)
-    {
-        $('#modal').modal('hide');
-        alert("Unable to locate request id "+$('#save_btn').data('id'));
-        $('#request_id').focus();
+var ticketSystem = new TicketSystem('../api/v1');
+
+function requestAjaxDone(data, err) {
+    if(err !== null) {
+        if(err.jsonResp !== undefined && err.jsonResp.message !== undefined) {
+            alert(err.jsonResp.message);
+        }
+        else {
+            console.log(err);
+            alert('Unable to assign bucket to request!');
+        }
         return;
     }
-    var data = jqXHR.responseJSON;
     $('#modal_title').html('Request #'+data.request_id);
     $('#given_name').val(data.givenName);
     $('#last_name').val(data.sn);
@@ -39,32 +42,29 @@ function lookup_request_by_id(id)
 {
     $('#request_select').modal('hide');
     $('#modal').modal('show');
-    $.ajax({
-            url: '../api/v1/requests/'+id+'/current/Actions/Requests.GetBucket',
-            type: 'POST',
-            dataType: 'json',
-            complete: request_ajax_done});
+    ticketSystem.getRequestAndAssignBucket(requestAjaxDone, id);
 }
 
-function lookup_ajax_done(jqXHR)
-{
-    if(jqXHR.status != 200 || jqXHR.responseJSON === undefined || jqXHR.responseJSON.length === 0)
-    {
-        alert('No request found!');
+function lookupAjaxDone(data, err) {
+    if(err !== null) {
+        if(err.jsonResp !== undefined && err.jsonResp.message !== undefined) {
+            alert(err.jsonResp.message);
+        }
+        else {
+            console.log(err);
+            alert('Unable to lookup request!');
+        }
+        return;
     }
-    var data = jqXHR.responseJSON;
-    if(data.length == 1)
-    {
+    if(data.length === 1) {
         $('#request_id').val(data[0].request_id);
         lookup_request($('#request_id'));
     }
-    else
-    {
+    else {
         $('#request_select').modal('show');
         var table = $('#request_table').DataTable();
         table.clear();
-        for(i = 0; i < data.length; i++)
-        {
+        for(i = 0; i < data.length; i++) {
             var row = [
                 '<a href="#" onclick="lookup_request_by_id(\''+data[i].request_id+'\');">'+data[i].request_id+'</a>',
                 data[i].givenName+' '+data[i].sn,
@@ -82,21 +82,11 @@ function lookup_request_by_value(control)
     var value = $(control).val();
     if(type === '*')
     {
-        $.ajax({
-            url: '../api/v1/requests',
-            data: '$search='+value+'&$filter=year eq current',
-            type: 'get',
-            dataType: 'json',
-            complete: lookup_ajax_done});
+        ticketSystem.searchRequest(value, lookupAjaxDone);
     }
     else
     {
-        $.ajax({
-            url: '../api/v1/requests',
-            data: '$filter=contains('+type+','+value+') and year eq current',
-            type: 'get',
-            dataType: 'json',
-            complete: lookup_ajax_done});
+        ticketSystem.getRequests(lookupAjaxDone, 'contains('+type+','+value+') and year eq current');
     }
     $(control).val('');
 }
@@ -126,15 +116,19 @@ function status_ajax_done(jqXHR)
     }
 }
 
-function save_request_done(data)
-{
+function saveRequestDone(data, err) {
+    if(err !== null) {
+        if(err.jsonResp !== undefined && err.jsonResp.message !== undefined) {
+            alert(err.jsonResp.message);
+        }
+        else {
+            console.log(err);
+            alert('Unable to save request!');
+        }
+        return;
+    }
     $('#modal').modal('hide');
     $('#request_id').focus();
-    if(data.error !== undefined)
-    {
-        alert(data.error);
-        console.log(data);
-    }
 }
 
 function save_request()
@@ -153,14 +147,10 @@ function save_request()
     {
         obj.total_received = obj.total_received.substring(1);
     }
-    console.log(obj);
-    $.ajax({
-        url: '../api/v1/requests/'+obj.id+'/current',
-        data: JSON.stringify(obj),
-        dataType: 'json',
-        type: 'patch',
-        processData: false,
-        success: save_request_done}); 
+    obj.request_id = obj.id;
+    delete obj.id;
+    obj.year = 'current';
+    ticketSystem.updateRequest(obj, saveRequestDone);
 }
 
 function init_page()

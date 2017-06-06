@@ -1,7 +1,9 @@
+var ticketSystem = new TicketSystem('../api/v1');
+
 function init_table()
 {
     $(this).dataTable({
-        'ajax': '../api/v1/requests/problems/'+$(this).attr('id')+'?fmt=data-table',
+        'ajax': ticketSystem.getProblemRequestDataTableUri($(this).attr('id')),
         'columns': [
             {'data': 'request_id'},
             {'data': 'private_status'},
@@ -43,14 +45,9 @@ function on_print_change(mql)
 
 function exportCSV(view)
 {
-    if(view === undefined)
-    {
-        window.location = '../api/v1/requests/problems?$format=csv';
-    }
-    else
-    {
-        window.location = '../api/v1/requests/problems/'+view+'?$format=csv';
-    }
+    var uri = ticketSystem.getProblemRequestDataTableUri(view);
+    uri = uri.replace('fmt=data-table', '$format=csv2');
+    window.location = uri; 
 }
 
 function init_page()

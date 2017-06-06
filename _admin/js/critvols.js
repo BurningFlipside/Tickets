@@ -1,16 +1,25 @@
-function set_crit_done(data)
-{
+var ticketSystem = new TicketSystem('../api/v1');
+
+function setCritDone(data, err) {
+    if(err !== null) {
+        if(err.jsonResp !== undefined && err.jsonResp.message !== undefined) {
+            alert(err.jsonResp.message);
+        }
+        else {
+            console.log(err);
+            alert('Unable to save request!');
+        }
+        return;
+    }
     console.log(data);
 }
 
-function patchRequestCritVol(request_id, value)
-{
-    $.ajax({
-        url: '../api/v1/requests/'+request_id+'/current',
-        data: '{"crit_vol": '+value+'}',
-        type: 'patch',
-        dataType: 'json',
-        complete: set_crit_done});
+function patchRequestCritVol(request_id, value) {
+    var obj = {};
+    obj.request_id = request_id;
+    obj.year = 'current';
+    obj.crit_vol = value;
+    ticketSystem.updateRequest(obj, setCritDone); 
 }
 
 function save_one_critvol(index, element)
@@ -38,53 +47,52 @@ function save_critvol(event)
     $('.modal').modal('hide');
 }
 
-function search_done(jqXHR)
-{
-    if(jqXHR.status !== 200 || jqXHR.responseJSON === undefined)
-    {
-        alert("No requests found!");
+function searchDone(data, err) {
+    if(err !== null) {
+        if(err.jsonResp !== undefined && err.jsonResp.message !== undefined) {
+            alert(err.jsonResp.message);
+        }
+        else {
+            console.log(err);
+            alert('No requests found!');
+        }
+        return;
     }
-    else
-    {
-        var data = jqXHR.responseJSON;
-            var table = $('<table/>', {'class': 'table'});
-            var thead = $('<thead/>');
-            var row = $('<tr/>');
-            var cell = $('<th/>');
-            cell.html('Request ID');
-            cell.appendTo(row);
-            cell = $('<th/>');
-            cell.html('Name');
-            cell.appendTo(row);
-            cell = $('<th/>');
-            cell.html('Crit');
-            cell.appendTo(row);
-            row.appendTo(thead);
-            thead.appendTo(table);
-            thead = $('<tbody/>');
-            for(i = 0; i < data.length; i++)
-            {
-                row = $('<tr/>');
-                cell = $('<td/>');
-                cell.html(data[i].request_id);
-                cell.appendTo(row);
-                cell = $('<td/>');
-                cell.html(data[i].givenName+' '+data[i].sn);
-                cell.appendTo(row);
-                var checkbox = $('<input/>', {'type': 'checkbox', 'name': 'crit_vol_'+data[i].request_id});
-                if(data[i].crit_vol)
-                {
-                    checkbox.attr('checked', 'true');
-                }
-                cell = $('<td/>');
-                checkbox.appendTo(cell);
-                cell.appendTo(row);
-                row.appendTo(thead);
-            }
-            thead.appendTo(table);
-            var modal = create_modal('Requests', table, [{'text': 'Save', 'method': save_critvol}]);
-            modal.modal();
+    var table = $('<table/>', {'class': 'table'});
+    var thead = $('<thead/>');
+    var row = $('<tr/>');
+    var cell = $('<th/>');
+    cell.html('Request ID');
+    cell.appendTo(row);
+    cell = $('<th/>');
+    cell.html('Name');
+    cell.appendTo(row);
+    cell = $('<th/>');
+    cell.html('Crit');
+    cell.appendTo(row);
+    row.appendTo(thead);
+    thead.appendTo(table);
+    thead = $('<tbody/>');
+    for(i = 0; i < data.length; i++) {
+        row = $('<tr/>');
+        cell = $('<td/>');
+        cell.html(data[i].request_id);
+        cell.appendTo(row);
+        cell = $('<td/>');
+        cell.html(data[i].givenName+' '+data[i].sn);
+        cell.appendTo(row);
+        var checkbox = $('<input/>', {'type': 'checkbox', 'name': 'crit_vol_'+data[i].request_id});
+        if(data[i].crit_vol) {
+            checkbox.attr('checked', 'true');
+        }
+        cell = $('<td/>');
+        checkbox.appendTo(cell);
+        cell.appendTo(row);
+        row.appendTo(thead);
     }
+    thead.appendTo(table);
+    var modal = create_modal('Requests', table, [{'text': 'Save', 'method': save_critvol}]);
+    modal.modal();
 }
 
 function search(event)
@@ -93,33 +101,28 @@ function search(event)
     var value = $('#search').val();
     if(type === '*')
     {
-        $.ajax({
-            url: '../api/v1/requests',
-            data: '$search='+value+'&$filter=year eq current',
-            type: 'get',
-            dataType: 'json',
-            complete: search_done});
+        ticketSystem.searchRequest(value, searchDone);
     }
     else
     {
-        $.ajax({
-            url: '../api/v1/requests',
-            data: '$filter=contains('+type+','+value+') and year eq current',
-            type: 'get',
-            dataType: 'json',
-            complete: search_done});
+        ticketSystem.getRequests(searchDone, 'contains('+type+','+value+') and year eq current');
     }
     event.preventDefault();
     return false;
 }
 
-function uploadDone(jqXHR)
+function uploadDone(json, err)
 {
-    if(jqXHR.status !== 200 || jqXHR.responseJSON === undefined)
-    {
-        alert('Error setting critical volunteers!');
+    if(err !== null) {
+        if(err.jsonResp !== undefined && err.jsonResp.message !== undefined) {
+            alert(err.jsonResp.message);
+        }
+        else {
+            console.log(err);
+            alert('Unable to import bulk crivols!');
+        }
+        return;
     }
-    var json = jqXHR.responseJSON;
     console.log(json);
     $('#success_count').html(json.processed.length);
     $('#fail_count').html(json.unprocessed.length);
@@ -155,12 +158,7 @@ function allCritvolsObtained(jqXHR)
         alert('Unable to obtain leads list!');
         return;
     }
-    $.ajax({
-        url: '../api/v1/requests/Actions/SetCritVols',
-        type: 'POST',
-        data: jqXHR.responseText,
-        processData: false,
-        complete: uploadDone});
+    ticketSystem.bulkSetCritvols(jqXHR.responseText, uploadDone);
 }
 
 function auto_critvol()
@@ -175,12 +173,7 @@ function auto_critvol()
 
 function fileRead(e)
 {
-    $.ajax({
-        url: '../api/v1/requests/Actions/SetCritVols',
-        type: 'POST',
-        data: e.target.result,
-        processData: false,
-        complete: uploadDone});
+    ticketSystem.bulkSetCritvols(e.target.result, uploadDone);
 }
 
 function handleFileUpload(files, obj)
