@@ -35,16 +35,24 @@ else
     if(isset($_GET['id']))
     {
         $hash = $_GET['id'];
-        if(strpos($hash, ' ') !== FALSE)
+        if(strpos($hash, ' ') !== false)
         {
             $hash = \Tickets\Ticket::words_to_hash($hash); 
         }
         $ticket = \Tickets\Ticket::get_ticket_by_hash($hash);
-        if($ticket == FALSE)
+        if($ticket === false)
         {
-            $page->addNotification('The specified ticket does not exist!. Please enter the ID again. If this error persists then please contact the <a href="mailto:tickets@burningflipside.com" class="alert-link">Flipside Ticket Team</a>.', 
+            $ticket = \Tickets\Ticket::find_current_from_old_hash($hash);
+            if($ticket !== false && \Tickets\Ticket::user_has_ticket($ticket->hash, FlipSession::getUser()))
+            {
+                $page->addNotification('The specified ticket no longer exists!. However, the new copy is currently in your possession. Look <a href="index.php" class="alert-link">here</a> for a list of all your tickets.', TicketPage::NOTIFICATION_INFO);
+            }
+            else
+            {
+                $page->addNotification('The specified ticket does not exist!. Please enter the ID again. If this error persists then please contact the <a href="mailto:tickets@burningflipside.com" class="alert-link">Flipside Ticket Team</a>.', 
                                    TicketPage::NOTIFICATION_FAILED);
-            $page->body .= ticket_id_entry_form();
+                $page->body .= ticket_id_entry_form();
+            }
         }
         else
         {
