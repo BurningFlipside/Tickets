@@ -4,8 +4,7 @@ if(!isset($_FILES['file']) && !isset($_REQUEST['data']))
     echo json_encode(array('error'=>'Invalid Parameter! No file uploaded.'));
     die();
 }
-require_once('class.FlipSession.php');
-require_once('class.FlipsideLDAPServer.php');
+require_once('Autoload.php');
 $user = FlipSession::getUser();
 if($user == FALSE)
 {
@@ -30,15 +29,17 @@ else
 $token = strtok($file_content, "\r\n,");
 $success = array();
 $fails = array();
-$server = new FlipsideLDAPServer();
-$groups = $server->getGroups("(cn=TicketTeam)");
-if($groups == FALSE || !isset($groups[0]))
-{
-    return json_encode(array('error' => "Internal Error! Unable to locate TicketTeam Group!"));
-}
+$auth = AuthProvider::getInstance();
+$group = $auth->getGroupByName('TicketTeam');
 while($token !== false)
 {
-    if($groups[0]->addMemberByEmail($token) == FALSE)
+    $filter = new \Data\Filter('mail eq '.$token);
+    $users = $auth->getUsersByFilter($filter);
+    if($users === false || !isset($users[0]))
+    {
+        array_push($fails, $token);
+    }
+    if($group->addMember($users[0]->uid) === false)
     {
         array_push($fails, $token);
     }
