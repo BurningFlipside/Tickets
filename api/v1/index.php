@@ -1,53 +1,35 @@
 <?php
-require_once('class.FlipREST.php');
-require_once('ticket_api.php');
-require_once('ticket_history_api.php');
-require_once('request_api.php');
-require_once('request_ticket_api.php');
-require_once('global_api.php');
-require_once('pool_api.php');
-require_once('early.php');
-require_once('secondary_api.php');
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 
-if($_SERVER['REQUEST_URI'][0] == '/' && $_SERVER['REQUEST_URI'][1] == '/')
-{
-    $_SERVER['REQUEST_URI'] = substr($_SERVER['REQUEST_URI'], 1);
-}
+require('Autoload.php');
+require('class.BaseAPI.php');
+require('class.AdminTicketDataTableAPI.php');
+require('class.GlobalAPI.php');
+require('class.TicketDataTableAPI.php');
+require('class.PoolAPI.php');
+require('class.RequestAPI.php');
+require('class.RequestWithTicketsAPI.php');
+require('class.SecondaryAPI.php');
+require('class.TicketAPI.php');
+require('class.TicketHistoryAPI.php');
 
-$app = new FlipREST();
-$app->get('(/)', 'getRoot');
-$app->get('$metadata', 'getMetadata');
-$app->get('/$metadata', 'getMetadata');
-$app->group('/ticket', 'ticket_api_group');
-$app->group('/tickets', 'ticket_api_group');
-$app->group('/tickets_history', 'ticket_history_api_group');
-$app->group('/request', 'request_api_group');
-$app->group('/requests', 'request_api_group');
-$app->group('/requests_w_tickets', 'request_ticket_api_group');
-$app->group('/globals', 'global_api_group');
-$app->group('/pools', 'poolApiGroup');
-$app->group('/earlyEntry', 'eeApiGroup');
-$app->group('/secondary', 'secondary_api_group');
-
-function getRoot()
-{
-    global $app;
-    $ret = array();
-    $root = $app->request->getRootUri();
-    $ret['@odata.context'] = $root.'/$metadata';
-    $ret['value'] = array();
-    $ret['value']['Tickets'] = array('@odata.id'=>$root.'/tickets');
-    $ret['value']['TicketsHistory'] = array('@odata.id'=>$root.'/tickets_history');
-    $ret['value']['Requests'] = array('@odata.id'=>$root.'/requests');
-    $ret['value']['Globals'] = array('@odata.id'=>$root.'/globals');
-    echo json_encode($ret);
-}
-
-function getMetadata()
-{
-    global $app;
-    echo file_get_contents('csdl.xml');
-}
-
-$app->run();
-?>
+$site = new \Http\WebSite();
+$site->registerAPI('/', new BaseAPI());
+$site->registerAPI('/earlyEntry', new AdminTicketDataTableAPI('tickets', 'EarlyEntryMap', 'earlyEntrySetting'));
+$site->registerAPI('/globals', new GlobalAPI());
+$site->registerAPI('/globals/donation_types', new TicketDataTableAPI('tickets', 'DonationTypes', 'entityName'));
+$site->registerAPI('/globals/ticket_types', new TicketDataTableAPI('tickets', 'TicketTypes', 'TypeCode'));
+$site->registerAPI('/globals/statuses', new TicketDataTableAPI('tickets', 'RequestStatus', 'status_id'));
+$site->registerAPI('/globals/vars', new AdminTicketDataTableAPI('tickets', 'Variables', 'name'));
+$site->registerAPI('/globals/long_text', new AdminTicketDataTableAPI('tickets', 'LongText', 'name'));
+$site->registerAPI('/pools', new PoolAPI());
+$site->registerAPI('/requests', new RequestAPI());
+$site->registerAPI('/request', new RequestAPI());
+$site->registerAPI('/requests_w_tickets', new RequestWithTicketsAPI());
+$site->registerAPI('/secondary', new SecondaryAPI());
+$site->registerAPI('/ticket', new TicketAPI());
+$site->registerAPI('/tickets', new TicketAPI());
+$site->registerAPI('/tickets_history', new TicketHistoryAPI());
+$site->run();
+/* vim: set tabstop=4 shiftwidth=4 expandtab: */
