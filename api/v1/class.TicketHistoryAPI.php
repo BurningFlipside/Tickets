@@ -1,5 +1,5 @@
 <?php
-class TicketAPI extends Http\Rest\RestAPI
+class TicketHistoryAPI extends Http\Rest\RestAPI
 {
     public function setup($app)
     {

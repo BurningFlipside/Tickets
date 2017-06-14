@@ -99,7 +99,7 @@ class SecondaryAPI extends Http\Rest\RestAPI
         $resp = \Httpful\Request::post('https://www.google.com/recaptcha/api/siteverify?secret='.$key.'&response='.$data['g-recaptcha-response'])->send();
         if($resp->body->success != true)
         {
-            return $response->withJson('err'=>'Sorry Google thinks you are a robot!'));
+            return $response->withJson(array('err'=>'Sorry Google thinks you are a robot!'));
         }
         unset($data['g-recaptcha-response']);
         $ids = \FlipSession::getVar('questionIDs');
@@ -192,7 +192,7 @@ class SecondaryAPI extends Http\Rest\RestAPI
         $requestDataTable = DataSetFactory::getDataTableByNames('tickets', 'SecondaryRequests');
         $filter = false;
         $odata = $request->getAttribute('odata', new \ODataParams(array()));
-        if($app->user->isInGroupNamed('TicketAdmins') && $odata->filter !== false)
+        if($this->user->isInGroupNamed('TicketAdmins') && $odata->filter !== false)
         {
             $filter = $odata->filter;
             if($filter->contains('year eq current'))
@@ -500,7 +500,7 @@ padding: 0 1em 0 0;
         $validTickets = json_decode($request['valid_tickets']);
         for($i = 0; $i < count($validTickets); $i++)
         {
-            $ret.='<tr><td>Ticket '.$i+1.'</td><td>'.$request['ticket_first_'.$validTickets[$i]].'</td><td>'.$request['ticket_last_'.$validTickets[$i]].'</td></tr>';
+            $ret.='<tr><td>Ticket '.($i+1).'</td><td>'.$request['ticket_first_'.$validTickets[$i]].'</td><td>'.$request['ticket_last_'.$validTickets[$i]].'</td></tr>';
         }
         return $ret;
     }

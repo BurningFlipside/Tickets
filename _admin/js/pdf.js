@@ -53,7 +53,7 @@ function gotPDFSource(jqXHR)
     {
          alert('Unable to obtain PDF source!');
     }
-    $('#pdf-source').val(jqXHR.responseText);
+    $('#pdf-source').val(jqXHR.responseJSON);
 }
 
 function page_init()

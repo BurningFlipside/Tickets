@@ -28,5 +28,15 @@ class AdminTicketDataTableAPI extends Http\Rest\DataTableAPI
         $this->validateLoggedIn($request);
         return $this->user->isInGroupNamed('TicketAdmins');
     }
+
+    protected function processEntry($obj, $request)
+    {
+        $args = $request->getAttribute('route')->getArguments();
+        if(empty($args))
+        {
+            return $obj;
+        }
+        return $obj['value'];
+    }
 }
 /* vim: set tabstop=4 shiftwidth=4 expandtab: */

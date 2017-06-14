@@ -62,7 +62,7 @@ class TicketAPI extends Http\Rest\RestAPI
         $hash = $app['hash'];
         $withHistory = $request->getQueryParam('with_history', false);
         $odata = $request->getAttribute('odata', new \ODataParams(array()));
-        if($withHistory === true && $withHistory === '1')
+        if($withHistory === true || $withHistory === '1')
         {
             $ticket = \Tickets\Ticket::get_ticket_history_by_hash($hash);
         }
@@ -74,7 +74,7 @@ class TicketAPI extends Http\Rest\RestAPI
         {
             return $response->withStatus(404);
         }
-        return $response->withJson($ticket->serializeObject($app->fmt, $odata->select));
+        return $response->withJson($ticket);
     }
 
     public function getPdf($request, $response, $app)
@@ -175,7 +175,8 @@ class TicketAPI extends Http\Rest\RestAPI
         $this->validateLoggedIn($request);
         $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
         $ticket_type_data_table = $ticket_data_set['TicketTypes'];
-        $ticket_types = $ticket_type_data_table->read($app->odata->filter, $app->odata->select, $app->odata->top, $app->odata->skip, $app->odata->orderby);
+        $odata = $request->getAttribute('odata', new \ODataParams(array()));
+        $ticket_types = $ticket_type_data_table->read($odata->filter, $odata->select, $odata->top, $odata->skip, $odata->orderby);
         if($ticket_types === false)
         {
             $ticket_types = array();

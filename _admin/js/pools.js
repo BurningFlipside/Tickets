@@ -211,7 +211,7 @@ function initTable()
 function initPage()
 {
     $.ajax({
-        url: window.profilesUrl+'/api/v1/groups?$select=cn',
+        url: window.profilesUrl+'api/v1/groups?$select=cn',
         type: 'get',
         dataType: 'json',
         xhrFields: {withCredentials: true},

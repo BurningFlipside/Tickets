@@ -121,9 +121,9 @@ function known_change(control)
 function populate_raw_table(vars)
 {
     var tbody = $('#raw tbody');
-    for(var propertyName in vars)
+    for(var i = 0; i < vars.length; i++)
     {
-        add_row_to_table(tbody, propertyName, vars[propertyName]);
+        add_row_to_table(tbody, vars[i].name, vars[i].value);
     }
     //Add empty row for adding
     add_row_to_table(tbody, '_blank', '');
@@ -133,12 +133,12 @@ function populate_raw_table(vars)
 
 function populate_known_form(vars)
 {
-   for(var propertyName in vars)
+   for(var i = 0; i < vars.length; i++)
    {
-       var control = $('#'+propertyName);
+       var control = $('#'+vars[i].name);
        if(control.length > 0)
        {
-           control.val(vars[propertyName]);
+           control.val(vars[i].value);
        }
    }
 }

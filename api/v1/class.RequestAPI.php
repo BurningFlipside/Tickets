@@ -165,7 +165,7 @@ class RequestAPI extends Http\Rest\RestAPI
         {
             $search = $params['$search'];
         }
-        if($search !== null && $app->user->isInGroupNamed('TicketAdmins'))
+        if($search !== null && $this->user->isInGroupNamed('TicketAdmins'))
         {
             $filter->addToSQLString(" AND (mail LIKE '%$search%' OR sn LIKE '%$search%' OR givenName LIKE '%$search%')");
         }
@@ -535,7 +535,7 @@ class RequestAPI extends Http\Rest\RestAPI
         {
             $year = $args['year'];
         }
-        $request = getRequestHelper($request_id, $year);
+        $request = $this->getRequestHelper($request_id, $year);
         if($request === false)
         {
             return $response->withStatus(404);
@@ -657,7 +657,7 @@ class RequestAPI extends Http\Rest\RestAPI
         }
         $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
         $data_table = $ticket_data_set[$view];
-        $odata = $request->getAttribute('odata', new \ODataParams(array()));
+        $odata = $httpRequest->getAttribute('odata', new \ODataParams(array()));
         $filter = $odata->filter;
         if($filter === false)
         {
