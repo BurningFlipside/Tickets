@@ -4,8 +4,8 @@ error_reporting(E_ALL);
 require_once('class.TicketAdminPage.php');
 $page = new TicketAdminPage('Burning Flipside - Tickets');
 
-$page->addJSByURI('//cdn.ckeditor.com/4.4.5/full/ckeditor.js', false);
-$page->addJSByURI('//cdn.ckeditor.com/4.4.5/full/adapters/jquery.js', false);
+$page->addJSByURI('//cdn.ckeditor.com/4.7.0/full/ckeditor.js', false);
+$page->addJSByURI('//cdn.ckeditor.com/4.7.0/full/adapters/jquery.js', false);
 $page->addJSByURI('js/ticket_pdf.js');
 
     $page->body .= '
