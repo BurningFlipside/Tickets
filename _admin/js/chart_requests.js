@@ -113,10 +113,64 @@ function gotRequestCounts(data, err) {
     $('#rejectedRequestCount').html(rejectedText);
 }
 
+function gotRequests(requests, err) {
+    if(requests === null) {
+        return;
+    }
+    var total = $('#requestOverTimeTable tbody tr:nth-child(1) td:nth-child('+this.col+')');
+    total.append(requests.length);
+    var received = 0;
+    var notReceived = 0;
+    var problem = 0;
+    var reject = 0;
+    for(var i = 0; i < requests.length; i++) {
+        switch(requests[i].private_status) {
+            case 0:
+                notReceived++;
+                break;
+            case 1:
+            case 6:
+                received++;
+                break;
+            case 2:
+                problem++;
+                break;
+            case 3:
+            case 4:
+                reject++;
+        }
+    }
+    var cell = $('#requestOverTimeTable tbody tr:nth-child(2) td:nth-child('+this.col+')');
+    cell.append(received);
+    cell = $('#requestOverTimeTable tbody tr:nth-child(3) td:nth-child('+this.col+')');
+    cell.append(notReceived);
+    cell = $('#requestOverTimeTable tbody tr:nth-child(4) td:nth-child('+this.col+')');
+    cell.append(problem);
+    cell = $('#requestOverTimeTable tbody tr:nth-child(5) td:nth-child('+this.col+')');
+    cell.append(reject);
+}
+
+function gotAllYears(years, err) {
+    years.sort();
+    var thead = $('#requestOverTimeTable thead tr');
+    var rows = $('#requestOverTimeTable tbody tr');
+    thead.append('<th></th>');
+    for(var i = 0; i < years.length; i++) {
+        thead.append('<th>'+years[i]+'</th>');
+        for(var j = 0; j < rows.length; j++) {
+            rows[j].innerHTML += '<td></td>';
+        }
+        var obj = { year: years[i], col: i+2};
+        var gotRequestsCall = gotRequests.bind(obj);
+        ticketSystem.getRequests(gotRequestsCall, 'year eq '+years[i]);
+    }
+}
+
 function init_page()
 {
     ticketSystem.getTicketRequestCountsByStatus(gotRequestCounts);
     ticketSystem.getRequestedTicketCountsByType(ticketsDone);
+    ticketSystem.getAllYears(gotAllYears);
 }
 
 $(init_page);

@@ -37,7 +37,7 @@ class TicketAPI extends Http\Rest\RestAPI
         }
         else
         {
-            $filter = new \Tickets\DB\TicketDefaultFilter($app->user->mail);
+            $filter = new \Tickets\DB\TicketDefaultFilter($this->user->mail);
         }
         $ticket_data_table = \Tickets\DB\TicketsDataTable::getInstance();
         $tickets = $ticket_data_table->read($filter, $odata->select, $odata->top, $odata->skip, $odata->orderby);

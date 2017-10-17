@@ -22,6 +22,18 @@ TicketSystem.prototype.getCurrentYear = function(callback) {
         complete: parseResults});
 }
 
+TicketSystem.prototype.getAllYears = function(callback) {
+    var obj = {
+        callback: callback
+    };
+    var parseResults = ticketSystemGenericResults.bind(obj);
+    $.ajax({
+        url: this.apiRoot+'/globals/years',
+        type: 'get',
+        dataType: 'json',
+        complete: parseResults});
+}
+
 TicketSystem.prototype.getWindow = function(callback) {
     var obj = {
         callback: callback,
@@ -212,6 +224,18 @@ TicketSystem.prototype.getUsedTicketCount = function(callback) {
     var parseResults = ticketSystemGenericResults.bind(obj);
     $.ajax({
         url: this.apiRoot+'/tickets?$filter=year eq current and used eq 1&$count=true&$select=@odata.count',
+        type: 'get',
+        dataType: 'json',
+        complete: parseResults});
+}
+
+TicketSystem.prototype.getUnusedTicketCount = function(callback) {
+    var obj = {
+        callback: callback,
+        parser: getODataCount};
+    var parseResults = ticketSystemGenericResults.bind(obj);
+    $.ajax({
+        url: this.apiRoot+'/tickets?$filter=year eq current and used eq 0 and sold eq 1&$count=true&$select=@odata.count',
         type: 'get',
         dataType: 'json',
         complete: parseResults});
