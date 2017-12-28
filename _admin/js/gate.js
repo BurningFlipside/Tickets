@@ -51,6 +51,7 @@ function process_ticket()
     data = JSON.stringify(data);
     $.ajax({
         url:  '../api/v1/tickets/'+hash,
+        contentType: 'application/json',
         type: 'patch',
         dataType: 'json',
         data: data,

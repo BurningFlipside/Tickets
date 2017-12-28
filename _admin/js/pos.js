@@ -135,6 +135,7 @@ function final_post(e)
             obj.email = $('#email').val();
             $.ajax({
                  url: '/tickets/api/v1/tickets/'+id+'/Actions/Ticket.Sell',
+                 contentType: 'application/json',
                  type: 'POST',
                  dataType: 'json',
                  processData: false,
@@ -144,6 +145,7 @@ function final_post(e)
         }
         $.ajax({
            url: '/tickets/api/v1/ticket/pos/sell',
+           contentType: 'application/json',
            type: 'POST',
            dataType: 'json',
            processData: false,

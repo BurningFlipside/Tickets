@@ -132,6 +132,7 @@ function commitDonationType(e)
     e.preventDefault();
     $.ajax({
         url: '../api/v1/globals/donation_types',
+        contentType: 'application/json',
         data: JSON.stringify(data),
         type: 'POST',
         processData: false,

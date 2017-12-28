@@ -101,6 +101,7 @@ TicketSystem.prototype.getRequestAndAssignBucket = function(callback, requestId,
     var parseResults = ticketSystemGenericResults.bind(obj);
     $.ajax({
         url: this.apiRoot+'/requests/'+requestId+'/'+year+'/Actions/Requests.GetBucket',
+        contentType: 'application/json',
         type: 'POST',
         dataType: 'json',
         complete: parseResults});
@@ -164,6 +165,7 @@ TicketSystem.prototype.getTicketRequestIdForCurrentUser = function(callback) {
     var parseResults = ticketSystemGenericResults.bind(obj);
     $.ajax({
         url: this.apiRoot+'/requests/Actions/Requests.GetRequestID',
+        contentType: 'application/json',
         type: 'POST',
         dataType: 'json',
         complete: parseResults});
@@ -266,6 +268,7 @@ TicketSystem.prototype.createRequest = function(request, callback) {
     var parseResults = ticketSystemGenericResults.bind(obj);
     $.ajax({
         url: this.apiRoot+'/request',
+        contentType: 'application/json',
         data: JSON.stringify(request),
         type: 'POST',
         dataType: 'json',
@@ -278,6 +281,7 @@ TicketSystem.prototype.updateRequest = function(request, callback) {
     var parseResults = ticketSystemGenericResults.bind(obj);
     $.ajax({
         url: this.apiRoot+'/requests/'+request.request_id+'/'+request.year,
+        contentType: 'application/json',
         data: JSON.stringify(obj),
         processData: false,
         dataType: 'json',

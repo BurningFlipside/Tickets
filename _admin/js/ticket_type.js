@@ -150,6 +150,7 @@ function commitTicketType(e)
     e.preventDefault();
     $.ajax({
         url: '../api/v1/globals/ticket_types',
+        contentType: 'application/json',
         data: JSON.stringify(data),
         type: 'POST',
         processData: false,

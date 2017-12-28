@@ -14,6 +14,7 @@ function earlyEntryChanged()
     var val = $('#currentEarlyEntry').val();
     $.ajax({
         url: '../api/v1/globals/vars/currentEarlyEntry',
+        contentType: 'application/json',
         type: 'patch',
         dataType: 'json',
         data: JSON.stringify(val),

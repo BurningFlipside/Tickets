@@ -27,6 +27,7 @@ function gen_tickets()
     }
     $.ajax({
         url: '../api/v1/tickets/Actions/GenerateTickets',
+        contentType: 'application/json',
         type: 'post',
         data: JSON.stringify(obj),
         dataType: 'json',
