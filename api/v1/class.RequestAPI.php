@@ -288,7 +288,7 @@ class RequestAPI extends Http\Rest\RestAPI
             throw new Exception('Required Parameter tickets is missing', \Http\Rest\INVALID_PARAM);
         }
         $settings = \Tickets\DB\TicketSystemSettings::getInstance();
-        $ticket_count = count($obj->tickets);
+        $ticket_count = count($obj['tickets']);
         if($ticket_count > $settings['max_tickets_per_request'])
         {
             throw new Exception('Too many tickets for request', \Http\Rest\INVALID_PARAM);
@@ -297,7 +297,7 @@ class RequestAPI extends Http\Rest\RestAPI
         {
              $request->validateRequestId($this->user->mail);
         }
-        $ret = $request->validateTickets(isset($obj->minor_confirm));
+        $ret = $request->validateTickets(isset($obj['minor_confirm']));
         if($ret !== false)
         {
              return $response->withJson($ret);
@@ -312,13 +312,13 @@ class RequestAPI extends Http\Rest\RestAPI
         $filter = new \Data\Filter("request_id eq '".$request->request_id."' and year eq ".$settings['year']);
         if($requestDataTable->read($filter) === false)
         {
-            $requestDataTable->create($request);
+            $res = $requestDataTable->create($request);
         }
         else
         {
             $requestDataTable->update($filter, $request);
         }
-        if(strcasecmp($request->mail, $app->user->mail) === 0)
+        if(strcasecmp($request->mail, $this->user->mail) !== 0)
         {
             return $response->withJson(true);
         }
@@ -512,10 +512,11 @@ class RequestAPI extends Http\Rest\RestAPI
         {
             $year = $args['year'];
         }
-        $request = getRequestHelper($request_id, $year);
+        $request = $this->getRequestHelper($request_id, $year);
         $email_msg = new \Tickets\Flipside\FlipsideTicketRequestEmail($request);
         $email_provider = \EmailProvider::getInstance();
-        if($email_provider->sendEmail($email_msg) === false)
+        $res = $email_provider->sendEmail($email_msg);
+        if($res === false)
         {
             throw new \Exception('Unable to send email!');
         }

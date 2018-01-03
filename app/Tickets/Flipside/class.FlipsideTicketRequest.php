@@ -327,17 +327,11 @@ class FlipsideTicketRequest extends \SerializableObject
          $filter = new FlipsideRequestDefaultFilter($request_id, $year);
          $dataSet = \DataSetFactory::getDataSetByName('tickets');
          $requestDataTable = $dataSet['TicketRequest'];
-         $donationDataTable = $dataSet['RequestDonation'];
-         $requestedTicketDataTable = $dataSet['RequestedTickets'];
          $requests = $requestDataTable->read($filter);
          if($requests !== false && isset($requests[0]))
          {
-             $requests[0]['tickets']   = $requestedTicketDataTable->read($filter);
-             $requests[0]['donations'] = $donationDataTable->read($filter);
-             if($requests[0]['donations'] === false)
-             {
-                 unset($requests[0]['donations']);
-             }
+             $requests[0]['tickets']   = json_decode($requests[0]['tickets']);
+             $requests[0]['donations'] = json_decode($requests[0]['donations']);
              return new static($requests[0]);
          }
          throw new \Exception('Not found');

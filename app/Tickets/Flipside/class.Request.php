@@ -90,6 +90,16 @@ class Request extends \SerializableObject
         for($i = 0; $i < $count; $i++)
         {
             $ticket = $this->tickets[$i];
+            if(is_array($ticket))
+            {
+                $tmp = new \stdClass();
+                $tmp->first = $ticket['first'];
+                $tmp->last = $ticket['last'];
+                $tmp->type = $ticket['type'];
+                $tmp->cost = $ticket['cost'];
+                $ticket = $tmp;
+                $this->tickets[$i] = $tmp;
+            }
             if($minorConfirm !== true && \Tickets\TicketType::typeIsMinor($ticket->type))
             {
                 return array('need_minor_confirm'=>true);
