@@ -165,11 +165,9 @@ class Request extends \SerializableObject
         {
             return 0;
         }
-        $count = count($this->donations);
-        for($i = 0; $i < $count; $i++)
+        foreach($this->donations as $donation)
         {
-             $donation = $this->donations[$i];
-             $amt += $donation->amount;
+             $amt += $donation['amount'];
         }
         return $amt;
     }
