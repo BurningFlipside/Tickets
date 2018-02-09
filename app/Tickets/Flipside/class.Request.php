@@ -96,7 +96,15 @@ class Request extends \SerializableObject
                 $tmp->first = $ticket['first'];
                 $tmp->last = $ticket['last'];
                 $tmp->type = $ticket['type'];
-                $tmp->cost = $ticket['cost'];
+                if(!isset($ticket['cost']))
+                {
+                    $type = \Tickets\TicketType::getTicketType($ticket['type']);
+                    $tmp->cost = $type['cost'];
+                }
+                else
+                {
+                    $tmp->cost = $ticket['cost'];
+                }
                 $ticket = $tmp;
                 $this->tickets[$i] = $tmp;
             }
@@ -122,7 +130,7 @@ class Request extends \SerializableObject
                 $type = \Tickets\TicketType::getTicketType($keys[$i]);
                 if($type->maxPerRequest < $typeCounts[$keys[$i]])
                 {
-                    throw new Exception('Too many tickets of type '.$keys[$i].' for request', INVALID_PARAM);
+                    throw new \Exception('Too many tickets of type '.$keys[$i].' for request', \Http\Rest\INVALID_PARAM);
                 }
             }
         }
@@ -131,17 +139,17 @@ class Request extends \SerializableObject
 
     public function validateRequestId($email)
     {
-        $ticketDataSet = DataSetFactory::getDataSetByName('tickets');
+        $ticketDataSet = \DataSetFactory::getDataSetByName('tickets');
         $requestIdTable = $ticketDataSet['RequestIDs'];
         $filter = new \Data\Filter("mail eq '$email'");
         $requestIds = $requestIdTable->read($filter);
         if($requestIds === false || !isset($requestIds[0]) || !isset($requestIds[0]['request_id']))
         {
-            throw new Exception('Request ID not retrievable! Call GetRequestID first.', INVALID_PARAM);
+            throw new \Exception('Request ID not retrievable! Call GetRequestID first.', \Http\Rest\INVALID_PARAM);
         }
         if($requestIds[0]['request_id'] !== $this->request_id)
         {
-            throw new Exception('Request ID not correct!', INVALID_PARAM);
+            throw new \Exception('Request ID not correct!', \Http\Rest\INVALID_PARAM);
         }
     }
 
