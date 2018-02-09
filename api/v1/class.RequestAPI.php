@@ -40,7 +40,7 @@ class RequestAPI extends Http\Rest\RestAPI
             $id = $request_ids[0]['MAX(request_id)'];
             $id++;
         }
-        $data = array('mail'=>$app->user->mail, 'request_id'=>$id);
+        $data = array('mail'=>$this->user->mail, 'request_id'=>$id);
         $dataTable->create($data);
         return $id;
     }
@@ -394,9 +394,9 @@ class RequestAPI extends Http\Rest\RestAPI
         {
             $year = $args['year'];
         }
-        $request = getRequestHelper($request_id, $year);
+        $request = $this->getRequestHelper($request_id, $year);
         $pdf = new \Tickets\Flipside\RequestPDF($request);
-        if($app->request->isPost())
+        if($httpRequest->isPost())
         {
             $response = $response->withHeader('Content-Type', 'text/plain');
             $response->getBody()->write(base64_encode($pdf->toPDFBuffer()));
@@ -575,7 +575,7 @@ class RequestAPI extends Http\Rest\RestAPI
         {
             $year = $args['year'];
         }
-        $obj = $request->getParsedBody();
+        $obj = $httpRequest->getParsedBody();
         $request = new \Tickets\Flipside\Request($obj);
         $settings = \Tickets\DB\TicketSystemSettings::getInstance();
         if(!$this->user->isInGroupNamed('TicketAdmins') && !$this->user->isInGroupNamed('TicketTeam'))
@@ -626,7 +626,7 @@ class RequestAPI extends Http\Rest\RestAPI
             $request->request_id = $request->id;
             unset($request->id);
         }
-        $old_request = getRequestHelper($request_id, $year);
+        $old_request = $this->getRequestHelper($request_id, $year);
         if($old_request !== false)
         {
             if(!isset($request->request_id))
