@@ -279,10 +279,14 @@ TicketSystem.prototype.createRequest = function(request, callback) {
 TicketSystem.prototype.updateRequest = function(request, callback) {
     var obj = {callback: callback};
     var parseResults = ticketSystemGenericResults.bind(obj);
+    var uri = this.apiRoot+'/requests/'+request.request_id;
+    if(request.year !== undefined) {
+        uri += '/'+request.year;
+    }
     $.ajax({
-        url: this.apiRoot+'/requests/'+request.request_id+'/'+request.year,
+        url: uri,
         contentType: 'application/json',
-        data: JSON.stringify(obj),
+        data: JSON.stringify(request),
         processData: false,
         dataType: 'json',
         type: 'patch',
