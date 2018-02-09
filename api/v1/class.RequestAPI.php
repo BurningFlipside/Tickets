@@ -606,7 +606,7 @@ class RequestAPI extends Http\Rest\RestAPI
                 unset($request->comments);
             }
         }
-        $ret = $request->validateTickets(isset($obj->minor_confirm));
+        $ret = $request->validateTickets(isset($obj['minor_confirm']));
         if($ret !== false)
         {
             return $response->withJson($ret);
