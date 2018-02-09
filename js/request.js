@@ -239,7 +239,15 @@ function delete_ticket()
 
 function donation_amount_changed(elem)
 {
-    var jq = $(elem);
+    var jq = null;
+    if(elem.target !== undefined)
+    {
+      jq = $(elem.target);
+    }
+    else
+    {
+      jq = $(elem);
+    }
     var id = jq.attr('id');
     var text_id = id+"_text";
     if(jq.val() == 'other')
@@ -327,7 +335,7 @@ function add_donation_type_to_table(table, donation)
     cell.appendTo(row);
     cell = $('<td/>', {style: 'vertical-align:middle; horizontal-align:left'});
     var id = 'donation_amount_'+donation.entityName;
-    var dropdown = $('<select />', {id: id, name: id, onchange: 'donation_amount_changed('+id+')', 'class':'form-control'});
+    var dropdown = $('<select />', {id: id, name: id, 'class':'form-control'});
     $('<option/>', {value: '0', text: '$0'}).appendTo(dropdown);
     $('<option/>', {value: '5', text: '$5'}).appendTo(dropdown);
     $('<option/>', {value: '10', text: '$10'}).appendTo(dropdown);
@@ -337,6 +345,7 @@ function add_donation_type_to_table(table, donation)
     dropdown.appendTo(cell); 
     cell.appendTo(row);
     row.appendTo(table);
+    dropdown.on('change', donation_amount_changed);
     if(donation.thirdParty && $(window).width() < 768)
     {
         row = $('<tr/>');
