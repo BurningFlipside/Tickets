@@ -362,7 +362,7 @@ class TicketAPI extends Http\Rest\RestAPI
         return $response->withJson($res); 
     }
 
-    public function verifyShortCode($request, $response, $app)
+    public function verifyShortCode($request, $response, $args)
     {
         $this->validateLoggedIn($request);
         $code = $args['code'];
@@ -379,7 +379,7 @@ class TicketAPI extends Http\Rest\RestAPI
         return $response->withJson($res);
     }
 
-    public function generateTickets($request, $response, $app)
+    public function generateTickets($request, $response, $args)
     {
         $this->validateLoggedIn($request);
         if(!$this->user->isInGroupNamed('TicketAdmins'))
