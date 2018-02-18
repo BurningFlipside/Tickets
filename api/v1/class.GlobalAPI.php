@@ -10,7 +10,7 @@ class GlobalAPI extends Http\Rest\RestAPI
         $app->get('/window', array($this, 'showWindow'));
         $app->get('/users', array($this, 'getTicketUsers'));
         $app->get('/years', array($this, 'getYears'));
-        $app->post('/Actions/generatePreview/{class}', array($this, 'previewPDF'));
+        $app->post('/Actions/generatePreview/{class:.*}', array($this, 'previewPDF'));
     }
 
     public function getConstraints($request, $response, $args)
@@ -159,11 +159,11 @@ class GlobalAPI extends Http\Rest\RestAPI
         {
             return $response->withStatus(401);
         }
-        $type = '\\'.implode('\\', $args['class']);
+        $type = '\\'.str_replace('/', '\\', $args['class']);
         $body = $request->getBody()->getContents();
         $pdf = new $type(false, $body);
-        $response = $response->withHeader('Content-Type', 'application/pdf');
-        $response->getBody()->write($pdf->toPDFBuffer());
+        $response = $response->withHeader('Content-Type', 'text/html');
+        $response->getBody()->write(base64_encode($pdf->toPDFBuffer()));
         return $response;
     }
 }

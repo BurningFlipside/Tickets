@@ -155,7 +155,7 @@ function edit_request(control)
 function getPDF(control)
 {
     var request = $('#modal').data('request');
-    window.location = request.getPdfUri;
+    window.location = request.getPdfUri();
 }
 
 function getCSV()

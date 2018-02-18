@@ -76,6 +76,7 @@ function saveRequest(control)
     obj.total_due = obj.total_due.substring(1);
     $.ajax({
         url: '../api/v1/secondary/requests/'+$('#request_id').val()+'/current',
+        contentType: 'application/json',
         data: JSON.stringify(obj),
         processData: false,
         dataType: 'json',

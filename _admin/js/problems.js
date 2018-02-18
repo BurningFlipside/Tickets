@@ -46,7 +46,7 @@ function on_print_change(mql)
 function exportCSV(view)
 {
     var uri = ticketSystem.getProblemRequestDataTableUri(view);
-    uri = uri.replace('fmt=data-table', '$format=csv2');
+    uri = uri.replace('fmt=data-table', '$format=csv');
     window.location = uri; 
 }
 

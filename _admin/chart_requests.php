@@ -46,6 +46,27 @@ $page->body .= '
                         </div>
                     </div>
                 </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#requestsOverTime">Requests over Time</a></h4>
+                    </div>
+                    <div id="requestsOverTime" class="panel-collapse collapse">
+                        <div class="panel-body">
+                            <table id="requestOverTimeTable" class="table">
+                                <thead>
+                                    <tr></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><th>Total Requests</th></tr>
+                                    <tr><th>Received</th></tr>
+                                    <tr><th>Not Received</th></tr>
+                                    <tr><th>Problem Requests</th></tr>
+                                    <tr><th>Rejected Requests</th></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

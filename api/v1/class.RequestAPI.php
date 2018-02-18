@@ -40,7 +40,7 @@ class RequestAPI extends Http\Rest\RestAPI
             $id = $request_ids[0]['MAX(request_id)'];
             $id++;
         }
-        $data = array('mail'=>$app->user->mail, 'request_id'=>$id);
+        $data = array('mail'=>$this->user->mail, 'request_id'=>$id);
         $dataTable->create($data);
         return $id;
     }
@@ -141,7 +141,7 @@ class RequestAPI extends Http\Rest\RestAPI
         $filter = false;
         $show_children = false;
         $odata = $request->getAttribute('odata', new \ODataParams(array()));
-        if($this->user->isInGroupNamed('TicketAdmins') && $odata->filter !== false)
+        if(($this->user->isInGroupNamed('TicketAdmins') || $this->user->isInGroupNamed('TicketTeam')) && $odata->filter !== false)
         {
             $filter = $odata->filter;
             if($filter->contains('year eq current'))
@@ -165,7 +165,7 @@ class RequestAPI extends Http\Rest\RestAPI
         {
             $search = $params['$search'];
         }
-        if($search !== null && $this->user->isInGroupNamed('TicketAdmins'))
+        if($search !== null && ($this->user->isInGroupNamed('TicketAdmins') || $this->user->isInGroupNamed('TicketTeam')))
         {
             $filter->addToSQLString(" AND (mail LIKE '%$search%' OR sn LIKE '%$search%' OR givenName LIKE '%$search%')");
         }
@@ -288,7 +288,7 @@ class RequestAPI extends Http\Rest\RestAPI
             throw new Exception('Required Parameter tickets is missing', \Http\Rest\INVALID_PARAM);
         }
         $settings = \Tickets\DB\TicketSystemSettings::getInstance();
-        $ticket_count = count($obj->tickets);
+        $ticket_count = count($obj['tickets']);
         if($ticket_count > $settings['max_tickets_per_request'])
         {
             throw new Exception('Too many tickets for request', \Http\Rest\INVALID_PARAM);
@@ -297,7 +297,7 @@ class RequestAPI extends Http\Rest\RestAPI
         {
              $request->validateRequestId($this->user->mail);
         }
-        $ret = $request->validateTickets(isset($obj->minor_confirm));
+        $ret = $request->validateTickets(isset($obj['minor_confirm']));
         if($ret !== false)
         {
              return $response->withJson($ret);
@@ -312,13 +312,13 @@ class RequestAPI extends Http\Rest\RestAPI
         $filter = new \Data\Filter("request_id eq '".$request->request_id."' and year eq ".$settings['year']);
         if($requestDataTable->read($filter) === false)
         {
-            $requestDataTable->create($request);
+            $res = $requestDataTable->create($request);
         }
         else
         {
             $requestDataTable->update($filter, $request);
         }
-        if(strcasecmp($request->mail, $app->user->mail) === 0)
+        if(strcasecmp($request->mail, $this->user->mail) !== 0)
         {
             return $response->withJson(true);
         }
@@ -394,9 +394,9 @@ class RequestAPI extends Http\Rest\RestAPI
         {
             $year = $args['year'];
         }
-        $request = getRequestHelper($request_id, $year);
+        $request = $this->getRequestHelper($request_id, $year);
         $pdf = new \Tickets\Flipside\RequestPDF($request);
-        if($app->request->isPost())
+        if($httpRequest->isPost())
         {
             $response = $response->withHeader('Content-Type', 'text/plain');
             $response->getBody()->write(base64_encode($pdf->toPDFBuffer()));
@@ -512,10 +512,11 @@ class RequestAPI extends Http\Rest\RestAPI
         {
             $year = $args['year'];
         }
-        $request = getRequestHelper($request_id, $year);
+        $request = $this->getRequestHelper($request_id, $year);
         $email_msg = new \Tickets\Flipside\FlipsideTicketRequestEmail($request);
         $email_provider = \EmailProvider::getInstance();
-        if($email_provider->sendEmail($email_msg) === false)
+        $res = $email_provider->sendEmail($email_msg);
+        if($res === false)
         {
             throw new \Exception('Unable to send email!');
         }
@@ -550,6 +551,10 @@ class RequestAPI extends Http\Rest\RestAPI
         {
             $request->bucket = $max_buckets;
         }
+        else if($request->bucket !== '-1' && $request->bucket !== -1)
+        {
+            return $response->withJson($request);
+        }
         else
         {
             $request->bucket = (int)mt_rand(1, ($max_buckets-1));
@@ -574,7 +579,7 @@ class RequestAPI extends Http\Rest\RestAPI
         {
             $year = $args['year'];
         }
-        $obj = $request->getParsedBody();
+        $obj = $httpRequest->getParsedBody();
         $request = new \Tickets\Flipside\Request($obj);
         $settings = \Tickets\DB\TicketSystemSettings::getInstance();
         if(!$this->user->isInGroupNamed('TicketAdmins') && !$this->user->isInGroupNamed('TicketTeam'))
@@ -605,10 +610,37 @@ class RequestAPI extends Http\Rest\RestAPI
                 unset($request->comments);
             }
         }
-        $ret = $request->validateTickets(isset($obj->minor_confirm));
-        if($ret !== false)
+        else
         {
-            return $response->withJson($ret);
+            if(isset($request->status))
+            {
+                $request->private_status = $request->status;
+                unset($request->status);
+            }
+        }
+        $old_request = $this->getRequestHelper($request_id, $year);
+        if(isset($request->tickets))
+        {
+            $ret = $request->validateTickets(isset($obj['minor_confirm']));
+            if($ret !== false)
+            {
+                return $response->withJson($ret);
+            }
+        }
+        if($old_request !== false)
+        {
+            if(!isset($request->tickets))
+            {
+                $request->tickets = $old_request->tickets;
+            }
+            if(!isset($request->donations))
+            {
+                $request->donations = $old_request->donations;
+            }
+            if(!isset($request->year) || $request->year === 0)
+            {
+                $request->year = $settings['year'];
+            }
         }
         $request->modifiedBy = $this->user->uid;
         $request->modifiedByIP = $_SERVER['REMOTE_ADDR'];
@@ -625,7 +657,6 @@ class RequestAPI extends Http\Rest\RestAPI
             $request->request_id = $request->id;
             unset($request->id);
         }
-        $old_request = getRequestHelper($request_id, $year);
         if($old_request !== false)
         {
             if(!isset($request->request_id))
@@ -634,7 +665,7 @@ class RequestAPI extends Http\Rest\RestAPI
             }
             $requestDataTable = \Tickets\DB\RequestDataTable::getInstance();
             $filter = new \Data\Filter("request_id eq '".$request->request_id."' and year eq ".$settings['year']);
-            $requestDataTable->update($filter, $request);
+            $ret = $requestDataTable->update($filter, $request);
             return $response->withJson(true);
         }
         else

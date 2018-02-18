@@ -22,6 +22,18 @@ TicketSystem.prototype.getCurrentYear = function(callback) {
         complete: parseResults});
 }
 
+TicketSystem.prototype.getAllYears = function(callback) {
+    var obj = {
+        callback: callback
+    };
+    var parseResults = ticketSystemGenericResults.bind(obj);
+    $.ajax({
+        url: this.apiRoot+'/globals/years',
+        type: 'get',
+        dataType: 'json',
+        complete: parseResults});
+}
+
 TicketSystem.prototype.getWindow = function(callback) {
     var obj = {
         callback: callback,
@@ -89,6 +101,7 @@ TicketSystem.prototype.getRequestAndAssignBucket = function(callback, requestId,
     var parseResults = ticketSystemGenericResults.bind(obj);
     $.ajax({
         url: this.apiRoot+'/requests/'+requestId+'/'+year+'/Actions/Requests.GetBucket',
+        contentType: 'application/json',
         type: 'POST',
         dataType: 'json',
         complete: parseResults});
@@ -152,6 +165,7 @@ TicketSystem.prototype.getTicketRequestIdForCurrentUser = function(callback) {
     var parseResults = ticketSystemGenericResults.bind(obj);
     $.ajax({
         url: this.apiRoot+'/requests/Actions/Requests.GetRequestID',
+        contentType: 'application/json',
         type: 'POST',
         dataType: 'json',
         complete: parseResults});
@@ -217,6 +231,18 @@ TicketSystem.prototype.getUsedTicketCount = function(callback) {
         complete: parseResults});
 }
 
+TicketSystem.prototype.getUnusedTicketCount = function(callback) {
+    var obj = {
+        callback: callback,
+        parser: getODataCount};
+    var parseResults = ticketSystemGenericResults.bind(obj);
+    $.ajax({
+        url: this.apiRoot+'/tickets?$filter=year eq current and used eq 0 and sold eq 1&$count=true&$select=@odata.count',
+        type: 'get',
+        dataType: 'json',
+        complete: parseResults});
+}
+
 TicketSystem.prototype.getTicketRequestCountsByStatus = function(callback) {
     var obj = {callback: callback};
     var parseResults = ticketSystemGenericResults.bind(obj);
@@ -242,6 +268,7 @@ TicketSystem.prototype.createRequest = function(request, callback) {
     var parseResults = ticketSystemGenericResults.bind(obj);
     $.ajax({
         url: this.apiRoot+'/request',
+        contentType: 'application/json',
         data: JSON.stringify(request),
         type: 'POST',
         dataType: 'json',
@@ -252,9 +279,14 @@ TicketSystem.prototype.createRequest = function(request, callback) {
 TicketSystem.prototype.updateRequest = function(request, callback) {
     var obj = {callback: callback};
     var parseResults = ticketSystemGenericResults.bind(obj);
+    var uri = this.apiRoot+'/requests/'+request.request_id;
+    if(request.year !== undefined) {
+        uri += '/'+request.year;
+    }
     $.ajax({
-        url: this.apiRoot+'/requests/'+request.request_id+'/'+request.year,
-        data: JSON.stringify(obj),
+        url: uri,
+        contentType: 'application/json',
+        data: JSON.stringify(request),
         processData: false,
         dataType: 'json',
         type: 'patch',

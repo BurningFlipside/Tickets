@@ -72,6 +72,7 @@ function updatePool()
     }
     $.ajax({
         url: '../api/v1/pools/'+id,
+        contentType: 'application/json',
         method: 'patch',
         data: JSON.stringify(obj),
         processData: false,
@@ -88,6 +89,7 @@ function createPool()
     $('#newModal').modal('hide');
     $.ajax({
         url: '../api/v1/pools',
+        contentType: 'application/json',
         method: 'post',
         data: JSON.stringify(obj),
         processData: false,

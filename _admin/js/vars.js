@@ -69,6 +69,7 @@ function change_var()
     }
     $.ajax({
             url: '../api/v1/globals/vars/'+var_name,
+            contentType: 'application/json',
             data: JSON.stringify(var_value),
             processData: false,
             type: method,
@@ -80,6 +81,7 @@ function unset_test_mode()
 {
     $.ajax({
             url: '../api/v1/globals/vars/test_mode',
+            contentType: 'application/json',
             data: JSON.stringify(0),
             processData: false,
             type: 'patch',
@@ -111,6 +113,7 @@ function known_change(control)
     }
     $.ajax({
             url: '../api/v1/globals/vars/'+var_name,
+            contentType: 'application/json',
             data: JSON.stringify(var_value),
             processData: false,
             type: 'patch',

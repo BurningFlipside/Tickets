@@ -59,9 +59,9 @@ class RequestPDF extends \PDF\PDF
         {
             $ticket_table .= '<tr>';
             $ticket_table .= '<td>Ticket '.($i+1).'</td>';
-            $ticket_table .= '<td>'.$this->request->tickets[$i]['first'].'</td>';
-            $ticket_table .= '<td>'.$this->request->tickets[$i]['last'].'</td>';
-            $type = \Tickets\TicketType::getTicketType($this->request->tickets[$i]['type']);
+            $ticket_table .= '<td>'.$this->request->tickets[$i]->first.'</td>';
+            $ticket_table .= '<td>'.$this->request->tickets[$i]->last.'</td>';
+            $type = \Tickets\TicketType::getTicketType($this->request->tickets[$i]->type);
             $ticket_table .= '<td>'.$type->description.'</td>';
             $ticket_table .= '<td>$'.$type->cost.'</td>';
             $ticket_table .= '</tr>';
@@ -72,11 +72,10 @@ class RequestPDF extends \PDF\PDF
         {
             $donation_table  = '<table style="margin-left:auto; margin-right:auto; width:100%;">';
             $donation_table .= '<tr><td></td><th>Entity Name</th><th>Amount</th></tr>';
-            $count = count($this->request->donations);
-            for($i = 0; $i < $count; $i++)
+            foreach($this->request->donations as $donation);
             {
-                $donation_table .= '<tr><td>Donation '.($i+1).'</td><td>'.$this->request->donations[$i]['type'].'</td>';
-                $donation_table .= '<td>$'.$this->request->donations[$i]['amount'].'</td></tr>';
+                $donation_table .= '<tr><td>Donation '.($i+1).'</td><td>'.$donation->type.'</td>';
+                $donation_table .= '<td>$'.$donation->amount.'</td></tr>';
             }
             $donation_table .= '</table>';
         }
