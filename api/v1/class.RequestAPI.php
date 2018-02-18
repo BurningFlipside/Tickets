@@ -141,7 +141,7 @@ class RequestAPI extends Http\Rest\RestAPI
         $filter = false;
         $show_children = false;
         $odata = $request->getAttribute('odata', new \ODataParams(array()));
-        if($this->user->isInGroupNamed('TicketAdmins') && $odata->filter !== false)
+        if(($this->user->isInGroupNamed('TicketAdmins') || $this->user->isInGroupNamed('TicketTeam')) && $odata->filter !== false)
         {
             $filter = $odata->filter;
             if($filter->contains('year eq current'))
@@ -165,7 +165,7 @@ class RequestAPI extends Http\Rest\RestAPI
         {
             $search = $params['$search'];
         }
-        if($search !== null && $this->user->isInGroupNamed('TicketAdmins'))
+        if($search !== null && ($this->user->isInGroupNamed('TicketAdmins') || $this->user->isInGroupNamed('TicketTeam')))
         {
             $filter->addToSQLString(" AND (mail LIKE '%$search%' OR sn LIKE '%$search%' OR givenName LIKE '%$search%')");
         }
@@ -551,6 +551,10 @@ class RequestAPI extends Http\Rest\RestAPI
         {
             $request->bucket = $max_buckets;
         }
+        else if($request->bucket !== '-1' && $request->bucket !== -1)
+        {
+            return $response->withJson($request);
+        }
         else
         {
             $request->bucket = (int)mt_rand(1, ($max_buckets-1));
@@ -606,10 +610,37 @@ class RequestAPI extends Http\Rest\RestAPI
                 unset($request->comments);
             }
         }
-        $ret = $request->validateTickets(isset($obj['minor_confirm']));
-        if($ret !== false)
+        else
         {
-            return $response->withJson($ret);
+            if(isset($request->status))
+            {
+                $request->private_status = $request->status;
+                unset($request->status);
+            }
+        }
+        $old_request = $this->getRequestHelper($request_id, $year);
+        if(isset($request->tickets))
+        {
+            $ret = $request->validateTickets(isset($obj['minor_confirm']));
+            if($ret !== false)
+            {
+                return $response->withJson($ret);
+            }
+        }
+        if($old_request !== false)
+        {
+            if(!isset($request->tickets))
+            {
+                $request->tickets = $old_request->tickets;
+            }
+            if(!isset($request->donations))
+            {
+                $request->donations = $old_request->donations;
+            }
+            if(!isset($request->year) || $request->year === 0)
+            {
+                $request->year = $settings['year'];
+            }
         }
         $request->modifiedBy = $this->user->uid;
         $request->modifiedByIP = $_SERVER['REMOTE_ADDR'];
@@ -626,7 +657,6 @@ class RequestAPI extends Http\Rest\RestAPI
             $request->request_id = $request->id;
             unset($request->id);
         }
-        $old_request = $this->getRequestHelper($request_id, $year);
         if($old_request !== false)
         {
             if(!isset($request->request_id))
@@ -635,7 +665,7 @@ class RequestAPI extends Http\Rest\RestAPI
             }
             $requestDataTable = \Tickets\DB\RequestDataTable::getInstance();
             $filter = new \Data\Filter("request_id eq '".$request->request_id."' and year eq ".$settings['year']);
-            $requestDataTable->update($filter, $request);
+            $ret = $requestDataTable->update($filter, $request);
             return $response->withJson(true);
         }
         else

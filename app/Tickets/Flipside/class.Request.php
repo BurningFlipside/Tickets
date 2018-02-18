@@ -175,7 +175,14 @@ class Request extends \SerializableObject
         }
         foreach($this->donations as $donation)
         {
-             $amt += $donation['amount'];
+             if(is_array($donation))
+             {
+                 $amt += $donation['amount'];
+             }
+             else
+             {
+                 $amt += $donation->amount;
+             }
         }
         return $amt;
     }
