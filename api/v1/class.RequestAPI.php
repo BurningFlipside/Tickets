@@ -489,13 +489,13 @@ class RequestAPI extends Http\Rest\RestAPI
             }
         }
         $filter = new \Data\Filter("request_id eq '$request_id' and year eq $year");
-        $odata = $request->getAttribute('odata', new \ODataParams(array()));
+        $odata = $httpRequest->getAttribute('odata', new \ODataParams(array()));
         $tickets = $requestDataTable->read($filter, array('tickets'), $odata->top, $odata->skip, $odata->orderby);
         if($tickets !== false)
         {
             $tickets = $tickets[0]['tickets'];
         }
-        $tickets = $app->odata->filterArrayPerSelect($tickets);
+        $tickets = $odata->filterArrayPerSelect($tickets);
         return $response->withJson($tickets);
     }
 

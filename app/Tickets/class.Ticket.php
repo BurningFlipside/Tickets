@@ -79,9 +79,37 @@ class Ticket extends \SerializableObject
         }
         $array = $this->jsonSerialize();
         unset($array['used_dt']);
-        if($array['soldDT'] === '')
+        if(!isset($array['soldDT']) || $array['soldDT'] === '')
         {
             $array['soldDT'] = null;
+        }
+        if(!isset($array['assigned']))
+        {
+            $array['assigned'] = 0;
+        }
+        if(!isset($array['void']))
+        {
+            $array['void'] = 0;
+        }
+        if(!isset($array['sold']))
+        {
+            $array['sold'] = 0;
+        }
+        if(!isset($array['used']))
+        {
+            $array['used'] = 0;
+        }
+        if(!isset($array['discretionary']))
+        {
+            $array['discretionary'] = 0;
+        }
+        if(!isset($array['last_updated_by']))
+        {
+            $array['last_updated_by'] = '';
+        }
+        if(!isset($array['last_updated_ip']))
+        {
+            $array['last_updated_ip'] = '';
         }
         $res = $datatable->create($array);
         if($res !== false && (isset($this->previous_hash) && $this->previous_hash !== false && $this->previous_hash !== null))

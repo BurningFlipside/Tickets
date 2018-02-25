@@ -83,7 +83,7 @@ class TicketAPI extends Http\Rest\RestAPI
         $hash = $app['hash'];
         $ticket = \Tickets\Ticket::get_ticket_by_hash($hash);
         $pdf = new \Tickets\TicketPDF($ticket);
-        $response = $response->withHeaders('Content-Type', 'application/pdf');
+        $response = $response->withHeader('Content-Type', 'application/pdf');
         $response->getBody()->write($pdf->toPDFBuffer());
         return $response;
     }
@@ -396,6 +396,7 @@ class TicketAPI extends Http\Rest\RestAPI
         $settings = \Tickets\DB\TicketSystemSettings::getInstance();
         $year = $settings['year'];
         $ticketDataTable = \Tickets\DB\TicketsDataTable::getInstance();
+        $f = new \Data\Filter("year eq $year and private_status eq 1");
         foreach($types as $type=>$count)
         {
             for($i = 0; $i < $count; $i++)
@@ -410,15 +411,14 @@ class TicketAPI extends Http\Rest\RestAPI
         {
             $dataSet = DataSetFactory::getDataSetByName('tickets');
             $requestDataTable = $dataSet['TicketRequest'];
-            $requestedTicketsDataTable = $dataSet['RequestedTickets'];
             $unTicketedRequests = $requestDataTable->read(new \Data\Filter("year eq $year and private_status eq 1"));
             foreach($unTicketedRequests as $request)
             {
                 $request_id = $request['request_id'];
-                $filter = new \Data\Filter("year eq $year and request_id eq '$request_id'");
-                $requestedTickets = $requestedTicketsDataTable->read($filter);
+                $requestedTickets = json_decode($request['tickets']);
                 foreach($requestedTickets as $requestedTicket)
                 {
+                    $requestedTicket = (array)$requestedTicket;
                     $unAssignedTickets = $ticketDataTable->read(new \Data\Filter("sold eq 0 and year eq $year and type eq '{$requestedTicket['type']}'"), false, 1);
                     if(!isset($unAssignedTickets[0]))
                     {
@@ -429,6 +429,7 @@ class TicketAPI extends Http\Rest\RestAPI
                     $unAssignedTickets[0]['email'] = $request['mail'];
                     $unAssignedTickets[0]['request_id'] = $request['request_id'];
                     $unAssignedTickets[0]['sold'] = 1;
+                    $unAssignedTickets[0]['used_dt'] = NULL;
                     if($requestedTicket['type'] !== 'A')
                     {
                         $unAssignedTickets[0]['guardian_first'] = $request['givenName'];
@@ -436,14 +437,11 @@ class TicketAPI extends Http\Rest\RestAPI
                     }
                     $filter = new \Data\Filter("hash eq '{$unAssignedTickets[0]['hash']}'");
                     unset($unAssignedTickets[0]['hash_words']);
-                    $ticketDataTable->update($filter, $unAssignedTickets[0]);
-                    $requestedTicket['assigned_id'] = $unAssignedTickets[0]['hash'];
-                    $filter = new \Data\Filter("requested_ticket_id eq {$requestedTicket['requested_ticket_id']}");
-                    $requestedTicketsDataTable->update($filter, $requestedTicket);
+                    $res = $ticketDataTable->update($filter, $unAssignedTickets[0]);
                 }
                 $request['private_status'] = 6;
                 $filter = new \Data\Filter("year eq $year and request_id eq '$request_id'");
-                $requestDataTable->update($filter, $request);
+                $res = $requestDataTable->update($filter, $request);
             }
         }
         return $response->withJson(true);
