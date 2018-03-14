@@ -77,7 +77,7 @@ function gotRequestCounts(data, err) {
     $('#requestCount').html(totalCount);
     var receivedCount = 0;
     for(var i = 0; i < data.length; i++) {
-        if(data[i].private_status === 3 || data[i].private_status === 6) {
+        if(data[i].private_status === 1 || data[i].private_status === 6) {
             receivedCount += data[i].count;
         }
     }
