@@ -92,7 +92,7 @@ function save_ticket_done(data)
     else
     {
         console.log(data);
-        //location.reload();
+        location.reload();
     }
 }
 
@@ -102,6 +102,7 @@ function save_ticket()
         url: 'api/v1/tickets/'+$('#show_short_code').data('hash'),
         type: 'patch',
         data: '{"firstName":"'+$('#edit_first_name').val()+'","lastName":"'+$('#edit_last_name').val()+'"}',
+        contentType: 'application/json',
         processData: false,
         dataType: 'json',
         success: save_ticket_done});
