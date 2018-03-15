@@ -100,13 +100,13 @@ class TicketAPI extends Http\Rest\RestAPI
         return $response->withJson($tickets);
     }
 
-    public function updateTicket($request, $response, $app)
+    public function updateTicket($request, $response, $args)
     {
         $this->validateLoggedIn($request);
         $id = $args['hash'];
         $ticket_data_table = \Tickets\DB\TicketsDataTable::getInstance();
         $filter = new \Tickets\DB\TicketHashFilter($id);
-        $array = (array)$requet->getParsedBody();
+        $array = (array)$request->getParsedBody();
         $copy = $array;
         unset($copy['firstName']);
         unset($copy['lastName']);
@@ -143,7 +143,7 @@ class TicketAPI extends Http\Rest\RestAPI
         {
             throw new Exception('Unable to update DB', \Http\Rest\INTERNAL_ERROR);
         }
-        $url = $app->request->getRootUri().$app->request->getResourceUri();
+        $url = $request->getUri()->getPath();
         $url = substr($url, 0, strrpos($url, '/')+1);
         return $response->withJson(array('hash'=>$hash, 'href'=>$url.$hash));
     }
