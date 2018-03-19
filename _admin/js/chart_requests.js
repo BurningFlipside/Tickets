@@ -166,11 +166,16 @@ function gotAllYears(years, err) {
     }
 }
 
+function gotDonationAmount(donations, err) {
+    $('#receivedDonations').html('$'+donations);
+}
+
 function init_page()
 {
     ticketSystem.getTicketRequestCountsByStatus(gotRequestCounts);
     ticketSystem.getRequestedTicketCountsByType(ticketsDone);
     ticketSystem.getAllYears(gotAllYears);
+    ticketSystem.getDonationsAmount(gotDonationAmount);
 }
 
 $(init_page);

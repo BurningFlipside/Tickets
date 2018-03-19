@@ -7,6 +7,7 @@ class RequestAPI extends Http\Rest\RestAPI
         $app->get('/crit_vols', array($this, 'getCritVols'));
         $app->get('/problems[/{view}]', array($this, 'getProblems'));
         $app->get('/countsByStatus', array($this, 'getCountsByStatus'));
+        $app->get('/donations', array($this, 'getDonations'));
         $app->get('/{request_id}[/{year}]', array($this, 'getRequest'));
         $app->get('/{request_id}/{year}/pdf', array($this, 'getRequestPdf'));
         $app->get('/{request_id}/{year}/donations', array($this, 'getRequestDonations'));
@@ -721,6 +722,25 @@ class RequestAPI extends Http\Rest\RestAPI
         $count = $ticketDataSet->raw_query('SELECT count(*) FROM tblTicketRequest WHERE year='.$year);
         array_push($data, array('all'=>true, 'count'=>intval($count[0]['count(*)'])));
         return $response->withJson($data);
+    }
+
+    public function getDonations($request, $response)
+    {
+        $this->validateLoggedIn($request);
+        if(!$this->user->isInGroupNamed('TicketAdmins'))
+        {
+             return $response->withStatus(401);
+        }
+        $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+        $year = $settings['year'];
+        $ticketDataSet = DataSetFactory::getDataSetByName('tickets');
+        $data = $ticketDataSet->raw_query('SELECT SUM(donationAmount) AS amount FROM tblTicketRequest WHERE year='.$year.' AND private_status=6');
+        if(empty($data))
+        {
+             return $response->withJson(0);
+        }
+        $data = $data[0];
+        return $response->withJson($data['amount']);
     }
 }
 /* vim: set tabstop=4 shiftwidth=4 expandtab: */

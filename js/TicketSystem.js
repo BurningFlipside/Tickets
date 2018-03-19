@@ -304,6 +304,16 @@ TicketSystem.prototype.bulkSetCritvols = function(critVols, callback) {
         complete: parseResults});
 }
 
+TicketSystem.prototype.getDonationsAmount = function(callback) {
+    var obj = {callback: callback};
+    var parseResults = ticketSystemGenericResults.bind(obj);
+    $.ajax({
+        url: this.apiRoot+'/requests/donations',
+        type: 'GET',
+        processData: false,
+        complete: parseResults});
+}
+
 TicketRequest.prototype.getPdfUri = function() {
     return this.ticketSystem.apiRoot+'/request/'+this.request_id+'/'+this.year+'/pdf';
 }

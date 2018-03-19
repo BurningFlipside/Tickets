@@ -27,6 +27,7 @@ $page->body .= '
                             Received Request Count: <span id="receivedRequestCount">?</span><br/>
                             Problem Request Count: <span id="problemRequestCount">?</span><br/>
                             Rejected Request Count: <span id="rejectedRequestCount">?</span><br/>
+                            Donations Received: <span id="receivedDonations">?</span><br/>
                         </div>
                     </div>
                 </div>
