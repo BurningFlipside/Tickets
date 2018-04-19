@@ -256,7 +256,7 @@ function make_actions(data, type, row, meta)
     var res = '';
     if($(window).width() < 768)
     {
-        res += getViewButton(data);
+        res += getOuterHTML(getViewButton(data));
     }
     res += getOuterHTML(getEditButton(data));
     res += getPDFButton(data);
