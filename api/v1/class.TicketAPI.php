@@ -302,14 +302,14 @@ class TicketAPI extends Http\Rest\RestAPI
             throw new \Exception('Unable to parse payload!');
         }
         $ticket->sold = 1;
-        $ticket->email = $obj->email;
-        if(isset($obj->firstName))
+        $ticket->email = $obj['email'];
+        if(isset($obj['firstName']))
         {
-            $ticket->firstName = $obj->firstName;
+            $ticket->firstName = $obj['firstName'];
         }
-        if(isset($obj->lastName))
+        if(isset($obj['lastName']))
         {
-            $ticket->lastName = $obj->lastName;
+            $ticket->lastName = $obj['lastName'];
         }
         $res = $ticket->insert_to_db();
         if($res === true)
