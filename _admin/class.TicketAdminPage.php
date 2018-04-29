@@ -63,7 +63,8 @@ class TicketAdminPage extends FlipAdminPage
         $charts_menu = array(
             'Request Statistics' => 'chart_requests.php',
             'Tickets Graphs' => 'chart_tickets.php',
-            'Gate Graphs'    => 'chart_used.php'
+            'Gate Graphs'    => 'chart_used.php',
+            'Common Reports' => 'reports_common.php'
         );
         $request_menu = array(
             'All Requests'      => 'requests.php',
@@ -88,8 +89,12 @@ class TicketAdminPage extends FlipAdminPage
             'Edit Ticket PDF'    => 'ticket_pdf.php',
             'Data Entry Users'   => 'users.php'
         );
+        if($this->user->isInGroupNamed('AAR') || $this->user->isInGroupNamed('AFs'))
+        {
+            $ticket_menu['My Discretionary Tickets'] = 'tickets.php?discretionaryUser='.$this->user['mail'];
+        }
         $this->addLink('<span class="fa fa-tachometer"></span> Dashboard', 'index.php');
-        $this->addLink('<span class="fa fa-bar-chart"></span> Charts', '#', $charts_menu);
+        $this->addLink('<span class="fa fa-bar-chart"></span> Reports', '#', $charts_menu);
         $this->addLink('<span class="fa fa-file"></span> Requests', '#', $request_menu);
         $this->addLink('<span class="fa fa-ticket"></span> Tickets', '#', $ticket_menu);
         $this->addLink('<span class="fa fa-pencil"></span> Data Entry', 'data.php');

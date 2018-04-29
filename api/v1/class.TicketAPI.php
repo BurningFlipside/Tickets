@@ -39,6 +39,16 @@ class TicketAPI extends Http\Rest\RestAPI
         {
             $filter = new \Tickets\DB\TicketDefaultFilter($this->user->mail);
         }
+        $params = $request->getQueryParams();
+        $search = null;
+        if(isset($params['$search']))
+        {
+            $search = $params['$search'];
+        }
+        if($search !== null && ($this->user->isInGroupNamed('TicketAdmins') || $this->user->isInGroupNamed('TicketTeam')))
+        {
+            $filter->addToSQLString(" AND (email LIKE '%$search%' OR lastName LIKE '%$search%' OR firstName LIKE '%$search%')");
+        }
         $ticket_data_table = \Tickets\DB\TicketsDataTable::getInstance();
         $tickets = $ticket_data_table->read($filter, $odata->select, $odata->top, $odata->skip, $odata->orderby);
         if($tickets === false)

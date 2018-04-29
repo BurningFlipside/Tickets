@@ -36,6 +36,7 @@ if($issuedTicketCount != 0)
     $page->add_card('fa-ticket', '<div id="unsoldCount">?</div>', 'Unsold Tickets', 'tickets.php?sold=0');
     $page->add_card('fa-check', '<div id="usedCount">?</div>', 'Used Tickets', 'tickets.php?used=1', $page::CARD_GREEN);
 }
+/*
 $secondaryTable = \DataSetFactory::getDataTableByNames('tickets', 'SecondaryRequests');
 $secondaryTotalCount = 0;
 $validTicketArray = $secondaryTable->read(false, array('valid_tickets'));
@@ -58,6 +59,7 @@ for($i = 0; $i < $proccessedTicketArrayCount; $i++)
 }
 $page->add_card('fa-ticket', '<div>'.$secondaryTotalCount.'</div>', 'Processed Secondary Tickets', 'secondary.php', $page::CARD_GREEN);
 $page->body.='</div>';
+*/
 
 $page->print_page();
 // vim: set tabstop=4 shiftwidth=4 expandtab:

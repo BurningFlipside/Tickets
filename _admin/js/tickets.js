@@ -307,6 +307,7 @@ function requeryTable()
     var year = $('#ticket_year').val();
     var sold = $('#ticketSold').val();
     var used = $('#ticketUsed').val();
+    var disc = $('#discretionaryUser').val();
     var filter = 'year eq '+year;
     if(sold !== '*')
     {
@@ -315,6 +316,10 @@ function requeryTable()
     if(used !== '*')
     {
         filter+=' and used eq '+used;
+    }
+    if(disc !== '')
+    {
+        filter+=' and discretionaryOrig eq \''+disc+'\'';
     }
     $('#tickets').DataTable().ajax.url('../api/v1/tickets?filter='+filter+'&fmt=data-table').load();
 }
@@ -330,6 +335,11 @@ function usedChanged()
 }
 
 function yearChanged(e)
+{
+    requeryTable();
+}
+
+function discretionaryChanged(e)
 {
     requeryTable();
 }
@@ -402,6 +412,11 @@ function init_page()
     {
         $('#ticketUsed').val(used);
     }
+    var discretionaryUser = getParameterByName('discretionaryUser');
+    if(discretionaryUser !== null)
+    {
+        $('#discretionaryUser').val(discretionaryUser);
+    }
 
     $('#tickets').dataTable({
         columns: [
@@ -431,6 +446,7 @@ function init_page()
     $('#tickets').on('search.dt', table_searched);
     $('#ticketSold').on('change', soldChanged);
     $('#ticketUsed').on('change', usedChanged);
+    $('#discretionaryUser').on('change', discretionaryChanged);
 }
 
 $(init_page)
