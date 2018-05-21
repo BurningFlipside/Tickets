@@ -22,6 +22,12 @@ $page->body .= '
                 <option value="1">Yes</option>
                 <option value="0">No</option>
             </select>
+            Assigned:
+            <select id="ticketAssigned">
+                <option selected value="*">Both</option>
+                <option value="1">Yes</option>
+                <option value="0">No</option>
+            </select>
             Used: 
             <select id="ticketUsed">
                 <option selected value="*">Both</option>

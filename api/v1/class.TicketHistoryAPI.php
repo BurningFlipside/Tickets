@@ -7,7 +7,7 @@ class TicketHistoryAPI extends Http\Rest\RestAPI
         $app->get('/{hash}[/]', 'showTicketHistory');
     }
 
-    public function listTickets($request, $response, $args)
+    public function listTicketHistory($request, $response, $args)
     {
         $this->validateLoggedIn($request);
         if($this->user->isInGroupNamed('TicketAdmins') === false)

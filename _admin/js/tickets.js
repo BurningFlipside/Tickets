@@ -306,12 +306,17 @@ function requeryTable()
 {
     var year = $('#ticket_year').val();
     var sold = $('#ticketSold').val();
+    var assigned = $('#ticketAssigned').val();
     var used = $('#ticketUsed').val();
     var disc = $('#discretionaryUser').val();
     var filter = 'year eq '+year;
     if(sold !== '*')
     {
         filter+=' and sold eq '+sold;
+    }
+    if(assigned !== '*')
+    {
+        filter+=' and assigned eq '+assigned;
     }
     if(used !== '*')
     {
@@ -325,6 +330,11 @@ function requeryTable()
 }
 
 function soldChanged()
+{
+    requeryTable();
+}
+
+function assignedChanged()
 {
     requeryTable();
 }
@@ -445,6 +455,7 @@ function init_page()
 
     $('#tickets').on('search.dt', table_searched);
     $('#ticketSold').on('change', soldChanged);
+    $('#ticketAssigned').on('change', assignedChanged);
     $('#ticketUsed').on('change', usedChanged);
     $('#discretionaryUser').on('change', discretionaryChanged);
 }
