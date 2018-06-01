@@ -9,6 +9,13 @@ function TicketRequest(data, ticketSystem) {
     }
 }
 
+function Ticket(data, ticketSystem) {
+    this.ticketSystem = ticketSystem;
+    for(var propName in data) {
+        this[propName] = data[propName];
+    }
+}
+
 TicketSystem.prototype.getCurrentYear = function(callback) {
     var obj = {
         callback: callback,
@@ -311,6 +318,54 @@ TicketSystem.prototype.getDonationsAmount = function(callback) {
         url: this.apiRoot+'/requests/donations',
         type: 'GET',
         processData: false,
+        complete: parseResults});
+}
+
+TicketSystem.prototype.getTickets = function(callback, filter) {
+    var obj = {
+        callback: callback,
+        objectType: Ticket,
+        ticketSystem: this
+    };
+    var url = this.apiRoot+'/tickets';
+    if(filter !== undefined) {
+        url+='?$filter='+filter;
+    }
+    var parseResults = ticketSystemGenericResults.bind(obj);
+    $.ajax({
+        url: url,
+        type: 'GET',
+        dataType: 'json',
+        complete: parseResults});
+}
+
+TicketSystem.prototype.searchTickets = function(value, callback, year) {
+    var obj = {
+        callback: callback,
+        objectType: Ticket,
+        ticketSystem: this
+    };
+    if(year === undefined) {
+        year = 'current';
+    }
+    var parseResults = ticketSystemGenericResults.bind(obj);
+    $.ajax({
+        url: this.apiRoot+'/tickets?$search='+value+'&$filter=year eq '+year,
+        type: 'get',
+        dataType: 'json',
+        complete: parseResults});
+}
+
+TicketSystem.prototype.getEarlyEntryWindows = function(callback) {
+    var obj = {
+        callback: callback,
+        ticketSystem: this
+    };
+    var parseResults = ticketSystemGenericResults.bind(obj);
+    $.ajax({
+        url: this.apiRoot+'/earlyEntry',
+        type: 'get',
+        dataType: 'json',
         complete: parseResults});
 }
 

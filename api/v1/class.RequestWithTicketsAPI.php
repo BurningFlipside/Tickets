@@ -5,6 +5,7 @@ class RequestWithTicketsAPI extends Http\Rest\RestAPI
     {
         $app->get('[/]', array($this, 'listRequestsWithTickets'));
         $app->get('/types', array($this, 'getRequestedTypes'));
+        $app->get('/minorMails', array($this, 'getMinorMailout'));
         $app->get('/{request_id}[/{year}]', array($this, 'getRequestWithTickets'));
     }
 
@@ -50,6 +51,71 @@ class RequestWithTicketsAPI extends Http\Rest\RestAPI
                 $tmp['last'] = $requests[$i]['tickets'][$j]->last;
                 $tmp['type'] = $requests[$i]['tickets'][$j]->type;
                 array_push($returnArray, $tmp);
+            }
+        }
+        $requests = $odata->filterArrayPerSelect($returnArray);
+        if($odata->count)
+        {
+            $requests = array('@odata.count'=>count($requests), 'value'=>$requests);
+        }
+        return $response->withJson($requests);
+    }
+
+    public function getMinorMailout($request, $response, $args)
+    {
+        $this->validateLoggedIn($request);
+        $requestDataTable = \Tickets\DB\RequestDataTable::getInstance();
+        $filter = false;
+        $odata = $request->getAttribute('odata', new \ODataParams(array()));
+        if(!$this->user->isInGroupNamed('TicketAdmins'))
+        {
+            return $response->withJson(array());
+        }
+        else if($odata->filter === false)
+        {
+            $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+            $filter = new \Data\Filter('year eq '.$settings['year'].' and private_status eq 6');
+        }
+        else
+        {
+            $filter = $odata->filter;
+            if($filter->contains('year eq current'))
+            {
+                $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+                $clause = $filter->getClause('year');
+                $clause->var2 = $settings['year'];
+            }
+        }
+        $select = false;
+        if($odata->select === false)
+        {
+            $select = ['request_id', 'givenName', 'sn', 'mail', 'street', 'l', 'st', 'zip', 'c', 'tickets'];
+        }
+        $requests = $requestDataTable->read($filter, $select);
+        if($requests === false)
+        {
+            return $response->withJson(array());
+        }
+        $count = count($requests);
+        $returnArray = array();
+        for($i = 0; $i < $count; $i++)
+        {
+            if($requests[$i]['tickets'] === null)
+            {
+                continue;
+            }
+            $count2 = count($requests[$i]['tickets']);
+            for($j = 0; $j < $count2; $j++)
+            {
+                $tmp = (array)$requests[$i];
+                unset($tmp['tickets']);
+                if($requests[$i]['tickets'][$j]->type !== 'A')
+                {
+                    $tmp['minorFirst'] = $requests[$i]['tickets'][$j]->first;
+                    $tmp['minorLast'] = $requests[$i]['tickets'][$j]->last;
+                    $tmp['type'] = $requests[$i]['tickets'][$j]->type;
+                    array_push($returnArray, $tmp);
+                }
             }
         }
         $requests = $odata->filterArrayPerSelect($returnArray);
