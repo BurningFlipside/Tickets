@@ -6,7 +6,6 @@ $page = new TicketPage('Burning Flipside - Tickets');
 
 $page->addWellKnownJS(JS_DATATABLE);
 $page->addWellKnownCSS(CSS_DATATABLE);
-$page->addJSByURI('js/transfer.js');
 
 function ticket_id_entry_form()
 {
@@ -105,6 +104,6 @@ else
         $page->body .= ticket_id_entry_form();
     }
 }
-$page->print_page();
+$page->printPage();
 // vim: set tabstop=4 shiftwidth=4 expandtab:
 

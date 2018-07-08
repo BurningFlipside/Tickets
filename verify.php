@@ -4,8 +4,6 @@ error_reporting(E_ALL);
 require_once('class.TicketPage.php');
 $page = new TicketPage('Burning Flipside - Tickets');
 
-$page->addJSByURI('js/verify.js');
-
 if(!FlipSession::isLoggedIn())
 {
     $page->body .= '
@@ -23,5 +21,5 @@ else
     </div>
 </div>';
 }
-$page->print_page();
+$page->printPage();
 // vim: set tabstop=4 shiftwidth=4 expandtab:

@@ -8,7 +8,6 @@ $page->addWellKnownJS(JS_DATATABLE);
 $page->addWellKnownJS(JS_BOOTSTRAP_FH, false);
 $page->addWellKnownCSS(CSS_DATATABLE);
 $page->addWellKnownCSS(CSS_BOOTSTRAP_FH);
-$page->addJSByURI('js/request.js');
 
 $email = '';
 if($page->user)
@@ -174,6 +173,6 @@ if($page->user)
 </div>
 ';
 
-$page->print_page();
+$page->printPage();
 // vim: set tabstop=4 shiftwidth=4 expandtab:
 

@@ -1,8 +1,11 @@
 <?php
 require_once('class.FlipSession.php');
 require_once('app/TicketAutoload.php');
-class TicketAdminPage extends FlipAdminPage
+require_once('../../class.SecurePage.php');
+class TicketAdminPage extends \Http\FlipAdminPage
 {
+    use SecureWebPage;
+
     private $is_data;
     public  $ticketSettings;
 
@@ -14,7 +17,10 @@ class TicketAdminPage extends FlipAdminPage
             $this->is_data  = $this->user->isInGroupNamed('TicketTeam');
             $this->is_admin = $this->is_data;
         }
-        $this->add_tickets_css();
+        $this->addTemplateDir('../../templates', 'Secure');
+        $this->addTemplateDir('../templates', 'Tickets');
+        $this->secure_root = $this->getSecureRoot();
+	$this->addCSS('../css/tickets.css');
         $this->add_links();
         $this->ticketSettings = \Tickets\DB\TicketSystemSettings::getInstance();
         if($this->ticketSettings->isTestMode())
@@ -30,25 +36,20 @@ class TicketAdminPage extends FlipAdminPage
                                         self::NOTIFICATION_WARNING);
              }
         }
-        $this->addWellKnownJS(JS_METISMENU);
-        $this->addJSByURI('js/admin.js');
-        $this->addJSByURI('../js/TicketSystem.js');
-    }
-
-    function add_tickets_css()
-    {
-	$this->addCSSByURI('../css/tickets.css');
+        $this->addJS('js/admin.js');
+        $this->addJS('../js/TicketSystem.js');
     }
 
     function add_links()
     {
+        $this->content['header']['sidebar'] = array();
         if($this->user === false && $this->user === null)
         {
             return;
         }
         if(!$this->is_admin)
         {
-            $this->addLink('<span class="fa fa-pencil"></span> Data Entry', 'data.php');
+            $this->content['header']['sidebar']['Data Entry'] = array('icon' => 'fa-pencil', 'url' => 'data.php');
             return;
         }
         $probs = '';
@@ -93,13 +94,13 @@ class TicketAdminPage extends FlipAdminPage
         {
             $ticket_menu['My Discretionary Tickets'] = 'tickets.php?discretionaryUser='.$this->user['mail'];
         }
-        $this->addLink('<span class="fa fa-tachometer"></span> Dashboard', 'index.php');
-        $this->addLink('<span class="fa fa-bar-chart"></span> Reports', '#', $charts_menu);
-        $this->addLink('<span class="fa fa-file"></span> Requests', '#', $request_menu);
-        $this->addLink('<span class="fa fa-ticket"></span> Tickets', '#', $ticket_menu);
-        $this->addLink('<span class="fa fa-pencil"></span> Data Entry', 'data.php');
-        $this->addLink('<span class="fa fa-usd"></span> Sales', 'pos.php');
-        $this->addLink('<span class="fa fa-sign-in"></span> Gate', 'gate.php');
+        $this->content['header']['sidebar']['Dashboard'] = array('icon' => 'fa-dashboard', 'url' => 'index.php');
+        $this->content['header']['sidebar']['Reports'] = array('icon' => 'fa-bar-chart', 'menu' => $charts_menu);
+        $this->content['header']['sidebar']['Requests'] = array('icon' => 'fa-file', 'menu' => $request_menu);
+        $this->content['header']['sidebar']['Tickets'] = array('icon' => 'fa-ticket', 'menu' => $ticket_menu);
+        $this->content['header']['sidebar']['Data Entry'] = array('icon' => 'fa-pencil', 'url' => 'data.php');
+        $this->content['header']['sidebar']['Sales'] = array('icon' => 'fa-usd', 'url' => 'pos.php');
+        $this->content['header']['sidebar']['Gate'] = array('icon' => 'fa-sign-in', 'url' => 'gate.php');
         if($this->user->isInGroupNamed('AAR'))
         {
             $aar_menu = array(
@@ -108,9 +109,9 @@ class TicketAdminPage extends FlipAdminPage
                 'Gate Control' => 'gateControl.php',
                 'Pool Management' => 'pools.php'
             );
-            $this->addLink('<span class="fa fa-fire"></span> AAR', '#', $aar_menu);
+            $this->content['header']['sidebar']['AAR'] = array('icon' => 'fa-fire', 'menu' => $aar_menu);
         }
-        $this->addLink('<span class="fa fa-cog"></span> Admin', '#', $admin_menu);
+        $this->content['header']['sidebar']['Admin'] = array('icon' => 'fa-cog', 'menu' => $admin_menu);
     }
 
     public function isAdmin()
