@@ -40,8 +40,8 @@ class TicketPage extends SecureLoginRequiredPage
                                         self::NOTIFICATION_WARNING);
              }
         }
-        $this->addJSByURI($this->ticket_root.'/js/tickets.js', false);
-        $this->addJSByURI($this->ticket_root.'/js/TicketSystem.js', false);
+        $this->addJS($this->ticket_root.'/js/tickets.js', false);
+        $this->addJS($this->ticket_root.'/js/TicketSystem.js', false);
     }
 
     function add_links()
@@ -59,7 +59,7 @@ class TicketPage extends SecureLoginRequiredPage
 
     function add_tickets_css()
     {
-        $this->addCSSByURI($this->ticket_root.'/css/tickets.css');
+        $this->addCSS($this->ticket_root.'/css/tickets.css');
     }
 }
 ?>

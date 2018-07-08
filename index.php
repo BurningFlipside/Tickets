@@ -6,12 +6,12 @@ $page = new TicketPage('Burning Flipside - Tickets');
 
 $page->addWellKnownJS(JS_DATATABLE, false);
 $page->addWellKnownCSS(CSS_DATATABLE);
-$page->addJSByURI('js/index.js', false);
+$page->addJS('js/index.js', false);
 
 $discretionary = '';
 if($page->user !== false && $page->user !== null && ($page->user->isInGroupNamed('AAR') || $page->user->isInGroupNamed('AFs')))
 {
-    $page->addJSByURI('js/discretionary.js');
+    $page->addJS('js/discretionary.js');
     $discretionary = '
         <div class="row" id="discretionary_set" style="display: none;">
             <div class="col-sm-1"></div>
@@ -180,6 +180,6 @@ if($page->user !== false && $page->user !== null && ($page->user->isInGroupNamed
 
 //$page->addNotification('Miss out on the initial ticket request window? Just need more tickets? You can request more tickets <a href="secondary.php" class="alert-link">here</a>!');
 
-$page->print_page();
+$page->printPage();
 // vim: set tabstop=4 shiftwidth=4 expandtab:
 
