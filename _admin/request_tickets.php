@@ -6,7 +6,6 @@ $page = new TicketAdminPage('Burning Flipside - Tickets');
 
 $page->addWellKnownJS(JS_DATATABLE, false);
 $page->addWellKnownCSS(CSS_DATATABLE);
-$page->addJSByURI('js/request_tickets.js');
 
 $page->body .= '
         <div class="row">
@@ -17,6 +16,8 @@ $page->body .= '
         <div class="row">
             Request Year: <select id="year" onchange="change_year(this)">
             </select>
+        </div>
+        <div class="row">
             <table class="table" id="tickets">
                 <thead>
                     <th>Request ID</th>
@@ -32,6 +33,6 @@ $page->body .= '
 </div>
 ';
 
-$page->print_page();
+$page->printPage();
 // vim: set tabstop=4 shiftwidth=4 expandtab:
 

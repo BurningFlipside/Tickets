@@ -6,7 +6,6 @@ $page = new TicketAdminPage('Burning Flipside - Tickets');
 
 $page->addWellKnownJS(JS_DATATABLE, false);
 $page->addWellKnownCSS(CSS_DATATABLE);
-$page->addJSByURI('js/critvols.js');
 
 $page->body .= '
         <div class="row">
@@ -15,13 +14,13 @@ $page->body .= '
             </div>
         </div>
         <div class="row">
-            <div class="panel-group" id="accordion">
-                <div class="panel panel-default">
-                    <div class="panel-heading">
+            <div class="accordion">
+                <div class="card">
+                    <div class="card-header">
                         <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#single">Single Critical Volunteer</a></h4>
                     </div>
-                    <div id="single" class="panel-collapse collapse in">
-                        <div class="panel-body">
+                    <div id="single" class="collapse show">
+                        <div class="card-body">
                             <form class="form-inline" role="form">
                                 Search Type: <select id="search_type" name="search_type" class="form-control">
                                     <option value="*">All</option>
@@ -36,22 +35,22 @@ $page->body .= '
                         </div>
                     </div>
                 </div>
-                <div class="panel panel-default">
-                    <div class="panel-heading">
+                <div class="card">
+                    <div class="card-header">
                         <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#auto">Automatic Critical Volunteers</a></h4>
                     </div>
-                    <div id="auto" class="panel-collapse collapse">
+                    <div id="auto" class="collapse">
                         <div class="panel-body">
                             <p>This option will automatically set all members of the AAR, AF, and Lead Groups to Critvol status.</p>
                             <button class="btn btn-default" onclick="auto_critvol()">Automatically Set Critvols</button>
                         </div>
                     </div>
                 </div>
-                <div class="panel panel-default">
-                    <div class="panel-heading">
+                <div class="card">
+                    <div class="card-header">
                         <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#bulk">Bulk Critical Volunteers</a></h4>
                     </div>
-                    <div id="bulk" class="panel-collapse collapse">
+                    <div id="bulk" class="collapse">
                         <div class="panel-body">
                             <p>You can upload a file with a different request ID or email address seperated by new lines or commas. Each request will then be set to crit vol status. A summary of the actions taken both requests that were changed and requests that were not will be printed to the screen when it is done.</p>
                             <div id="filehandler" style="border: 2px dotted #0B85A1; width: 400px; color: #92AAB0; text-align:left; vertical-align:middle; font-size: 2em;">
@@ -89,7 +88,7 @@ $page->body .= '
 </div>
 ';
 
-$page->print_page();
+$page->printPage();
 // vim: set tabstop=4 shiftwidth=4 expandtab:
 ?>
 

@@ -7,7 +7,6 @@ $page = new TicketAdminPage('Burning Flipside - Tickets');
 $page->addWellKnownJS(JS_DATATABLE);
 $page->addWellKnownJS(JS_CHART);
 $page->addWellKnownCSS(CSS_DATATABLE);
-$page->addJSByURI('js/chart_used.js');
 
 $page->body .= '
         <div class="row">
@@ -16,12 +15,12 @@ $page->body .= '
             </div>
         </div>
         <div class="row">
-            <div class="panel-group" id="accordion">
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#used">Used/Unused</a></h4>
+            <div class="accordion">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title"><a data-toggle="collapse" data-parent="#accordion" href="#used">Used/Unused</a></h4>
                     </div>
-                    <div id="used" class="panel-collapse collapse in">
+                    <div id="used" class="collapse show">
                         <div class="panel-body">
                             <canvas id="used_chart" height="150" width="300" style="width: 300px; height: 150px;"></canvas>
                         </div>
@@ -33,7 +32,7 @@ $page->body .= '
 </div>
 ';
 
-$page->print_page();
+$page->printPage();
 // vim: set tabstop=4 shiftwidth=4 expandtab:
 ?>
 

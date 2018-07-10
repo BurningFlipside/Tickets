@@ -8,7 +8,6 @@ $page->addWellKnownJS(JS_DATATABLE, false);
 $page->addWellKnownJS(JS_BOOTSTRAP_FH);
 $page->addWellKnownCSS(CSS_DATATABLE);
 $page->addWellKnownCSS(CSS_BOOTSTRAP_FH);
-$page->addJSByURI('js/requests.js');
 
 $page->body .= '
         <div class="row">
@@ -23,6 +22,8 @@ $page->body .= '
                 <option value="*">All</option>
             </select>
             <a onclick="getCSV();" title="Export CSV"><i class="fa fa-file-excel-o"></i></a>
+        </div>
+        <div class="row">
             <table class="table" id="requests">
                 <thead>
                     <th>Request ID</th>
@@ -203,6 +204,6 @@ $page->body .= '
 </div>
 ';
 
-$page->print_page();
+$page->printPage();
 // vim: set tabstop=4 shiftwidth=4 expandtab:
 

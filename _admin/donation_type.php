@@ -4,8 +4,6 @@ error_reporting(E_ALL);
 require_once('class.TicketAdminPage.php');
 $page = new TicketAdminPage('Burning Flipside - Tickets');
 
-$page->addJSByURI('js/donation_type.js');
-
 $is_admin = $page->user->isInGroupNamed("TicketAdmins");
 if(!$is_admin)
 {
@@ -27,6 +25,6 @@ else
 ';
 
 }
-$page->print_page();
+$page->printPage();
 // vim: set tabstop=4 shiftwidth=4 expandtab:
 

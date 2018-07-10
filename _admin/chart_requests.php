@@ -7,7 +7,6 @@ $page = new TicketAdminPage('Burning Flipside - Tickets');
 $page->addWellKnownJS(JS_DATATABLE);
 $page->addWellKnownJS(JS_CHART);
 $page->addWellKnownCSS(CSS_DATATABLE);
-$page->addJSByURI('js/chart_requests.js');
 
 $page->body .= '
         <div class="row">
@@ -16,13 +15,13 @@ $page->body .= '
             </div>
         </div>
         <div class="row">
-            <div class="panel-group" id="accordion">
-                <div class="panel panel-default">
-                     <div class="panel-heading">
+            <div class="accordion" id="accordion">
+                <div class="card">
+                     <div class="card-header">
                         <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#requestStats">Request Stats</a></h4>
                     </div>
-                    <div id="requestStats" class="panel-collapse collapse in">
-                        <div class="panel-body">
+                    <div id="requestStats" class="collapse show">
+                        <div class="card-body">
                             Total Request Count: <span id="requestCount">?</span><br/>
                             Received Request Count: <span id="receivedRequestCount">?</span><br/>
                             Problem Request Count: <span id="problemRequestCount">?</span><br/>
@@ -31,12 +30,12 @@ $page->body .= '
                         </div>
                     </div>
                 </div>
-                <div class="panel panel-default">
-                    <div class="panel-heading">
+                <div class="card">
+                    <div class="card-header">
                         <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#requestTypes">Request Types</a></h4>
                     </div>
-                    <div id="requestTypes" class="panel-collapse collapse">
-                        <div class="panel-body">
+                    <div id="requestTypes" class="collapse">
+                        <div class="card-body">
                             <table id="requestTypesTable" class="table">
                                 <thead>
                                     <tr><th>Type</th><th>Total Count</th><th>Received Count</th></tr>
@@ -47,12 +46,12 @@ $page->body .= '
                         </div>
                     </div>
                 </div>
-                <div class="panel panel-default">
-                    <div class="panel-heading">
+                <div class="card">
+                    <div class="card-header">
                         <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#requestsOverTime">Requests over Time</a></h4>
                     </div>
-                    <div id="requestsOverTime" class="panel-collapse collapse">
-                        <div class="panel-body">
+                    <div id="requestsOverTime" class="collapse">
+                        <div class="card-body">
                             <table id="requestOverTimeTable" class="table">
                                 <thead>
                                     <tr></tr>
@@ -74,7 +73,7 @@ $page->body .= '
 </div>
 ';
 
-$page->print_page();
+$page->printPage();
 // vim: set tabstop=4 shiftwidth=4 expandtab:
 ?>
 

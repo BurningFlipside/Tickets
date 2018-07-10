@@ -6,7 +6,6 @@ $page = new TicketAdminPage('Burning Flipside - Tickets');
 
 $page->addWellKnownJS(JS_BOOTBOX);
 $page->addWellKnownJS(JS_TYPEAHEAD, false);
-$page->addJSByURI('js/pools.js');
 
 $page->body .= '
         <div class="row">
@@ -90,6 +89,6 @@ $page->body .= '
 </div>
 ';
 
-$page->print_page();
+$page->printPage();
 // vim: set tabstop=4 shiftwidth=4 expandtab:
 
