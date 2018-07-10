@@ -6,7 +6,6 @@ $page = new TicketAdminPage('Burning Flipside - Tickets');
 
 $page->addWellKnownJS(JS_DATATABLE);
 $page->addWellKnownCSS(CSS_DATATABLE);
-$page->addJSByURI('js/vars.js');
 
     $page->body .= '
 <div id="content">
@@ -109,6 +108,6 @@ $page->addJSByURI('js/vars.js');
 </div>
 ';
 
-$page->print_page();
+$page->printPage();
 // vim: set tabstop=4 shiftwidth=4 expandtab:
 

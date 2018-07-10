@@ -6,7 +6,6 @@ $page = new TicketAdminPage('Burning Flipside - Tickets');
 
 $page->addWellKnownJS(JS_DATATABLE, false);
 $page->addWellKnownCSS(CSS_DATATABLE);
-$page->addJSByURI('js/data.js');
 
 $page->body .= '
         <div class="row">
@@ -27,14 +26,14 @@ $page->body .= '
             <hr/>
         </div>
         <div class="row">
-            <div class="panel panel-default">
-                <div class="panel-heading" role="tab" id="advanced_hdr">
-                    <h4 class="panel-title">
+            <div class="card">
+                <div class="card-header" role="tab" id="advanced_hdr">
+                    <h4 class="card-title">
                         <a class="collapsed" data-toggle="collapse" href="#advanced" aria-expanded="false" aria-controls="advanced">Advanced Search</a>
                     </h4>
                 </div>
-                <div id="advanced" class="panel-collapse collapse" role="tabpanel" aria-labelledby="advanced_hdr">
-                    <div class="panel-body">
+                <div id="advanced" class="collapse" role="tabpanel" aria-labelledby="advanced_hdr">
+                    <div class="card-body">
                         <div class="input-group">
                             <div class="input-group-btn">
                                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false" id="type" data-type="*">All <span class="caret"></span></button>
@@ -144,6 +143,6 @@ $page->body .= '
 </div>
 ';
 
-$page->print_page();
+$page->printPage();
 // vim: set tabstop=4 shiftwidth=4 expandtab:
 
