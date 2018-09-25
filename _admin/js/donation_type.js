@@ -1,8 +1,8 @@
 function addDonationType(donation_type)
 {
     var nav = $('#donation_type_nav');
-    var nav_item = $('<li/>');
-    var link = $('<a/>', {href: '#'+donation_type.entityName, role: 'tab', 'data-toggle':'tab'}).html(donation_type.entityName).appendTo(nav_item);
+    var nav_item = $('<li/>', {'class': 'nav-item'});
+    var link = $('<a/>', {'class': 'nav-link', href: '#'+donation_type.entityName, role: 'tab', 'data-toggle':'tab'}).html(donation_type.entityName).appendTo(nav_item);
     if(donation_type.entityName != 'NEW')
     {
         var button = $('<button/>', {type: 'button', 'class': 'btn btn-link', id: 'delete_'+donation_type.entityName, 'title': 'Delete Donation Type', 'data-toggle': "tooltip", 'data-placement': "top"});

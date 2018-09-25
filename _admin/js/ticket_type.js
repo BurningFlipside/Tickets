@@ -1,8 +1,8 @@
 function addTicketType(ticket_type)
 {
     var nav = $('#ticket_type_nav');
-    var nav_item = $('<li/>');
-    var link = $('<a/>', {href: '#'+ticket_type.typeCode, role: 'tab', 'data-toggle':'tab'}).html(ticket_type.description).appendTo(nav_item);
+    var nav_item = $('<li/>', {'class': 'nav-item'});
+    var link = $('<a/>', {'class': 'nav-link', href: '#'+ticket_type.typeCode, role: 'tab', 'data-toggle':'tab'}).html(ticket_type.description).appendTo(nav_item);
     if(ticket_type.typeCode != 'NEW')
     {
         var button = $('<button/>', {type: 'button', 'class': 'btn btn-link', id: 'delete_'+ticket_type.typeCode, 'title': 'Delete Ticket Type', 'data-toggle': "tooltip", 'data-placement': "top"});
