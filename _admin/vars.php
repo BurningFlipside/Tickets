@@ -10,8 +10,8 @@ $page->addWellKnownCSS(CSS_DATATABLE);
     $page->body .= '
 <div id="content">
     <ul class="nav nav-tabs" role="tablist" id="tabs">
-        <li class="active"><a href="#tab1" role="tab" data-toggle="tab">Known Variables</a></li>
-        <li><a href="#tab2" role="tab" data-toggle="tab">Raw View</a></li>
+        <li class="nav-item"><a class="nav-link active" href="#tab1" role="tab" data-toggle="tab">Known Variables</a></li>
+        <li class="nav-item"><a class="nav-link" href="#tab2" role="tab" data-toggle="tab">Raw View</a></li>
     </ul>
     <div class="tab-content">
         <div class="tab-pane active" id="tab1">

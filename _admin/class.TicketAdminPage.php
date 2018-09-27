@@ -20,6 +20,7 @@ class TicketAdminPage extends \Http\FlipAdminPage
         $this->addTemplateDir('../../templates', 'Secure');
         $this->addTemplateDir('../templates', 'Tickets');
         $this->secure_root = $this->getSecureRoot();
+        $this->content['loginUrl'] = $this->secure_root.'api/v1/login';
 	$this->addCSS('../css/tickets.css');
         $this->add_links();
         $this->ticketSettings = \Tickets\DB\TicketSystemSettings::getInstance();
@@ -87,8 +88,7 @@ class TicketAdminPage extends \Http\FlipAdminPage
             'Edit Variables'     => 'vars.php',
             'Edit Request PDF'   => 'pdf.php',
             'Edit Ticket Emails' => 'emails.php',
-            'Edit Ticket PDF'    => 'ticket_pdf.php',
-            'Data Entry Users'   => 'users.php'
+            'Edit Ticket PDF'    => 'ticket_pdf.php'
         );
         if($this->user->isInGroupNamed('AAR') || $this->user->isInGroupNamed('AFs'))
         {
