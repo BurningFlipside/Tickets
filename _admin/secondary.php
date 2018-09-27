@@ -3,35 +3,21 @@ ini_set('display_errors', 1);
 error_reporting(E_ALL);
 require_once('class.TicketAdminPage.php');
 $page = new TicketAdminPage('Burning Flipside - Tickets');
-
+$page->setTemplateName('admin-table.html');
 $page->addWellKnownJS(JS_DATATABLE, false);
 $page->addWellKnownJS(JS_BOOTSTRAP_FH);
 $page->addWellKnownCSS(CSS_DATATABLE);
 $page->addWellKnownCSS(CSS_BOOTSTRAP_FH);
 
+$page->content['pageHeader'] = 'Secondary Ticket Requests';
+$page->content['selectors'] = '
+  Request Year: <select id="year" onchange="change_year(this)"></select>
+  <a onclick="getCSV();" title="Export CSV"><i class="fa fa-file-excel-o"></i></a>
+';
+$page->content['table'] = array('id' => 'requests', 'headers'=>array('Request ID', 'First Name', 'Last Name', 'Total Due'));
+
+
 $page->body .= '
-        <div class="row">
-            <div class="col-lg-12">
-                <h1 class="page-header">Secondary Ticket Requests</h1>
-            </div>
-        </div>
-        <div class="row">
-            Request Year: <select id="year" onchange="change_year(this)">
-            </select>
-            <a onclick="getCSV();" title="Export CSV"><i class="fa fa-file-excel-o"></i></a>
-        </div>
-        <div class="row">
-            <table class="table" id="requests">
-                <thead>
-                    <th>Request ID</th>
-                    <th>First Name</th>
-                    <th>Last Name</th>
-                    <th>Total Due</th>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
-        </div>
         <div class="modal fade in" aria-hidden="false" id="modal">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
