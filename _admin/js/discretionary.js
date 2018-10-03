@@ -54,11 +54,9 @@ function gotDiscretionaryTickets(jqXHR)
         if(disc[email] === undefined)
         {
             disc[email] = {};
-            var url = window.profilesUrl;
-            url += 'api/v1/users?$filter=mail eq '+email;
             calls.push(
                 $.ajax({
-                url: url,
+                url: window.profilesUrl+'/api/v1/users?$filter=mail eq '+email,
                 type: 'get',
                 dataType: 'json',
                 xhrFields: {withCredentials: true},
@@ -108,10 +106,9 @@ function initPage()
         type: 'get',
         dataType: 'json',
         complete: gotDiscretionaryTickets});
-    var url = window.profilesUrl;
-    url += 'api/v1/groups?$select=cn';
+
     $.ajax({
-        url: url,
+        url: window.profilesUrl+'/api/v1/groups?$select=cn',
         type: 'get',
         dataType: 'json',
         xhrFields: {withCredentials: true},
