@@ -55,10 +55,6 @@ function gotDiscretionaryTickets(jqXHR)
         {
             disc[email] = {};
             var url = window.profilesUrl;
-            if(url === undefined)
-            {
-              url = 'https://profiles.burningflipside.com/';
-            }
             url += 'api/v1/users?$filter=mail eq '+email;
             calls.push(
                 $.ajax({
@@ -113,10 +109,6 @@ function initPage()
         dataType: 'json',
         complete: gotDiscretionaryTickets});
     var url = window.profilesUrl;
-    if(url === undefined)
-    {
-      url = 'https://profiles.burningflipside.com/';
-    }
     url += 'api/v1/groups?$select=cn';
     $.ajax({
         url: url,
