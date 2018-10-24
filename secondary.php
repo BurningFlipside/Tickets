@@ -125,7 +125,7 @@ if($secondaryTotalCount > $page->ticketSettings['secondaryTicketCount'])
 
 $page->body .= '<div id="content">
     <form id="questions">
-        First you must answer a series of questions to prove you have read the Burning Flipside '.$page->ticketSettings['year'].' survival guide. You can locate the guide <a href="https://www.burningflipside.com/sg" target="_blank">here</a>.
+        First you must answer a series of questions to prove you have read the Burning Flipside '.$page->ticketSettings['year'].' survival guide. You can locate the guide <a href="'.$page->wwwUrl.'/sg" target="_blank">here</a>.
         <div id="questionContent"></div>
         <div class="clearfix visible-sm visible-md visible-lg"></div>
         <br/><br/>
