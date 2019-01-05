@@ -8,7 +8,7 @@ var basic_button_options = {'class': 'btn btn-link btn-sm', 'data-toggle': 'tool
 function tableDrawComplete()
 {
     $("#ticket_set").show();
-    if($("#ticketList").DataTable().data().length !== 0)
+    if ($("#ticketList").DataTable({retrieve: true}).data().length !== 0)
     {
         //Table contains nothing, just return
         return;
@@ -42,7 +42,7 @@ function show_long_id(hash)
 
 function findTicketInTableByHash(table, hash)
 {
-    var json = table.DataTable().ajax.json();
+    var json = table.DataTable({retrieve: true}).ajax.json();
     var i;
     for(i = 0; i < json.data.length; i++)
     {
