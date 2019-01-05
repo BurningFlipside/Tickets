@@ -608,7 +608,7 @@ function requestIdDone(data, err) {
     $('#request_id').val(data);
     if(browser_supports_cors()) {
         $.ajax({
-            url: window.profilesUrl+'api/v1/users/me',
+            url: window.profilesUrl+'/api/v1/users/me',
             type: 'get',
             dataType: 'json',
             xhrFields: {withCredentials: true},
