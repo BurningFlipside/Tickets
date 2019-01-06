@@ -40,9 +40,9 @@ class RequestPDF extends \PDF\PDF
         $total_due      = $this->request->total_due;
         $open_date      = $settings['mail_start_date'];
         $close_date     = $settings['request_stop_date'];
-        if($this->c != 'US')
+        if($this->request->c != 'US')
         {
-            $address .= $this->c.$linebreak;
+            $address .= $this->request->c.$linebreak;
         }
         $last           = $this->request->sn;
         $address        = $this->request->givenName.' '.$this->request->sn.'<br/>';
@@ -68,7 +68,7 @@ class RequestPDF extends \PDF\PDF
         }
         $ticket_table .= '</table>';
         $donation_table = 'No donations';
-        if($this->request->donations !== false && count($this->request->donations) !== 0)
+        if($this->request->donations !== false && $this->request->donations !== null && count($this->request->donations) !== 0)
         {
             $donation_table  = '<table style="margin-left:auto; margin-right:auto; width:100%;">';
             $donation_table .= '<tr><td></td><th>Entity Name</th><th>Amount</th></tr>';
@@ -79,7 +79,7 @@ class RequestPDF extends \PDF\PDF
             }
             $donation_table .= '</table>';
         }
-        $requestor      = $this->request->givenName+' '+$this->request->sn;
+        $requestor      = $this->request->givenName.' '.$this->request->sn;
         $email          = $this->request->mail;
         $phone          = $this->request->mobile;
         $request_date   = $this->request->modifiedOn;
