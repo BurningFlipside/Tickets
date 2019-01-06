@@ -480,6 +480,9 @@ function processMailInWindow(now, mail_start, end)
 }
 
 function getWindowDone(data, err) {
+    if(ticket_year !== false) {
+      return;
+    }
     if(err !== null) {
         if(err.jsonResp !== undefined && err.jsonResp.code !== undefined) {
             switch(err.jsonResp.code) {
