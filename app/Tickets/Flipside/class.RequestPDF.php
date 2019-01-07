@@ -68,13 +68,14 @@ class RequestPDF extends \PDF\PDF
         }
         $ticket_table .= '</table>';
         $donation_table = 'No donations';
-        if($this->request->donations !== false && $this->request->donations !== null && count($this->request->donations) !== 0)
+        if($this->request->donations !== false && $this->request->donations !== null && count((array)$this->request->donations) !== 0)
         {
             $donation_table  = '<table style="margin-left:auto; margin-right:auto; width:100%;">';
             $donation_table .= '<tr><td></td><th>Entity Name</th><th>Amount</th></tr>';
-            foreach($this->request->donations as $donation);
+            $donations = get_object_vars($this->request->donations);
+            foreach($donations as $type => $donation);
             {
-                $donation_table .= '<tr><td>Donation '.($i+1).'</td><td>'.$donation->type.'</td>';
+                $donation_table .= '<tr><td>Donation '.($i+1).'</td><td>'.$type.'</td>';
                 $donation_table .= '<td>$'.$donation->amount.'</td></tr>';
             }
             $donation_table .= '</table>';
