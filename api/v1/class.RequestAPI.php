@@ -6,7 +6,7 @@ class RequestAPI extends Http\Rest\RestAPI
         $app->get('[/]', array($this, 'listRequests'));
         $app->get('/crit_vols', array($this, 'getCritVols'));
         $app->get('/problems[/{view}]', array($this, 'getProblems'));
-        $app->get('/countsByStatus', array($this, 'getCountsByStatus'));
+        $app->get('/countsByStatus[/{year}]', array($this, 'getCountsByStatus'));
         $app->get('/donations', array($this, 'getDonations'));
         $app->get('/{request_id}[/{year}]', array($this, 'getRequest'));
         $app->get('/{request_id}/{year}/pdf', array($this, 'getRequestPdf'));
@@ -710,6 +710,10 @@ class RequestAPI extends Http\Rest\RestAPI
         }
         $settings = \Tickets\DB\TicketSystemSettings::getInstance();
         $year = $settings['year'];
+        if(isset($args['year']))
+        {
+            $year = $args['year'];
+        }
         $ticketDataSet = DataSetFactory::getDataSetByName('tickets');
         $data = $ticketDataSet->raw_query('SELECT count(*),private_status FROM tblTicketRequest WHERE year='.$year.' GROUP BY private_status');
         $count = count($data);
