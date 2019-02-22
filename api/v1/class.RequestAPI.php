@@ -89,6 +89,19 @@ class RequestAPI extends Http\Rest\RestAPI
     protected function getRequestFromListEntry($entry, $year, $dataTable)
     {
         $request = false;
+        if(is_string($entry))
+        {
+            $request = $this->getRequestByID($entry, $year);
+            if($request !== false)
+            {
+                return $request;
+            }
+            $request = $this->getRequestByMail($entry, $year, $dataTable);
+            if($request !== false)
+            {
+                return $request;
+            }
+        }
         if(isset($entry['id']))
         {
             $request = $this->getRequestByID($entry['id'], $year);
@@ -125,7 +138,7 @@ class RequestAPI extends Http\Rest\RestAPI
             {
                 return $request;
             }
-            $request = getRequestByMail($entry[1], $year, $dataTable);
+            $request = $this->getRequestByMail($entry[1], $year, $dataTable);
             if($request !== false)
             {
                 return $request;
@@ -346,12 +359,12 @@ class RequestAPI extends Http\Rest\RestAPI
         }
         $unprocessed = array();
         $processed = array();
-        $list = $request->getBody()->getContent();
-        $list = str_getcsv($list, "\n");
+        $string = $httpRequest->getBody()->getContents();
+        $list = str_getcsv($string, "\n");
         $count = count($list);
         if($count === 1 && ($list[0][0] === '[' || $list[0][0] === '{'))
         {
-            $list = $request->getParsedBody();
+            $list = json_decode($string, true);
             $list = array_values(array_filter($list));
             $count = count($list);
         }
@@ -375,8 +388,12 @@ class RequestAPI extends Http\Rest\RestAPI
                 continue;
             }
             $request->crit_vol = 1;
-            $filter = new \Data\Filter("request_id eq '{$request->request_id}' and year eq $year");
-            $data_table->update($filter, $request);
+            $res = $request->update();
+            if($res === false)
+            {
+                array_push($unprocessed, $list[$i]);
+                continue;
+            }
             array_push($processed, $list[$i]);
         }
         return $response->withJson(array('processed'=>$processed, 'unprocessed'=>$unprocessed));
