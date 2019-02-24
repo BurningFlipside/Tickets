@@ -755,7 +755,7 @@ class RequestAPI extends Http\Rest\RestAPI
         $settings = \Tickets\DB\TicketSystemSettings::getInstance();
         $year = $settings['year'];
         $ticketDataSet = DataSetFactory::getDataSetByName('tickets');
-        $data = $ticketDataSet->raw_query('SELECT SUM(donationAmount) AS amount FROM tblTicketRequest WHERE year='.$year.' AND private_status=6');
+        $data = $ticketDataSet->raw_query('SELECT SUM(donationAmount) AS amount FROM tblTicketRequest WHERE year='.$year.' AND private_status IN (6,1)');
         if(empty($data))
         {
              return $response->withJson(0);
