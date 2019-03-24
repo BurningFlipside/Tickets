@@ -26,8 +26,9 @@ class TicketEmail extends \Email\Email
 
     private function getBodyFromDB($html=true)
     {
+        $settings = \Tickets\DB\TicketSystemSettings::getInstance();
         $barcode        = '<barcode code="'.$this->ticket->hash.'" type="C93"/>';
-        $transfer_url   = $this->settings['ticket_system_uri'].'/transfer.php?id='.$this->ticket->hash;
+        $transfer_url   = $settings['ticket_system_uri'].'/transfer.php?id='.$this->ticket->hash;
         $transfer_qr    = '<barcode code="'.$transfer_url.'" type="QR" class="barcode" size="1" error="M" />';
         $year           = $this->ticket->year;
         $ticket_id      = $this->ticket->hash;

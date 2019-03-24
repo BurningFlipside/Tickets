@@ -32,6 +32,7 @@ class TicketPDF extends \PDF\PDF
 
     private function createPDFBody()
     {
+        $settings = \Tickets\DB\TicketSystemSettings::getInstance();
         //$barcode_hash   = $this->ticket->getBarcodeHash();
         $tmp = substr($this->ticket->hash, 0, 8).substr($this->ticket->hash, 24, 8);
         //$remainder    = gmp_init($tmp, 16);
@@ -42,7 +43,7 @@ class TicketPDF extends \PDF\PDF
         //}
         $barcode_hash   = $tmp;
         $barcode        = '<barcode code="'.$barcode_hash.'" type="C128B"/>';
-        $transfer_qr    = '<barcode code="'.$this->settings['ticket_system_uri'].'/transfer.php?id='.$this->ticket->hash.'" type="QR" class="barcode" size="1" error="M" />';
+        $transfer_qr    = '<barcode code="'.$settings['ticket_system_uri'].'/transfer.php?id='.$this->ticket->hash.'" type="QR" class="barcode" size="1" error="M" />';
         $year           = $this->ticket->year;
         $ticket_id      = $this->ticket->hash;
         $short_id       = substr($this->ticket->hash, 0, 8);
