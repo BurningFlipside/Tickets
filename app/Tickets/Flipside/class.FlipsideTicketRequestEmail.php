@@ -37,7 +37,7 @@ class FlipsideTicketRequestEmail extends \Email\Email
         $start_date     = $this->settings['mail_start_date'];
         $stop_date      = $this->settings['request_stop_date'];
         $vars           = array(
-            '{$update_url}'   => $transfer_url,
+            '{$update_url}'   => $update_url,
             '{$year}'           => $year,
             '{$start_date}'     => $start_date,
             '{$stop_date}'      => $stop_date

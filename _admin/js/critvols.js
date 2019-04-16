@@ -163,8 +163,12 @@ function allCritvolsObtained(jqXHR)
 
 function auto_critvol()
 {
+    let uri = 'https://profiles.burningflipside.com/api/v1/leads?$select=mail';
+    if(window.profilesUrl !== undefined) {
+       uri =  window.profilesUrl+'/api/v1/leads?$select=mail';
+    }
     $.ajax({
-        url: window.profilesUrl+'/api/v1/leads?$select=mail',
+        url: uri,
         type: 'get',
         dataType: 'json',
         xhrFields: {withCredentials: true},
