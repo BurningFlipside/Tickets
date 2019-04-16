@@ -63,6 +63,9 @@ function process_ticket()
 
 function found_ticket(data)
 {
+    if(data[0] !== undefined) {
+       data = data[0];
+    }
     $('#ticket_history_modal').modal('hide');
     $('#search_ticket_modal').modal('hide');
     console.log(data);
