@@ -256,7 +256,12 @@ function history_search_done(data)
 
 function search_failed(jqXHR)
 {
-    alert('Unable to locate ticket!');
+    if(jqXHR.status === 401) {
+      location.reload();
+    }
+    else {
+      alert('Unable to locate ticket!');
+    }
 }
 
 function process_mag_stripe(stripe_value)
@@ -360,6 +365,10 @@ function filter_from_mag_stripe(stripe_value)
 function really_search(jqXHR)
 {
     var filter = false;
+    if(jqXHR.status === 401)
+    {
+        location.reload();
+    }
     if(this.indexOf('%') === 0)
     {
         filter = filter_from_mag_stripe(this);
