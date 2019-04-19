@@ -1,15 +1,6 @@
 var selectedPool = 0;
 var tickets = null;
 
-function show_tab(e)
-{
-    e.preventDefault();
-    if($(e.target).parent().filter('.disabled').length === 0)
-    {
-        $(this).tab('show');
-    }
-}
-
 function tab_changed(e)
 {
     var tab_index = $(e.target).parent().index();
@@ -24,11 +15,11 @@ function tab_changed(e)
     var last_index = $(e.target).parent().siblings().last().index();
     if(tab_index >= last_index)
     {
-        $('.next').html('<a href="#" onclick="final_post(event)">Sell</a>');
+        $('.next').html('<a class="page-link" href="#" onclick="final_post(event)">Sell</a>');
     }
     else
     {
-        $('.next').html('<a href="#" onclick="next_tab(event)">Next <span aria-hidden="true">&rarr;</span></a>');
+        $('.next').html('<a class="page-link" href="#" onclick="next_tab(event)">Next <span aria-hidden="true">&rarr;</span></a>');
     }
 }
 
@@ -157,14 +148,14 @@ function final_post(e)
 
 function prev_tab(e)
 {
-    $('li.active').prevAll(":not('.disabled')").first().contents().tab('show');
+    $('li.nav-item .active').parent().prevAll(":not('.disabled')").first().find('a').tab('show');
 }
 
 function next_tab(e)
 {
     if(validate_current())
     {
-        $('li.active').nextAll(":not('.disabled')").first().contents().tab('show');
+        $('li.nav-item .active').parent().next().find('a').tab('show');
     }
 }
 
@@ -315,7 +306,6 @@ function getTicketTypes()
         dataType: 'json',
         complete: getTicketTypesDone
     });
-    $('.navbar-nav').click(show_tab);
     $('.previous').attr('class', 'previous disabled');
     $('a[data-toggle="tab"]').on('shown.bs.tab', tab_changed);
 }
