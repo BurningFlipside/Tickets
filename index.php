@@ -100,7 +100,7 @@ if($page->user !== false && $page->user !== null && ($page->user->isInGroupNamed
                     <h3 class="panel-title">FAQ</h3>
                 </div>
                 <div class="panel-body">
-                    <a href="http://www.burningflipside.com/event/tickets/faq">Ticket FAQ</a>
+                    <a href="'.$page->wwwUrl.'/event/tickets/faq">Ticket FAQ</a>
                 </div>
             </div>
         </div>
