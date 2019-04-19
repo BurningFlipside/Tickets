@@ -265,7 +265,7 @@ class TicketAPI extends Http\Rest\RestAPI
         return $response->withJson($ticket_types);
     }
 
-    public function sendEmail($request, $response, $app)
+    public function sendEmail($request, $response, $args)
     {
         $this->validateLoggedIn($request);
         $hash = $args['hash'];
