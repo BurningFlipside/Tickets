@@ -14,27 +14,19 @@ $page->body .= '
             </div>
         </div>
         <div class="row">
-            <div id="poswizard">
-                <div class="navbar navbar-default">
-                    <div class="container-fluid">
-                        <div class="navbar-header">
-                            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#wizard-navbar-collapse-1">
-                                <span class="sr-only">Toggle navigation</span>
-                                <span class="icon-bar"></span>
-                                <span class="icon-bar"></span>
-                                <span class="icon-bar"></span>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="collapse navbar-collapse" id="wizard-navbar-collapse-1">
-                        <ul class="nav navbar-nav">
-                            <li class="active"><a href="#tab0" data-toggle="tab">Select Ticket(s)</a></li>
-                            <li><a href="#tab1" data-toggle="tab">Email</a></li>
-                            <li><a href="#tab2" data-toggle="tab">Checkout</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="tab-content">
+            <div class="container" id="poswizard">
+              <ul class="nav nav-tabs" id="posTabs" role="tablist">
+                <li class="nav-item">
+                  <a class="nav-link active" id="select-tab" data-toggle="tab" href="#tab0" role="tab" aria-controls="tab0" aria-selected="true">Select Ticket(s)</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" id="email-tab" data-toggle="tab" href="#tab1" role="tab" aria-controls="tab1" aria-selected="false">Email</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" id="checkout-tab" data-toggle="tab" href="#tab2" role="tab" aria-controls="tab2" aria-selected="false">Checkout</a>
+                </li>
+              </ul>
+              <div class="tab-content">
                     <div role="tabpanel" class="tab-pane active" id="tab0">
                         <div class="form-group">
                             <label for="pool" class="col-sm-2 control-label">Ticket From Pool:</label>
@@ -102,13 +94,13 @@ $page->body .= '
                         </div>
                         <div class="clearfix visible-sm visible-md visible-lg"></div>
                     </div>
-                </div>
-                <nav>
-                    <ul class="pager">
-                        <li class="previous disabled"><a href="#" onclick="prev_tab(event)"><span aria-hidden="true">&larr;</span> Previous</a></li>
-                        <li class="next"><a href="#" onclick="next_tab(event)">Next <span aria-hidden="true">&rarr;</span></a></li>
-                    </ul>
-                </nav>
+              </div>
+              <nav>
+                <ul class="pagination">
+                  <li class="page-item previous disabled"><a class="page-link" href="#" onclick="prev_tab(event)"><span aria-hidden="true">&larr;</span> Previous</a></li>
+                  <li class="page-item next"><a class="page-link" href="#" onclick="next_tab(event)">Next <span aria-hidden="true">&rarr;</span></a></li>
+                </ul>
+              </nav>
             </div>
         </div>
     </div>

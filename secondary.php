@@ -248,6 +248,7 @@ $page->body.='
     <button type="submit" name="submit" class="btn btn-primary" id="submitRequest">Submit Request</button>
 </form></div>'.$minor;
 
+$page->body = 'There are no secondary ticket sales this year.';
 $page->printPage();
 
 // vim: set tabstop=4 shiftwidth=4 expandtab:

@@ -380,7 +380,7 @@ TicketRequest.prototype.sendEmail = function(callback) {
         url: this.ticketSystem.apiRoot+'/request/'+this.request_id+'/'+this.year+'/Actions/Requests.SendEmail',
         type: 'post',
         dataType: 'json',
-        complete: email_request_done});
+        complete: parseResults});
 }
 
 function getDateInCentralTime(date) {

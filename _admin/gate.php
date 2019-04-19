@@ -51,14 +51,14 @@ $page->body .= '
             </div>
         </div>
     </div>
-    <div class="modal fade" aria-hidden="true" id="process_ticket_modal" style="display: none;" data-backdrop="static">
-        <div class="modal-dialog modal-lg">
+    <div class="modal fade" aria-hidden="true" id="process_ticket_modal" style="display: none;" data-backdrop="static" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
+		    <h4 class="modal-title" id="modal_title">Process Ticket</h4>
                     <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
-                    <h4 class="modal-title" id="modal_title">Process Ticket</h4>
                 </div>
-                <div class="modal-body"><div class="container-fluid">
+                <div class="modal-body">
                     <div>
                         <label for="hash" class="col-sm-2 control-label">Code:</label>
                         <div class="col-sm-6">
@@ -129,7 +129,7 @@ $page->body .= '
                         </div>
                     </div>
                     <div class="clearfix visible-sm visible-md visible-lg"></div>
-                </div></div>
+                </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" onclick="process_ticket()">Process</button>
                     <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
@@ -137,15 +137,14 @@ $page->body .= '
             </div>
         </div>
     </div>
-    <div class="modal fade" aria-hidden="true" id="search_ticket_modal" style="display: none;" data-backdrop="static">
+    <div class="modal fade" aria-hidden="true" id="search_ticket_modal" style="display: none;" data-backdrop="static" role="dialog">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
+		    <h4 class="modal-title" id="modal_title">Search Tickets</h4>
                     <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
-                    <h4 class="modal-title" id="modal_title">Search Tickets</h4>
                 </div>
                 <div class="modal-body">
-                    <div class="container-fluid">
                         <table class-"table table-striped stripe" id="search_ticket_table">
                             <thead>
                                 <tr>
@@ -158,19 +157,18 @@ $page->body .= '
                             <tbody>
                             </tbody>
                         </table>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="modal fade" aria-hidden="true" id="ticket_history_modal" style="display: none;" data-backdrop="static">
-        <div class="modal-dialog modal-lg">
+    <div class="modal fade" aria-hidden="true" id="ticket_history_modal" style="display: none;" data-backdrop="static" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
+		    <h4 class="modal-title" id="modal_title">Ticket History</h4>
                     <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
-                    <h4 class="modal-title" id="modal_title">Ticket History</h4>
                 </div>
-                <div class="modal-body"><div class="container-fluid">
+                <div class="modal-body">
                     <div class="form-group">
                         <label for="history_hash" class="col-sm-2 control-label">Code:</label>
                         <div class="col-sm-10">
@@ -240,7 +238,7 @@ $page->body .= '
                     <div class="col-md-6" style="text-align: center;"><a onclick="prev_ticket()" style="cursor: pointer;" id="left_arrow"><span class="fa fa-chevron-left"></span></a></div>
                     <div class="col-md-6" style="text-align: center;"><a onclick="next_ticket()" style="cursor: pointer;" id="right_arrow"><span class="fa fa-chevron-right"></span></a></div>
                     <div class="clearfix visible-sm visible-md visible-lg"></div>
-                </div></div>
+                </div>
                 <div class="modal-footer">
                     <button id="process_history" type="button" class="btn btn-default" onclick="process_history_ticket()">Process</button>
                     <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
@@ -248,15 +246,14 @@ $page->body .= '
             </div>
         </div>
     </div>
-    <div class="modal fade" aria-hidden="true" id="history_ticket_modal" style="display: none;" data-backdrop="static">
-        <div class="modal-dialog">
+    <div class="modal fade" aria-hidden="true" id="history_ticket_modal" style="display: none;" data-backdrop="static" role="dialog">
+        <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
+		    <h4 class="modal-title" id="modal_title">Search Ticket History</h4>
                     <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
-                    <h4 class="modal-title" id="modal_title">Search Ticket History</h4>
                 </div>
                 <div class="modal-body">
-                    <div class="container-fluid">
                         <table class-"table table-striped stripe" id="history_ticket_table">
                             <thead>
                                 <tr>
@@ -269,7 +266,6 @@ $page->body .= '
                             <tbody>
                             </tbody>
                         </table>
-                    </div>
                 </div>
             </div>
         </div>

@@ -8,7 +8,7 @@ var basic_button_options = {'class': 'btn btn-link btn-sm', 'data-toggle': 'tool
 function tableDrawComplete()
 {
     $("#ticket_set").show();
-    if($("#ticketList").DataTable().data().length !== 0)
+    if ($("#ticketList").DataTable().data().length !== 0)
     {
         //Table contains nothing, just return
         return;
@@ -266,20 +266,32 @@ function make_actions(data, type, row, meta)
 
 function init_table()
 {
-    $('#ticketList').dataTable({
+    // prevent duplicate initialization error
+    if ($.fn.dataTable.isDataTable('#ticketList')) {
+      table = $('#ticketList').DataTable();
+    } else {
+      table = $('#ticketList').dataTable({
         "ajax": 'api/v1/ticket?fmt=data-table',
         columns: [
-            {'data': 'firstName'},
-            {'data': 'lastName'},
-            {'data': 'type'},
-            {'data': 'hash', 'render': short_hash},
-            {'data': 'hash', 'render': make_actions, 'class': 'action-buttons', 'orderable': false}
+          { 'data': 'firstName' },
+          { 'data': 'lastName' },
+          { 'data': 'type' },
+          {
+            'data': 'hash',
+            'render': short_hash
+          },
+          {
+            'data': 'hash',
+            'render': make_actions,
+            'class': 'action-buttons',
+            'orderable': false
+          }
         ],
         paging: false,
         info: false,
         searching: false
-    });
-
+      });
+    }
     $("#ticketList").on('draw.dt', tableDrawComplete);
 }
 
@@ -480,6 +492,9 @@ function processMailInWindow(now, mail_start, end)
 }
 
 function getWindowDone(data, err) {
+    if(ticket_year !== false) {
+      return;
+    }
     if(err !== null) {
         if(err.jsonResp !== undefined && err.jsonResp.code !== undefined) {
             switch(err.jsonResp.code) {

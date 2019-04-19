@@ -16,7 +16,14 @@ class TicketHistoryAPI extends Http\Rest\RestAPI
         }
         $odata = $request->getAttribute('odata', new \ODataParams(array()));
         $ticketDataTable = \DataSetFactory::getDataTableByNames('tickets', 'TicketsHistory');
-        $tmp = $odata->filter->to_sql_string();
+        $filter = $odata->filter;
+        if($filter->contains('year eq current'))
+        {
+            $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+            $clause = $filter->getClause('year');
+            $clause->var2 = $settings['year'];
+        }
+        $tmp = $filter->to_sql_string();
         $sql = 'SELECT * from tblTicketsHistory WHERE '.$tmp.' UNION SELECT * FROM tickets.tblTickets WHERE '.$tmp;
         $tickets = $ticketDataTable->raw_query($sql);
         if($tickets === false)

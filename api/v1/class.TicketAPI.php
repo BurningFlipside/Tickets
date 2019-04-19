@@ -6,6 +6,7 @@ class TicketAPI extends Http\Rest\RestAPI
         $app->get('[/]', array($this, 'listTickets'));
         $app->get('/types[/]', array($this, 'listTicketTypes'));
         $app->get('/discretionary[/]', array($this, 'listDiscretionaryTickets'));
+        $app->post('/discretionary[/]', array($this, 'assignDiscretionaryTickets'));
         $app->get('/pos[/]', array($this, 'getSellableTickets'));
         $app->get('/{hash}[/]', array($this, 'showTicket'));
         $app->get('/{hash}/pdf[/]', array($this, 'getPdf'));
@@ -180,6 +181,72 @@ class TicketAPI extends Http\Rest\RestAPI
         return $response->withJson($tickets);
     }
 
+    protected function assignDiscrtionaryTicketsToUser($tickets, $user, $dataTable)
+    {
+        $res = true;
+        $count = count($tickets);
+        for($i = 0; $i < $count; $i++)
+        {
+            $ticket = $tickets[$i];
+            $ticket['email'] = $ticket['discretionaryOrig'] = $user->mail;
+            $ticket['assigned'] = 1;
+            $ticket['discretionary'] = 1;
+            unset($ticket['hash_words']);
+            if($dataTable->update(new \Tickets\DB\TicketHashFilter($ticket['hash']), $ticket) === false)
+            {
+                $res = false;
+            }
+        }
+        return $res;
+    }
+
+    public function assignDiscretionaryTickets($request, $response, $app)
+    {
+        $this->validateLoggedIn($request);
+        if(!$this->user->isInGroupNamed('AAR'))
+        {
+            throw new Exception('Must be member of AAR group', \Http\Rest\ACCESS_DENIED);
+        }
+        $ticket_data_table = \Tickets\DB\TicketsDataTable::getInstance();
+        $obj = $request->getParsedBody();
+        if(!isset($obj['ticketGroups']))
+        {
+            throw new Exception('Missing required parameter "ticketGroups"', \Http\Rest\INVALID_PARAM);
+        }
+        $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+        $year = $settings['year'];
+        $array = $obj['ticketGroups'];
+        $count = count($array);
+        $res = true;
+        $messages = '';
+        for($i = 0; $i < $count; $i++)
+        {
+            $group = \AuthProvider::getInstance()->getGroupByName($array[$i]['Group']);
+            $ticketCount = $array[$i]['Count'];
+            $members = $group->members(true, false, false);
+            $count1 = count($members);
+            for($j = 0; $j < $count1; $j++)
+            {
+                $user = $members[$j];
+                $filter = new \Data\Filter('year eq '.$year.' and type eq \'A\' and pool_id eq -1 and assigned eq 0 and sold eq 0 and discretionary eq 0');
+                $tickets = $ticket_data_table->read($filter, false, $ticketCount);
+                if($this->assignDiscrtionaryTicketsToUser($tickets, $user, $ticket_data_table) === false)
+                {
+                    $res = false;
+                    $messages+='Unable to assign tickets to '.$user->uid.'\n';
+                }
+            }
+        }
+        if($res)
+        {
+            return $response->withJson($res);
+        }
+        else
+        {
+            return $response->withJson(array('res'=>$res, 'messages'=>$messages));
+        }
+    }
+
     public function listTicketTypes($request, $response, $app)
     {
         $this->validateLoggedIn($request);
@@ -198,7 +265,7 @@ class TicketAPI extends Http\Rest\RestAPI
         return $response->withJson($ticket_types);
     }
 
-    public function sendEmail($request, $response, $app)
+    public function sendEmail($request, $response, $args)
     {
         $this->validateLoggedIn($request);
         $hash = $args['hash'];
@@ -407,6 +474,7 @@ class TicketAPI extends Http\Rest\RestAPI
         $year = $settings['year'];
         $ticketDataTable = \Tickets\DB\TicketsDataTable::getInstance();
         $f = new \Data\Filter("year eq $year and private_status eq 1");
+        $returnVal = array('passed' => 0, 'failed'=> 0, 'messages' => array());
         foreach($types as $type=>$count)
         {
             for($i = 0; $i < $count; $i++)
@@ -414,7 +482,15 @@ class TicketAPI extends Http\Rest\RestAPI
                 $ticket = new \Tickets\Ticket();
                 $ticket->year = $year;
                 $ticket->type = $type;
-                $ticket->insert_to_db($ticketDataTable);
+                if($ticket->insert_to_db($ticketDataTable))
+                {
+                    $returnVal['passed']++;
+                }
+                else
+                {
+                    $returnVal['failed']++;
+                    array_push($returnVal['messages'], 'Failed to create ticket type '.$type);
+                }
             }
         }
         if($autoPopulate)
@@ -426,6 +502,7 @@ class TicketAPI extends Http\Rest\RestAPI
             {
                 $request_id = $request['request_id'];
                 $requestedTickets = json_decode($request['tickets']);
+                $fullRequest = true;
                 foreach($requestedTickets as $requestedTicket)
                 {
                     $requestedTicket = (array)$requestedTicket;
@@ -448,13 +525,25 @@ class TicketAPI extends Http\Rest\RestAPI
                     $filter = new \Data\Filter("hash eq '{$unAssignedTickets[0]['hash']}'");
                     unset($unAssignedTickets[0]['hash_words']);
                     $res = $ticketDataTable->update($filter, $unAssignedTickets[0]);
+                    if($res === false)
+                    {
+                        $fullRequest = false;
+                        array_push($returnVal['messages'], 'Failed to update ticket '.$unAssignedTickets[0]['hash']);
+                    }
                 }
-                $request['private_status'] = 6;
-                $filter = new \Data\Filter("year eq $year and request_id eq '$request_id'");
-                $res = $requestDataTable->update($filter, $request);
+                if($fullRequest)
+                {
+                    $request['private_status'] = 6;
+                    $filter = new \Data\Filter("year eq $year and request_id eq '$request_id'");
+                    $res = $requestDataTable->update($filter, $request);
+                    if($res === false)
+                    {
+                        array_push($returnVal['messages'], 'Failed to update request '.$request_id);
+                    }
+                }
             }
         }
-        return $response->withJson(true);
+        return $response->withJson($returnVal);
     }
 }
 /* vim: set tabstop=4 shiftwidth=4 expandtab: */

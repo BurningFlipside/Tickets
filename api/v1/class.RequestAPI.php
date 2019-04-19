@@ -6,7 +6,7 @@ class RequestAPI extends Http\Rest\RestAPI
         $app->get('[/]', array($this, 'listRequests'));
         $app->get('/crit_vols', array($this, 'getCritVols'));
         $app->get('/problems[/{view}]', array($this, 'getProblems'));
-        $app->get('/countsByStatus', array($this, 'getCountsByStatus'));
+        $app->get('/countsByStatus[/{year}]', array($this, 'getCountsByStatus'));
         $app->get('/donations', array($this, 'getDonations'));
         $app->get('/{request_id}[/{year}]', array($this, 'getRequest'));
         $app->get('/{request_id}/{year}/pdf', array($this, 'getRequestPdf'));
@@ -89,6 +89,19 @@ class RequestAPI extends Http\Rest\RestAPI
     protected function getRequestFromListEntry($entry, $year, $dataTable)
     {
         $request = false;
+        if(is_string($entry))
+        {
+            $request = $this->getRequestByID($entry, $year);
+            if($request !== false)
+            {
+                return $request;
+            }
+            $request = $this->getRequestByMail($entry, $year, $dataTable);
+            if($request !== false)
+            {
+                return $request;
+            }
+        }
         if(isset($entry['id']))
         {
             $request = $this->getRequestByID($entry['id'], $year);
@@ -125,7 +138,7 @@ class RequestAPI extends Http\Rest\RestAPI
             {
                 return $request;
             }
-            $request = getRequestByMail($entry[1], $year, $dataTable);
+            $request = $this->getRequestByMail($entry[1], $year, $dataTable);
             if($request !== false)
             {
                 return $request;
@@ -346,12 +359,12 @@ class RequestAPI extends Http\Rest\RestAPI
         }
         $unprocessed = array();
         $processed = array();
-        $list = $request->getBody()->getContent();
-        $list = str_getcsv($list, "\n");
+        $string = $httpRequest->getBody()->getContents();
+        $list = str_getcsv($string, "\n");
         $count = count($list);
         if($count === 1 && ($list[0][0] === '[' || $list[0][0] === '{'))
         {
-            $list = $request->getParsedBody();
+            $list = json_decode($string, true);
             $list = array_values(array_filter($list));
             $count = count($list);
         }
@@ -375,8 +388,12 @@ class RequestAPI extends Http\Rest\RestAPI
                 continue;
             }
             $request->crit_vol = 1;
-            $filter = new \Data\Filter("request_id eq '{$request->request_id}' and year eq $year");
-            $data_table->update($filter, $request);
+            $res = $request->update();
+            if($res === false)
+            {
+                array_push($unprocessed, $list[$i]);
+                continue;
+            }
             array_push($processed, $list[$i]);
         }
         return $response->withJson(array('processed'=>$processed, 'unprocessed'=>$unprocessed));
@@ -710,6 +727,10 @@ class RequestAPI extends Http\Rest\RestAPI
         }
         $settings = \Tickets\DB\TicketSystemSettings::getInstance();
         $year = $settings['year'];
+        if(isset($args['year']))
+        {
+            $year = $args['year'];
+        }
         $ticketDataSet = DataSetFactory::getDataSetByName('tickets');
         $data = $ticketDataSet->raw_query('SELECT count(*),private_status FROM tblTicketRequest WHERE year='.$year.' GROUP BY private_status');
         $count = count($data);
@@ -734,7 +755,7 @@ class RequestAPI extends Http\Rest\RestAPI
         $settings = \Tickets\DB\TicketSystemSettings::getInstance();
         $year = $settings['year'];
         $ticketDataSet = DataSetFactory::getDataSetByName('tickets');
-        $data = $ticketDataSet->raw_query('SELECT SUM(donationAmount) AS amount FROM tblTicketRequest WHERE year='.$year.' AND private_status=6');
+        $data = $ticketDataSet->raw_query('SELECT SUM(donationAmount) AS amount FROM tblTicketRequest WHERE year='.$year.' AND private_status IN (6,1)');
         if(empty($data))
         {
              return $response->withJson(0);

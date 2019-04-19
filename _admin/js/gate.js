@@ -63,6 +63,9 @@ function process_ticket()
 
 function found_ticket(data)
 {
+    if(data[0] !== undefined) {
+       data = data[0];
+    }
     $('#ticket_history_modal').modal('hide');
     $('#search_ticket_modal').modal('hide');
     console.log(data);
@@ -253,7 +256,12 @@ function history_search_done(data)
 
 function search_failed(jqXHR)
 {
-    alert('Unable to locate ticket!');
+    if(jqXHR.status === 401) {
+      location.reload();
+    }
+    else {
+      alert('Unable to locate ticket!');
+    }
 }
 
 function process_mag_stripe(stripe_value)
@@ -357,6 +365,10 @@ function filter_from_mag_stripe(stripe_value)
 function really_search(jqXHR)
 {
     var filter = false;
+    if(jqXHR.status === 401)
+    {
+        location.reload();
+    }
     if(this.indexOf('%') === 0)
     {
         filter = filter_from_mag_stripe(this);
