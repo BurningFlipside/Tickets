@@ -68,6 +68,17 @@ $page->body .= '
                 <tbody></tbody>
             </table>
         </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <h2>Status is Not Received, but there is a bucket assigned <a href="#" onclick="exportCSV(\'vProblemBucketNotRecieved\')"><i class="fa fa-file-excel-o"></i></a></h2>
+            </div>
+            <table class="table" id="vProblemBucketNotRecieved">
+                <thead>
+                    <tr><th>Request Id</th><th>Status</th><th>Total Due</th><th>Total Received</th><th>Comments</th><th>Critical</th></tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
     </div>
 </div>
 ';

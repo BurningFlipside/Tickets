@@ -4,7 +4,6 @@ error_reporting(E_ALL);
 require_once('class.TicketAdminPage.php');
 $page = new TicketAdminPage('Burning Flipside - Tickets');
 $page->setTemplateName('admin-accordian.html');
-$page->addWellKnownJS(JS_DATATABLE);
 $page->addWellKnownJS(JS_CHART);
 $page->addWellKnownCSS(CSS_DATATABLE);
 
