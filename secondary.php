@@ -6,8 +6,12 @@ $page = new TicketPage('Burning Flipside - Tickets');
 
 $page->addWellKnownJS(JS_BOOTSTRAP_FH);
 $page->addWellKnownCSS(CSS_BOOTSTRAP_FH);
-$page->addJSByURI('js/secondary.js');
-$page->addJSByURI('https://www.google.com/recaptcha/api.js');
+$page->addJS('js/secondary.js');
+$page->addJS('https://www.google.com/recaptcha/api.js');
+
+$page->body = 'There are no secondary ticket sales this year.';
+$page->printPage();
+die();
 
 $minor = '<div id="minor_dialog" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true" aria-labelledby="minor-title">
     <div class="modal-dialog">
@@ -247,9 +251,6 @@ $page->body.='
     </table>
     <button type="submit" name="submit" class="btn btn-primary" id="submitRequest">Submit Request</button>
 </form></div>'.$minor;
-
-$page->body = 'There are no secondary ticket sales this year.';
-$page->printPage();
 
 // vim: set tabstop=4 shiftwidth=4 expandtab:
 
