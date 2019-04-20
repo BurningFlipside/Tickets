@@ -55,93 +55,84 @@ $page->body .= '
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-		    <h4 class="modal-title" id="modal_title">Process Ticket</h4>
+                    <h4 class="modal-title" id="modal_title">Process Ticket</h4>
                     <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
                 </div>
                 <div class="modal-body">
-                    <div>
-                        <label for="hash" class="col-sm-2 control-label">Code:</label>
+                  <div class="container-fluid">
+                    <div class="row" style="margin-top: 10px">
+                        <label for="hash" class="col-sm-2 col-form-label">Code:</label>
                         <div class="col-sm-6">
                             <input class="form-control" type="text" name="hash" id="hash" readonly="">
                         </div>
-                        <label for"type" class="col-sm-2 control-label">Type:</label>
+                        <label for"type" class="col-sm-1 col-form-label">Type:</label>
                         <div class="col-sm-2">
                             <input class="form-control" type="text" name="type" id="type" readonly="">
                         </div>
                     </div>
-                    <div class="clearfix visible-sm visible-md visible-lg"></div>
-                    <div class="form-group">
-                        <label for="firstName" class="col-sm-2 control-label">First Name:</label>
+                    <div class="row" style="margin-top: 10px">
+                        <label for="firstName" class="col-sm-2 col-form-label">First Name:</label>
                         <div class="col-sm-10">
                             <input class="form-control" type="text" name="firstName" id="firstName">
                         </div>
                     </div>
-                    <div class="clearfix visible-sm visible-md visible-lg"></div>
-                    <div class="form-group">
-                        <label for="lastName" class="col-sm-2 control-label">Last Name:</label>
+                    <div class="row" style="margin-top: 10px">
+                        <label for="lastName" class="col-sm-2 col-form-label">Last Name:</label>
                         <div class="col-sm-10">
                             <input class="form-control" type="text" name="lastName" id="lastName"/>
                         </div>
                     </div>
-                    <div class="clearfix visible-sm visible-md visible-lg"></div>
                     <div id="minor_block">
-                        <div class="form-group">
-                            <label for="guardian_first" class="col-sm-2 control-label">Guardian First Name:</label>
+                        <div class="row" style="margin-top: 10px">
+                            <label for="guardian_first" class="col-sm-2 col-form-label">Guardian First Name:</label>
                             <div class="col-sm-10">
                                 <input class="form-control" type="text" name="guardian_first" id="guardian_first"/>
                             </div>
                         </div>
-                        <div class="clearfix visible-sm visible-md visible-lg"></div>
-                        <div class="form-group">
-                            <label for="guardian_last" class="col-sm-2 control-label">Guardian Last Name:</label>
+                        <div class="row" style="margin-top: 10px">
+                            <label for="guardian_last" class="col-sm-2 col-form-label">Guardian Last Name:</label>
                             <div class="col-sm-10">
                                 <input class="form-control" type="text" name="guardian_last" id="guardian_last"/>
                             </div>
                         </div>
                         <div class="clearfix visible-sm visible-md visible-lg"></div>
                     </div>
-                    <div class="clearfix visible-sm visible-md visible-lg"></div>
-                    <div>
-                        <label for="used" class="col-sm-2 control-label">Used:</label>
+                    <div class="row" style="margin-top: 10px">
+                        <label for="used" class="col-sm-2 col-form-label">Used:</label>
                         <div class="col-sm-2">
                             <input class="form-control" type="checkbox" name="used" id="used"/>
                         </div>
-                    </div>
-                    <div class="col-sm-2"></div>
-                    <div>
-                        <label for="void" class="col-sm-2 control-label">Void:</label>
+                        <label for="void" class="col-sm-2 col-form-label">Void:</label>
                         <div class="col-sm-2">
                             <input class="form-control" type="checkbox" name="void" id="void"/>
                         </div>
                     </div>
-                    <div class="clearfix visible-sm visible-md visible-lg"></div>
-                    <div class="form-group">
-                        <label for="physical_ticket_id" class="col-sm-2 control-label">Physical Ticket ID:</label>
+                    <div class="row" style="margin-top: 10px">
+                        <label for="physical_ticket_id" class="col-sm-2 col-form-label">Physical Ticket ID:</label>
                         <div class="col-sm-10">
                             <input class="form-control" type="text" name="physical_ticket_id" id="physical_ticket_id"/>
                         </div>
                     </div>
-                    <div class="clearfix visible-sm visible-md visible-lg"></div>
-                    <div class="form-group">
-                        <label for="comments" class="col-sm-2 control-label">Comments:</label>
+                    <div class="row" style="margin-top: 10px">
+                        <label for="comments" class="col-sm-2 col-form-label">Comments:</label>
                         <div class="col-sm-10">
                             <textarea rows="5" class="form-control" name="comments" id="comments"></textarea>
                         </div>
                     </div>
-                    <div class="clearfix visible-sm visible-md visible-lg"></div>
+                  </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" onclick="process_ticket()">Process</button>
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-outline-primary" onclick="process_ticket()">Process</button>
+                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
                 </div>
             </div>
         </div>
     </div>
     <div class="modal fade" aria-hidden="true" id="search_ticket_modal" style="display: none;" data-backdrop="static" role="dialog">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-		    <h4 class="modal-title" id="modal_title">Search Tickets</h4>
+                    <h4 class="modal-title" id="modal_title">Search Tickets</h4>
                     <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
                 </div>
                 <div class="modal-body">
@@ -162,43 +153,40 @@ $page->body .= '
         </div>
     </div>
     <div class="modal fade" aria-hidden="true" id="ticket_history_modal" style="display: none;" data-backdrop="static" role="dialog">
-        <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-		    <h4 class="modal-title" id="modal_title">Ticket History</h4>
+                    <h4 class="modal-title" id="modal_title">Ticket History</h4>
                     <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
                 </div>
                 <div class="modal-body">
-                    <div class="form-group">
+                  <div class="container-fluid">
+                    <div class="row">
                         <label for="history_hash" class="col-sm-2 control-label">Code:</label>
                         <div class="col-sm-10">
                             <input class="form-control" type="text" name="history_hash" id="history_hash" readonly/>
                         </div>
                     </div>
-                    <div class="clearfix visible-sm visible-md visible-lg"></div>
-                    <div class="form-group">
+                    <div class="row">
                         <label for="history_firstName" class="col-sm-2 control-label">First Name:</label>
                         <div class="col-sm-10">
                             <input class="form-control" type="text" name="history_firstName" id="history_firstName"/>
                         </div>
                     </div>
-                    <div class="clearfix visible-sm visible-md visible-lg"></div>
-                    <div class="form-group">
+                    <div class="row">
                         <label for="history_lastName" class="col-sm-2 control-label">Last Name:</label>
                         <div class="col-sm-10">
                             <input class="form-control" type="text" name="history_lastName" id="history_lastName"/>
                         </div>
                     </div>
-                    <div class="clearfix visible-sm visible-md visible-lg"></div>
                     <div id="minor_block">
-                        <div class="form-group">
+                        <div class="row">
                             <label for="history_guardian_first" class="col-sm-2 control-label">Guardian First Name:</label>
                             <div class="col-sm-10">
                                 <input class="form-control" type="text" name="history_guardian_first" id="history_guardian_first"/>
                             </div>
                         </div>
-                        <div class="clearfix visible-sm visible-md visible-lg"></div>
-                        <div class="form-group">
+                        <div class="row">
                             <label for="history_guardian_last" class="col-sm-2 control-label">Guardian Last Name:</label>
                             <div class="col-sm-10">
                                 <input class="form-control" type="text" name="history_guardian_last" id="history_guardian_last"/>
@@ -207,37 +195,34 @@ $page->body .= '
                         <div class="clearfix visible-sm visible-md visible-lg"></div>
                     </div>
                     <div class="clearfix visible-sm visible-md visible-lg"></div>
-                    <div>
+                    <div class="row">
                         <label for="history_used" class="col-sm-2 control-label">Used:</label>
                         <div class="col-sm-2">
                             <input class="form-control" type="checkbox" name="history_used" id="history_used"/>
                         </div>
-                    </div>
-                    <div class="col-sm-2"></div>
-                    <div>
+                        <div class="col-sm-2"></div>
                         <label for="history_void" class="col-sm-2 control-label">Void:</label>
                         <div class="col-sm-2">
                             <input class="form-control" type="checkbox" name="history_void" id="history_void"/>
                         </div>
                     </div>
-                    <div class="clearfix visible-sm visible-md visible-lg"></div>
-                    <div class="form-group">
+                    <div class="row">
                         <label for="history_physical_ticket_id" class="col-sm-2 control-label">Physical Ticket ID:</label>
                         <div class="col-sm-10">
                             <input class="form-control" type="text" name="history_physical_ticket_id" id="history_physical_ticket_id">
                         </div>
                     </div>
-                    <div class="clearfix visible-sm visible-md visible-lg"></div>
-                    <div class="form-group">
+                    <div class="row">
                         <label for="history_comments" class="col-sm-2 control-label">Comments:</label>
                         <div class="col-sm-10">
                             <textarea rows="5" class="form-control" name="history_comments" id="history_comments"></textarea>
                         </div>
                     </div>
-                    <div class="clearfix visible-sm visible-md visible-lg"></div>
-                    <div class="col-md-6" style="text-align: center;"><a onclick="prev_ticket()" style="cursor: pointer;" id="left_arrow"><span class="fa fa-chevron-left"></span></a></div>
-                    <div class="col-md-6" style="text-align: center;"><a onclick="next_ticket()" style="cursor: pointer;" id="right_arrow"><span class="fa fa-chevron-right"></span></a></div>
-                    <div class="clearfix visible-sm visible-md visible-lg"></div>
+                    <div class="row">
+                      <div class="col-md-6" style="text-align: center;"><a onclick="prev_ticket()" style="cursor: pointer;" id="left_arrow"><span class="fa fa-chevron-left"></span></a></div>
+                      <div class="col-md-6" style="text-align: center;"><a onclick="next_ticket()" style="cursor: pointer;" id="right_arrow"><span class="fa fa-chevron-right"></span></a></div>
+                    </div>
+                  </div>
                 </div>
                 <div class="modal-footer">
                     <button id="process_history" type="button" class="btn btn-default" onclick="process_history_ticket()">Process</button>
