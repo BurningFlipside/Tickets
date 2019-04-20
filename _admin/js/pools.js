@@ -201,25 +201,26 @@ function gotGroups(jqXHR)
     $('#group_name_new').typeahead(null, {name: 'group_name', source: group_names});
 }
 
-function initTable()
-{
-    $.ajax({
-        url: '../api/v1/pools',
-        method: 'get',
-        complete: gotPools
-    });
+function initTable() {
+  $.ajax({
+    url: '../api/v1/pools',
+    method: 'get',
+    complete: gotPools
+  });
 }
 
-function initPage()
-{
-    $.ajax({
-        url: window.profilesUrl+'/api/v1/groups?$select=cn',
-        type: 'get',
-        dataType: 'json',
-        xhrFields: {withCredentials: true},
-        complete: gotGroups});
-    $("#editModal").modal({"show":false});
-    initTable();
+function initPage() {
+  if(window.profilesUrl === undefined) {
+    window.profilesUrl = 'https://profiles.burningflipside.com';
+  }
+  $.ajax({
+    url: window.profilesUrl+'/api/v1/groups?$select=cn',
+    type: 'get',
+    dataType: 'json',
+    xhrFields: {withCredentials: true},
+    complete: gotGroups});
+  $("#editModal").modal({"show":false});
+  initTable();
 }
 
 $(initPage);
