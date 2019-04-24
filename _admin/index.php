@@ -21,10 +21,10 @@ if($issuedTicketCount == 0)
     $page->addCard('fa-tag',  '<div id="requestedTicketCount">?</div> Requested Tickets', 'request_tickets.php', $page::CARD_GREEN);
 }
 $page->addCard('fa-fire', $data_table->count($yearFilter).' Problem Requests', 'problems.php', $page::CARD_RED);
-$page->addCard('fa-usd',  '<div id="soldTicketCount">?</div> Sold Tickets', 'tickets.php?sold=1', $page::CARD_YELLOW);
+$page->addCard('fa-dollar-sign',  '<div id="soldTicketCount">?</div> Sold Tickets', 'tickets.php?sold=1', $page::CARD_YELLOW);
 if($issuedTicketCount != 0)
 {
-    $page->addCard('fa-ticket', '<div id="unsoldCount">?</div> Unsold Tickets', 'tickets.php?sold=0');
+    $page->addCard('fa-ticket-alt', '<div id="unsoldCount">?</div> Unsold Tickets', 'tickets.php?sold=0');
     $page->addCard('fa-check', '<div id="usedCount">?</div> Used Tickets', 'tickets.php?used=1', $page::CARD_GREEN);
 }
 /*

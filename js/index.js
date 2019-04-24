@@ -236,7 +236,7 @@ function getViewButton(data)
 function getEditButton(data)
 {
     var edit_options = createButtonOptions('Edit Ticket<br/>Use this option to keep the ticket<br/>on your account but<br/>change the legal name.', 'edit_ticket(this)', data);
-    return makeGlyphButton(edit_options, 'fa fa-pencil');
+    return makeGlyphButton(edit_options, 'fa fa-pencil-alt');
 }
 
 function getPDFButton(data)
@@ -248,7 +248,7 @@ function getPDFButton(data)
 function getTransferButton(data)
 {
     var transfer_options = createButtonOptions('Transfer Ticket<br/>Use this option to send<br/>the ticket to someone else', 'transfer_ticket(this)', data);
-    return makeGlyphButton(transfer_options, 'fa fa-send');
+    return makeGlyphButton(transfer_options, 'fa fa-envelope');
 }
 
 function make_actions(data, type, row, meta)
@@ -301,7 +301,7 @@ function add_buttons_to_row(row, request)
     var edit_options = createButtonOptions('Edit Request');
     var mail_options = createButtonOptions('Resend Request Email');
     var pdf_options = createButtonOptions('Download Request PDF');
-    var html = makeGlyphLink(edit_options, 'fa fa-pencil', 'request.php?request_id='+request.request_id+'&year='+request.year);
+    var html = makeGlyphLink(edit_options, 'fa fa-pencil-alt', 'request.php?request_id='+request.request_id+'&year='+request.year);
     cell.append(html);
 
     html = makeGlyphButton(mail_options, 'fa fa-envelope', request.sendEmail.bind(request));

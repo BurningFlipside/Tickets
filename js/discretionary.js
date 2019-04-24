@@ -40,23 +40,32 @@ function make_d_action(data, type, row, meta)
             res += button.prop('outerHTML');
         }
 
-        var rand = Math.floor(Math.random() * 4);
+        var rand = Math.floor(Math.random() * 7);
 
         sell_options.type = 'button';
         button = $('<button/>', sell_options);
         switch(rand)
         {
             case 0:
-                glyph = $('<span/>', {class: 'fa fa-usd'});
+                glyph = $('<span/>', {class: 'fa fa-dollar-sign'});
                 break;
             case 1:
-                glyph = $('<span/>', {class: 'fa fa-euro'});
+                glyph = $('<span/>', {class: 'fa fa-euro-sign'});
                 break;
             case 2:
-                glyph = $('<span/>', {class: 'fa fa-yen'});
+                glyph = $('<span/>', {class: 'fa fa-yen-sign'});
                 break;
             case 3:
-                glyph = $('<span/>', {class: 'fa fa-gbp'});
+                glyph = $('<span/>', {class: 'fa fa-pound-sign'});
+                break;
+            case 4:
+                glyph = $('<span/>', {class: 'fab fa-bitcoin'});
+                break;
+            case 5:
+                glyph = $('<span/>', {class: 'fa fa-lira-sign'});
+                break;
+            case 6:
+                glyph = $('<span/>', {class: 'fa fa-ruble-sign'});
                 break;
         }
         glyph.appendTo(button);
@@ -154,6 +163,10 @@ function init_d_table()
 
 function init_discretionary()
 {
+    if($('#discretionary').dataTable === undefined) {
+      setTimeout(init_discretionary, 100);
+      return;
+    }
     init_d_table();
 }
 
