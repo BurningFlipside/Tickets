@@ -293,6 +293,7 @@ function init_table()
       });
     }
     $("#ticketList").on('draw.dt', tableDrawComplete);
+    $('[data-toggle="tooltip"]').tooltip();
 }
 
 function add_buttons_to_row(row, request)
