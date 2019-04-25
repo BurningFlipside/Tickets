@@ -519,28 +519,20 @@ function getWindowDone(data, err) {
     init_table();
 }
 
-function panel_heading_click(e)
-{
-    var panel = $(this);
-    var panelBody = panel.parents('.panel').find('.panel-body');
-    var glyph = panel.find('i');
-    if(panel.hasClass('panel-collapsed'))
-    {
-        panelBody.slideDown();
-        panel.removeClass('panel-collapsed');
-        glpyh.removeClass('fa-chevron-down').addClass('fa-chevron-up');
-    }
-    else
-    {
-        panelBody.slideUp();
-        panel.addClass('panel-collapsed');
-        glyph.removeClass('fa-chevron-up').addClass('fa-chevron-down');
-    }
+function collapseCard(e) {
+  var x = $(e.target).siblings();
+  x.find('.fa-chevron-up').removeClass('fa-chevron-up').addClass('fa-chevron-down');
+}
+
+function expandCard(e) {
+  var x = $(e.target).siblings();
+  x.find('.fa-chevron-down').removeClass('fa-chevron-down').addClass('fa-chevron-up');
 }
 
 function initIndex() {
     ticketSystem.getWindow(getWindowDone);
-    $('.panel-heading span.clickable').on("click", panel_heading_click);
+    $('.card .collapse').on('hidden.bs.collapse', collapseCard);
+    $('.card .collapse').on('shown.bs.collapse', expandCard);
     if(getParameterByName('show_transfer_info') === '1') {
         var body = $('#content');
         add_notification(body, 'You have successfully sent an email with the ticket information. The ticket will be fully transfered when the receipient logs in and claims the ticket', NOTIFICATION_SUCCESS);

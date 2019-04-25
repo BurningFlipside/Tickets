@@ -16,12 +16,14 @@ if($page->user !== false && $page->user !== null && ($page->user->isInGroupNamed
         <div class="row" id="discretionary_set" style="display: none;">
             <div class="col-sm-1"></div>
             <div class="col-sm-10">
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">Discretionary Tickets</h3>
-                        <span class="pull-right clickable"><i class="fa fa-chevron-up"></i></span>
+                <div class="card">
+                    <div class="card-header" id="discretionaryHeader">
+                      <button class="btn btn-light" type="button" data-toggle="collapse" data-target="#discretionaryDiv" aria-expanded="true" aria-controls="discretionaryDiv" style="width: 100%">
+                        <span class="float-left">Discretionary Tickets</span><span class="float-right"><i class="fa fa-chevron-up"></i></span>
+                      </button>
                     </div>
-                    <div class="panel-body">
+                    <div id="discretionaryDiv" class="collapse show" aria-labelledby="discretionaryHeader">
+                      <div class="card-body">
                         <table id="discretionary" class="table">
                             <thead>
                                 <tr>
@@ -33,6 +35,7 @@ if($page->user !== false && $page->user !== null && ($page->user->isInGroupNamed
                                 </tr>
                             </thead>
                         </table>
+                      </div>
                     </div>
                 </div>
             </div>
@@ -43,12 +46,14 @@ if($page->user !== false && $page->user !== null && ($page->user->isInGroupNamed
     <div class="row" id="request_set" style="display: none;">
         <div class="col-sm-1"></div>
         <div class="col-sm-10">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Ticket Request</h3>
-                    <span class="pull-right clickable"><i class="fa fa-chevron-up"></i></span>
+            <div class="card">
+                <div class="card-header" id="requestHeader">
+                  <button class="btn btn-light" type="button" data-toggle="collapse" data-target="#request" aria-expanded="true" aria-controls="request" style="width: 100%">
+                    <span class="float-left">Ticket Request</span><span class="float-right"><i class="fa fa-chevron-up"></i></span>
+                  </button>
                 </div>
-                <div class="panel-body">
+                <div id="request" class="collapse show" aria-labelledby="requestHeader">
+                  <div class="card-body">
                     <table id="requestList" class="table">
                         <thead>
                             <tr>
@@ -62,6 +67,7 @@ if($page->user !== false && $page->user !== null && ($page->user->isInGroupNamed
                         <tbody></tbody>
                     </table>
                     <a href="request.php" id="fallback">Create a new ticket request</a>
+                  </div>
                 </div>
             </div>
         </div>
@@ -69,13 +75,15 @@ if($page->user !== false && $page->user !== null && ($page->user->isInGroupNamed
     <div class="row" id="ticket_set" style="display: none;">
         <div class="col-sm-1"></div>
         <div class="col-sm-10">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Tickets</h3>
-                    <span class="pull-right clickable"><i class="fa fa-chevron-up"></i></span>
+            <div class="card">
+                <div class="card-header" id="ticketHeader">
+                  <button class="btn btn-light" type="button" data-toggle="collapse" data-target="#ticket" aria-expanded="true" aria-controls="ticket" style="width: 100%">
+                    <span class="float-left">Tickets</span><span class="float-right"><i class="fa fa-chevron-up"></i></span>
+                  </button>
                 </div>
-                <div class="panel-body">
-                    <table id="ticketList">
+                <div id="ticket" class="collapse show" aria-labelledby="ticketHeader">
+                  <div class="card-body">
+                    <table id="ticketList" class="table">
                         <thead>
                             <tr>
                                 <th>First Name</th>
@@ -86,9 +94,10 @@ if($page->user !== false && $page->user !== null && ($page->user->isInGroupNamed
                             </tr>
                         </thead>
                     </table>
+                    <a href="transfer.php">Transfer Tickets</a> | <a href="verify.php">Verify Tickets</a>
+                  </div>
                 </div>
             </div>
-            <a href="transfer.php">Transfer Tickets</a> | <a href="verify.php">Verify Tickets</a>
         </div>
     </div>
     '.$discretionary.'
