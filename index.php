@@ -118,8 +118,8 @@ if($page->user !== false && $page->user !== null && ($page->user->isInGroupNamed
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                        <h4 class="modal-title" id="modal_title">Full Ticket ID</h4>
+                      <h4 class="modal-title" id="modal_title">Full Ticket ID</h4>
+                      <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
                     </div>
                     <div class="modal-body">
                         <div class="alert alert-info" role="alert"><strong>Notice: </strong>Providing this ID to another person is as good as handing them your ticket. The Flipside Ticket Team will never ask for this information. Only provide this code to someone whom you are selling or giving the ticket to!</div>
@@ -135,8 +135,8 @@ if($page->user !== false && $page->user !== null && ($page->user->isInGroupNamed
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                        <h4 class="modal-title" id="modal_title">Ticket Information</h4>
+                      <h4 class="modal-title" id="modal_title">Ticket Information</h4>
+                      <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
                     </div>
                     <div class="modal-body">
                         First Name: <span id="view_first_name"></span><br/>
@@ -153,25 +153,23 @@ if($page->user !== false && $page->user !== null && ($page->user->isInGroupNamed
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                        <h4 class="modal-title" id="modal_title">Edit Ticket</h4>
+                      <h4 class="modal-title" id="modal_title">Edit Ticket</h4>
+                      <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
                     </div>
                     <div class="modal-body">
-                        <div class="form-group">
+                        <div class="row">
                             <label for="show_short_code" class="col-sm-2 control-label">Short Code:</label>
                             <div class="col-sm-10">
                                 <input class="form-control" type="text" name="show_short_code" id="show_short_code" readonly/>
                             </div>
                         </div>
-                        <div class="clearfix visible-sm visible-md visible-lg"></div>
-                        <div class="form-group">
+                        <div class="row">
                             <label for="edit_first_name" class="col-sm-2 control-label">First Name:</label>
                             <div class="col-sm-10">
                                 <input class="form-control" type="text" name="edit_first_name" id="edit_first_name"/>
                             </div>
                         </div>
-                        <div class="clearfix visible-sm visible-md visible-lg"></div>
-                        <div class="form-group">
+                        <div class="row">
                             <label for="edit_last_name" class="col-sm-2 control-label">Last Name:</label>
                             <div class="col-sm-10">
                                 <input class="form-control" type="text" name="edit_last_name" id="edit_last_name"/>
