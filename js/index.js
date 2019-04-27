@@ -1,4 +1,4 @@
-var ticketSystem = new TicketSystem('api/v1');
+var ticketSystem = null;
 
 var out_of_window = false;
 var test_mode = false;
@@ -531,13 +531,18 @@ function expandCard(e) {
 }
 
 function initIndex() {
-    ticketSystem.getWindow(getWindowDone);
-    $('.card .collapse').on('hidden.bs.collapse', collapseCard);
-    $('.card .collapse').on('shown.bs.collapse', expandCard);
-    if(getParameterByName('show_transfer_info') === '1') {
-        var body = $('#content');
-        add_notification(body, 'You have successfully sent an email with the ticket information. The ticket will be fully transfered when the receipient logs in and claims the ticket', NOTIFICATION_SUCCESS);
-    }
+  if(TicketSystem === undefined) {
+    setTimeout(initIndex, 100);
+    return;
+  }
+  ticketSystem = new TicketSystem('api/v1');
+  ticketSystem.getWindow(getWindowDone);
+  $('.card .collapse').on('hidden.bs.collapse', collapseCard);
+  $('.card .collapse').on('shown.bs.collapse', expandCard);
+  if(getParameterByName('show_transfer_info') === '1') {
+    var body = $('#content');
+    add_notification(body, 'You have successfully sent an email with the ticket information. The ticket will be fully transfered when the receipient logs in and claims the ticket', NOTIFICATION_SUCCESS);
+  }
 }
 
 $(initIndex);
