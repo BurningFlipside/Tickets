@@ -310,6 +310,8 @@ function requeryTable()
     var used = $('#ticketUsed').val();
     var voidVal = $('#ticketVoid').val();
     var disc = $('#discretionaryUser').val();
+    var ee = $('#earlyEntry').val();
+    var pool = $('#ticketPool').val();
     var filter = 'year eq '+year;
     if(sold !== '*')
     {
@@ -330,6 +332,14 @@ function requeryTable()
     if(voidVal !== '*')
     {
         filter+=' and void eq '+voidVal;
+    }
+    if(ee !== '*')
+    {
+        filter+=' and earlyEntryWindow eq '+ee;
+    }
+    if(pool !== '*')
+    {
+        filter+=' and pool_id eq '+pool;
     }
     $('#tickets').DataTable().ajax.url('../api/v1/tickets?filter='+filter+'&fmt=data-table').load();
 }
@@ -413,6 +423,20 @@ function gotEarlyEntry(jqXHR)
         earlyEntry[data[i].earlyEntrySetting] = data[i].earlyEntryDescription;
     }
     $('#earlyEntryWindow').replaceWith('<select id="earlyEntryWindow" name="earlyEntryWindow" class="form-control">'+options+'</select>');
+    $('#earlyEntry :first-child').after(options);
+}
+
+function gotPools(jqXHR) {
+  if(jqXHR.status !== 200 || jqXHR.responseJSON === undefined) {
+    console.log(jqXHR);
+    return;
+  }
+  var data = jqXHR.responseJSON;
+  var options = '';
+  for(var i = 0; i < data.length; i++) {
+    options+='<option value="'+data[i].pool_id+'">'+data[i].pool_name+'</option>';
+  }
+  $('#ticketPool :first-child').after(options);
 }
 
 function init_page()
@@ -457,6 +481,11 @@ function init_page()
         type: 'get',
         dataType: 'json',
         complete: gotEarlyEntry});
+    $.ajax({
+      url: '../api/v1/pools',
+      method: 'get',
+      complete: gotPools
+    });
 
     $('#tickets').on('search.dt', table_searched);
     $('#ticketSold').on('change', soldChanged);
@@ -464,6 +493,8 @@ function init_page()
     $('#ticketUsed').on('change', usedChanged);
     $('#discretionaryUser').on('change', discretionaryChanged);
     $('#ticketVoid').on('change', usedChanged);
+    $('#earlyEntry').on('change', usedChanged);
+    $('#ticketPool').on('change', usedChanged);
 }
 
 $(init_page)

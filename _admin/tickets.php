@@ -14,44 +14,56 @@ $page->body .= '
             </div>
         </div>
         <div class="row">
-          <div class="col-sm-2">
-            Year: <select id="ticket_year"></select>
-          </div>
-          <div class="col-sm-2">
-            Sold: 
-            <select id="ticketSold">
+          <div class="col-sm-1 col-form-label">Year:</div>
+          <div class="col-sm-1"><select id="ticket_year" class="form-control"></select></div>
+          <div class="col-sm-1 col-form-label">Sold:</div>
+          <div class="col-sm-1">
+            <select id="ticketSold" class="form-control">
                 <option selected value="*">Both</option>
                 <option value="1">Yes</option>
                 <option value="0">No</option>
             </select>
           </div>
-           <div class="col-sm-2">
-            Void:
-            <select id="ticketVoid">
+          <div class="col-sm-1 col-form-label">Void:</div>
+          <div class="col-sm-1">
+            <select id="ticketVoid" class="form-control">
                 <option selected value="*">Both</option>
                 <option value="1">Yes</option>
                 <option value="0">No</option>
             </select>
           </div>
+          <div class="col-sm-1 col-form-label">Assigned:</div>
+          <div class="col-sm-1">
+            <select id="ticketAssigned" class="form-control">
+                <option selected value="*">Both</option>
+                <option value="1">Yes</option>
+                <option value="0">No</option>
+            </select>
+          </div>
+          <div class="col-sm-1 col-form-label">Used:</div>
+          <div class="col-sm-1">
+            <select id="ticketUsed" class="form-control">
+                <option selected value="*">Both</option>
+                <option value="1">Yes</option>
+                <option value="0">No</option>
+            </select>
+          </div>
+          <div class="w-100"></div>
+          <div class="col-sm-1 col-form-label">Discretionary:</div>
+          <div class="col-sm-3">
+            <input type="email" id="discretionaryUser" class="form-control" autocomplete="on"/>
+          </div>
+          <div class="col-sm-1 col-form-label">Early Entry:</div>
+          <div class="col-sm-3">
+            <select id="earlyEntry" class="form-control">
+              <option selected value="*">All</option>
+            </select>
+          </div>
+          <div class="col-sm-1 col-form-label">Pool:</div>
           <div class="col-sm-2">
-            Assigned:
-            <select id="ticketAssigned">
-                <option selected value="*">Both</option>
-                <option value="1">Yes</option>
-                <option value="0">No</option>
+            <select id="ticketPool" class="form-control">
+              <option selected value="*">All</option>
             </select>
-          </div>
-          <div class="col-sm-2">
-            Used: 
-            <select id="ticketUsed">
-                <option selected value="*">Both</option>
-                <option value="1">Yes</option>
-                <option value="0">No</option>
-            </select>
-          </div>
-          <div class="col-sm-4">
-            Discretionary:
-            <input type="email" id="discretionaryUser" autocomplete="on"/>
           </div>
         </div>
         <div class="row">
@@ -83,70 +95,60 @@ $page->body .= '
                             <div class="col-sm-10">
                               <input class="form-control" type="text" name="hash" id="hash" readonly/>
                             </div>
-                          </div>
-                          <div class="row">
+                            <div class="w-100"></div>
                             <label for="year" class="col-sm-2 col-form-label">Year:</label>
                             <div class="col-sm-10">
                               <input class="form-control" type="text" name="year" id="year" readonly/>
                             </div>
-                          </div>
-                          <div class="row">
+                            <div class="w-100"></div>
                             <label for="firstName" class="col-sm-2 col-form-label">First Name:</label>
                             <div class="col-sm-10">
                               <input class="form-control" type="text" name="firstName" id="firstName" autocomplete="off"/>
                             </div>
-                          </div>
-                          <div class="row">
+                            <div class="w-100"></div>
                             <label for="lastName" class="col-sm-2 col-form-label">Last Name:</label>
                             <div class="col-sm-10">
                               <input class="form-control" type="text" name="lastName" id="lastName" autocomplete="off"/>
                             </div>
-                          </div>
-                          <div class="row">
+                            <div class="w-100"></div>
                             <label for="email" class="col-sm-2 col-form-label">Email:</label>
                             <div class="col-sm-10">
                               <input class="form-control" type="text" name="email" id="email" autocomplete="off"/>
                             </div>
-                          </div>
-                          <div class="row">
+                            <div class="w-100"></div>
                             <label for="request_id" class="col-sm-2 col-form-label">Request ID:</label>
                             <div class="col-sm-10">
                               <input class="form-control" type="text" name="request_id" id="request_id" autocomplete="off"/>
                             </div>
-                          </div>
-                          <div class="row">
+                            <div class="w-100"></div>
                             <label for="type" class="col-sm-2 col-form-label">Type:</label>
                             <div class="col-sm-10">
                               <input class="form-control" type="text" name="type" id="type"/>
                             </div>
-                          </div>
-                          <div class="row">
+                             <div class="w-100"></div>
                             <label for="guardian_first" class="col-sm-2 col-form-label">Guardian First Name:</label>
                             <div class="col-sm-10">
                               <input class="form-control" type="text" name="guardian_first" id="guardian_first"/>
                             </div>
-                          </div>
-                          <div class="row">
+                            <div class="w-100"></div>
                             <label for="guardian_last" class="col-sm-2 col-form-label">Guardian Last Name:</label>
                             <div class="col-sm-10">
                               <input class="form-control" type="text" name="guardian_last" id="guardian_last"/>
                             </div>
-                          </div>
-                          <div class="row">
+                            <div class="w-100"></div>
+                            <div class="col-sm-2"></div>
                             <input type="checkbox" id="sold" name="sold">
                             <label for="sold" class="col-sm-2 col-form-label">Sold?</label>
                             <input type="checkbox" id="used" name="used">
                             <label for="used" class="col-sm-2 col-form-label">Used?</label>
                             <input type="checkbox" id="void" name="void">
                             <label for="void" class="col-sm-2 col-form-label">Void?</label>
-                          </div>
-                          <div class="row">
+                            <div class="w-100"></div>
                             <label for="earlyEntryWindow" class="col-sm-2 col-form-label">Entry Window:</label>
                             <div class="col-sm-10">
                               <input class="form-control" type="text" name="earlyEntryWindow" id="earlyEntryWindow"/>
                             </div>
-                          </div>
-                          <div class="row">
+                            <div class="w-100"></div>
                             <label for="comments" class="col-sm-2 col-form-label">Comments:</label>
                             <div class="col-sm-10">
                               <textarea class="form-control" rows="5" name="comments" id="comments"></textarea>
