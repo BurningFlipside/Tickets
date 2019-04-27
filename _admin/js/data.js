@@ -2,6 +2,9 @@ var ticketSystem = new TicketSystem('../api/v1');
 
 function requestAjaxDone(data, err) {
     if(err !== null) {
+        if(err.httpStatus === 401) {
+          location.reload();
+        }
         if(err.jsonResp !== undefined && err.jsonResp.message !== undefined) {
             alert(err.jsonResp.message);
         }
