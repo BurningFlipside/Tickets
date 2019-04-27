@@ -1,4 +1,4 @@
-var ticketSystem = new TicketSystem('api/v1');
+var ticketSystem = null;
 
 var out_of_window = false;
 var test_mode = false;
@@ -236,7 +236,7 @@ function getViewButton(data)
 function getEditButton(data)
 {
     var edit_options = createButtonOptions('Edit Ticket<br/>Use this option to keep the ticket<br/>on your account but<br/>change the legal name.', 'edit_ticket(this)', data);
-    return makeGlyphButton(edit_options, 'fa fa-pencil');
+    return makeGlyphButton(edit_options, 'fa fa-pencil-alt');
 }
 
 function getPDFButton(data)
@@ -248,7 +248,7 @@ function getPDFButton(data)
 function getTransferButton(data)
 {
     var transfer_options = createButtonOptions('Transfer Ticket<br/>Use this option to send<br/>the ticket to someone else', 'transfer_ticket(this)', data);
-    return makeGlyphButton(transfer_options, 'fa fa-send');
+    return makeGlyphButton(transfer_options, 'fa fa-envelope');
 }
 
 function make_actions(data, type, row, meta)
@@ -293,6 +293,7 @@ function init_table()
       });
     }
     $("#ticketList").on('draw.dt', tableDrawComplete);
+    $('[data-toggle="tooltip"]').tooltip();
 }
 
 function add_buttons_to_row(row, request)
@@ -301,7 +302,7 @@ function add_buttons_to_row(row, request)
     var edit_options = createButtonOptions('Edit Request');
     var mail_options = createButtonOptions('Resend Request Email');
     var pdf_options = createButtonOptions('Download Request PDF');
-    var html = makeGlyphLink(edit_options, 'fa fa-pencil', 'request.php?request_id='+request.request_id+'&year='+request.year);
+    var html = makeGlyphLink(edit_options, 'fa fa-pencil-alt', 'request.php?request_id='+request.request_id+'&year='+request.year);
     cell.append(html);
 
     html = makeGlyphButton(mail_options, 'fa fa-envelope', request.sendEmail.bind(request));
@@ -519,32 +520,29 @@ function getWindowDone(data, err) {
     init_table();
 }
 
-function panel_heading_click(e)
-{
-    var panel = $(this);
-    var panelBody = panel.parents('.panel').find('.panel-body');
-    var glyph = panel.find('i');
-    if(panel.hasClass('panel-collapsed'))
-    {
-        panelBody.slideDown();
-        panel.removeClass('panel-collapsed');
-        glpyh.removeClass('fa-chevron-down').addClass('fa-chevron-up');
-    }
-    else
-    {
-        panelBody.slideUp();
-        panel.addClass('panel-collapsed');
-        glyph.removeClass('fa-chevron-up').addClass('fa-chevron-down');
-    }
+function collapseCard(e) {
+  var x = $(e.target).siblings();
+  x.find('.fa-chevron-up').removeClass('fa-chevron-up').addClass('fa-chevron-down');
+}
+
+function expandCard(e) {
+  var x = $(e.target).siblings();
+  x.find('.fa-chevron-down').removeClass('fa-chevron-down').addClass('fa-chevron-up');
 }
 
 function initIndex() {
-    ticketSystem.getWindow(getWindowDone);
-    $('.panel-heading span.clickable').on("click", panel_heading_click);
-    if(getParameterByName('show_transfer_info') === '1') {
-        var body = $('#content');
-        add_notification(body, 'You have successfully sent an email with the ticket information. The ticket will be fully transfered when the receipient logs in and claims the ticket', NOTIFICATION_SUCCESS);
-    }
+  if(TicketSystem === undefined) {
+    setTimeout(initIndex, 100);
+    return;
+  }
+  ticketSystem = new TicketSystem('api/v1');
+  ticketSystem.getWindow(getWindowDone);
+  $('.card .collapse').on('hidden.bs.collapse', collapseCard);
+  $('.card .collapse').on('shown.bs.collapse', expandCard);
+  if(getParameterByName('show_transfer_info') === '1') {
+    var body = $('#content');
+    add_notification(body, 'You have successfully sent an email with the ticket information. The ticket will be fully transfered when the receipient logs in and claims the ticket', NOTIFICATION_SUCCESS);
+  }
 }
 
 $(initIndex);

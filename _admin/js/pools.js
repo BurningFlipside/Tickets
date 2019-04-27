@@ -175,8 +175,8 @@ function gotPools(jqXHR)
         var myID = data[i].pool_id;
         pools[myID] = data[i];
         tbody.append('<tr><td><button class="btn btn-link" onclick="deletePoolDialog('+myID+')" title="Delete Pool"><i class="fa fa-times"></i></button>'+
-                     '<button class="btn btn-link" onclick="editDialogPool('+myID+')" title="Edit Pool"><i class="fa fa-pencil"></i></button>'+
-                     '<button class="btn btn-link" onclick="poolStats('+myID+')" title="Pool Stats"><i class="fa fa-bar-chart"></i></button>'+
+                     '<button class="btn btn-link" onclick="editDialogPool('+myID+')" title="Edit Pool"><i class="fa fa-pencil-alt"></i></button>'+
+                     '<button class="btn btn-link" onclick="poolStats('+myID+')" title="Pool Stats"><i class="fa fa-chart-bar"></i></button>'+
                      '</td><td>'+myID+'</td><td>'+data[i].pool_name+'</td><td>'+data[i].group_name+'</td></tr>');
     }
     tbody.append('<tr><td><button class="btn btn-link" onclick="newPool()" title="Add Pool"><i class="fa fa-plus"></i></button></td><td colspan=3"></td></tr>');
@@ -201,25 +201,26 @@ function gotGroups(jqXHR)
     $('#group_name_new').typeahead(null, {name: 'group_name', source: group_names});
 }
 
-function initTable()
-{
-    $.ajax({
-        url: '../api/v1/pools',
-        method: 'get',
-        complete: gotPools
-    });
+function initTable() {
+  $.ajax({
+    url: '../api/v1/pools',
+    method: 'get',
+    complete: gotPools
+  });
 }
 
-function initPage()
-{
-    $.ajax({
-        url: window.profilesUrl+'/api/v1/groups?$select=cn',
-        type: 'get',
-        dataType: 'json',
-        xhrFields: {withCredentials: true},
-        complete: gotGroups});
-    $("#editModal").modal({"show":false});
-    initTable();
+function initPage() {
+  if(window.profilesUrl === undefined) {
+    window.profilesUrl = 'https://profiles.burningflipside.com';
+  }
+  $.ajax({
+    url: window.profilesUrl+'/api/v1/groups?$select=cn',
+    type: 'get',
+    dataType: 'json',
+    xhrFields: {withCredentials: true},
+    complete: gotGroups});
+  $("#editModal").modal({"show":false});
+  initTable();
 }
 
 $(initPage);

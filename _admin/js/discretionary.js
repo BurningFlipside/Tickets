@@ -106,7 +106,9 @@ function initPage()
         type: 'get',
         dataType: 'json',
         complete: gotDiscretionaryTickets});
-
+    if(window.profilesUrl === undefined) {
+      window.profilesUrl = 'https://profiles.burningflipside.com';
+    }
     $.ajax({
         url: window.profilesUrl+'/api/v1/groups?$select=cn',
         type: 'get',

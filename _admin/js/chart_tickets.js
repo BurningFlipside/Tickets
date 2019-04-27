@@ -1,3 +1,5 @@
+var ticketSystem = new TicketSystem('../api/v1');
+
 function tickets_done(data)
 {
     var label_array = [];
@@ -101,12 +103,78 @@ function gotTicketTypes(jqXHR){
   }
 }
 
+function gotTickets(jqXHR) {
+  if(jqXHR.status !== 200) {
+    return;
+  }
+  var tickets = jqXHR.responseJSON;
+  var total = $('#ticketsSold tbody tr:nth-child(6) td:nth-child('+this.col+')');
+  total.append(tickets.length);
+  var orig = 0;
+  var crit = 0;
+  var secondary = 0;
+  var discretionary = 0;
+  var other = 0;
+  for(var i = 0; i < tickets.length; i++) {
+    var ticket = tickets[i];
+    if(ticket.discretionary === '1') {
+      discretionary++;
+    }
+    else if(ticket.pool_id === '-1') {
+      orig++;
+    }
+    else if(ticket.pool_id === '1') {
+      secondary++;
+    }
+    else if(ticket.pool_id === '3') {
+      crit++;
+    }
+    else {
+      other++;
+    }
+  }
+  var cell = $('#ticketsSold tbody tr:nth-child(1) td:nth-child('+this.col+')');
+  cell.append(orig);
+  cell = $('#ticketsSold tbody tr:nth-child(2) td:nth-child('+this.col+')');
+  cell.append(crit);
+  cell = $('#ticketsSold tbody tr:nth-child(3) td:nth-child('+this.col+')');
+  cell.append(secondary);
+  cell = $('#ticketsSold tbody tr:nth-child(4) td:nth-child('+this.col+')');
+  cell.append(discretionary);
+  cell = $('#ticketsSold tbody tr:nth-child(5) td:nth-child('+this.col+')');
+  cell.append(other);
+}
+
+function gotAllYears(years, err) {
+  years.sort();
+  var thead = $('#ticketsSold thead tr');
+  var rows = $('#ticketsSold tbody tr');
+  thead.append('<th></th>');
+  for(var i = 0; i < years.length; i++) {
+    if(years[i] === 0) {
+      continue;
+    }
+    thead.append('<th>'+years[i]+'</th>');
+    for(var j = 0; j < rows.length; j++) {
+      rows[j].innerHTML += '<td></td>';
+    }
+    var obj = { year: years[i], col: i+1};
+    $.ajax({
+      url: '../api/v1/tickets?$filter=year eq '+years[i]+' and sold eq 1&$select=pool_id,discretionary',
+      type: 'GET',
+      context: obj,
+      complete: gotTickets
+    });
+  }
+}
+
 function initPage(){
   $.ajax({
     url: '../api/v1/tickets/types',
     type: 'get',
     complete: gotTicketTypes
   });
+  ticketSystem.getAllYears(gotAllYears);
 }
 
 $(initPage);

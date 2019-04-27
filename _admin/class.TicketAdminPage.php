@@ -94,13 +94,13 @@ class TicketAdminPage extends \Http\FlipAdminPage
         {
             $ticket_menu['My Discretionary Tickets'] = 'tickets.php?discretionaryUser='.$this->user['mail'];
         }
-        $this->content['header']['sidebar']['Dashboard'] = array('icon' => 'fa-dashboard', 'url' => 'index.php');
-        $this->content['header']['sidebar']['Reports'] = array('icon' => 'fa-bar-chart', 'menu' => $charts_menu);
+        $this->content['header']['sidebar']['Dashboard'] = array('icon' => 'fa-tachometer-alt', 'url' => 'index.php');
+        $this->content['header']['sidebar']['Reports'] = array('icon' => 'fa-chart-bar', 'menu' => $charts_menu);
         $this->content['header']['sidebar']['Requests'] = array('icon' => 'fa-file', 'menu' => $request_menu);
-        $this->content['header']['sidebar']['Tickets'] = array('icon' => 'fa-ticket', 'menu' => $ticket_menu);
-        $this->content['header']['sidebar']['Data Entry'] = array('icon' => 'fa-pencil', 'url' => 'data.php');
-        $this->content['header']['sidebar']['Sales'] = array('icon' => 'fa-usd', 'url' => 'pos.php');
-        $this->content['header']['sidebar']['Gate'] = array('icon' => 'fa-sign-in', 'url' => 'gate.php');
+        $this->content['header']['sidebar']['Tickets'] = array('icon' => 'fa-ticket-alt', 'menu' => $ticket_menu);
+        $this->content['header']['sidebar']['Data Entry'] = array('icon' => 'fa-pencil-alt', 'url' => 'data.php');
+        $this->content['header']['sidebar']['Sales'] = array('icon' => 'fa-dollar-sign', 'url' => 'pos.php');
+        $this->content['header']['sidebar']['Gate'] = array('icon' => 'fa-sign-in-alt', 'url' => 'gate.php');
         if($this->user->isInGroupNamed('AAR'))
         {
             $aar_menu = array(

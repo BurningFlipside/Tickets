@@ -17,7 +17,9 @@ else
 <div id="content">
     <div class="input-group">
         <input type="text" class="form-control" placeholder="Short Ticket Code" id="short_code" onchange="verify_code()">
-        <span class="input-group-addon" id="verified">?</span>
+        <div class="input-group-append">
+          <span class="input-group-text" id="verified">?</span>
+        </div>
     </div>
 </div>';
 }
