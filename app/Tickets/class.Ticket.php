@@ -6,6 +6,31 @@ class Ticket extends \SerializableObject
 {
     private static $data_set = false;
     private static $data_tables = array();
+    private static $dne = null;
+
+    public function __construct($data)
+    {
+        if(static::$dne === null)
+	{
+            if(file_exists(dirname(__FILE__).'/../../dne.csv'))
+	    {
+                static::$dne = new \Data\CSVDataTable(dirname(__FILE__).'/../../dne.csv');
+            }
+	    else
+	    {
+                static::$dne = false;
+	    }
+        }
+        parent::__construct($data);
+	if($this->firstName !== '' && $this->lastName !== '' && static::$dne)
+	{
+            $test = static::$dne->read(new \Data\Filter('firstName eq '.$this->firstName.' and lastName eq '.$this->lastName));
+            if(count($test))
+	    {
+                $this->contactActual = true;
+	    }
+        }
+    }
 
     protected static function getDataSet()
     {
@@ -488,3 +513,4 @@ class Ticket extends \SerializableObject
         return true;
     }
 }
+/* vim: set tabstop=4 shiftwidth=4 expandtab: */

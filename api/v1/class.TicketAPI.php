@@ -18,7 +18,8 @@ class TicketAPI extends Http\Rest\RestAPI
         $app->post('/{hash}/Actions/Ticket.Sell', array($this, 'sellTicket'));
         $app->post('/pos/sell', array($this, 'sellMultipleTickets'));
         $app->post('/Actions/VerifyShortCode/{code}', array($this, 'verifyShortCode'));
-        $app->post('/Actions/GenerateTickets', array($this, 'generateTickets'));
+	$app->post('/Actions/GenerateTickets', array($this, 'generateTickets'));
+	$app->post('/Actions/CheckDNE', array($this, 'checkDNE'));
     }
 
     public function listTickets($request, $response, $app)
@@ -544,6 +545,27 @@ class TicketAPI extends Http\Rest\RestAPI
             }
         }
         return $response->withJson($returnVal);
+    }
+
+    public function checkDNE($request, $response, $args)
+    {
+        $this->validateLoggedIn($request);
+        if(!$this->user->isInGroupNamed('TicketAdmins'))
+        {
+            return $response->withStatus(401);
+	}
+	if(!file_exists(dirname(__FILE__).'/../../dne.csv'))
+	{
+            return $response->withStatus(404);
+	}
+	$dne = new \Data\CSVDataTable(dirname(__FILE__).'/../../dne.csv');
+	$body = $request->getParsedBody();
+	$test = $dne->read(new \Data\Filter('firstName eq '.$body['firstName'].' and lastName eq '.$body['lastName']));
+	if(count($test) === 0)
+	{
+            return $response->withStatus(404);
+	}
+	return $response->withJson(true);
     }
 }
 /* vim: set tabstop=4 shiftwidth=4 expandtab: */

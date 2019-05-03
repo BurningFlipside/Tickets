@@ -14,6 +14,27 @@ function error_processing_ticket(jqXHR)
     console.log(jqXHR);
 }
 
+function processedNameChange(jqXHR) {
+  if(jqXHR.status === 200 && jqXHR.responseJSON === true) {
+    add_notification($('#process_ticket_modal .modal-body'), 'Name corresponds to Denial of Entry list. Please contact Actual.', NOTIFICATION_FAILED, false);
+  }
+}
+
+function nameChanged() {
+  var data = {};
+  data.firstName = $('#firstName').val();
+  data.lastName  = $('#lastName').val();
+  $.ajax({
+    url:  '../api/v1/tickets/Actions/CheckDNE',
+    contentType: 'application/json',
+    type: 'POST',
+    dataType: 'json',
+    data: JSON.stringify(data),
+    processData: false,
+    complete: processedNameChange
+  });
+}
+
 function process_ticket()
 {
     var hash = $('#hash').val();
@@ -70,6 +91,10 @@ function found_ticket(data)
     $('#search_ticket_modal').modal('hide');
     console.log(data);
     $('#process_ticket_modal .modal-body .alert').remove();
+    if(data.contactActual === true)
+    {
+        add_notification($('#process_ticket_modal .modal-body'), 'Name corresponds to Denial of Entry list. Please contact Actual.', NOTIFICATION_FAILED, false);
+    }
     if(data.used !== '0')
     {
         add_notification($('#process_ticket_modal .modal-body'), 'Ticket is already used!', NOTIFICATION_FAILED, false);
@@ -656,6 +681,8 @@ function init_gate_page()
     else {
         enumError(null);
     }
+    $('#firstName').change(nameChanged)
+    $('#lastName').change(nameChanged);
 }
 
 $(init_gate_page);

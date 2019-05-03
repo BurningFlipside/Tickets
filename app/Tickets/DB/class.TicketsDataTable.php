@@ -4,13 +4,22 @@ namespace Tickets\DB;
 class TicketsDataTable extends SingletonDataTable
 {
     protected $settings;
+    protected $dne;
 
     protected function __construct()
     {
         parent::__construct();
         $data_set = self::getDataSet();
         $this->data_table = $data_set['Tickets'];
-        $this->settings = TicketSystemSettings::getInstance();
+	$this->settings = TicketSystemSettings::getInstance();
+	if(file_exists(dirname(__FILE__).'/../../../dne.csv'))
+	{
+            $this->dne = new \Data\CSVDataTable(dirname(__FILE__).'/../../../dne.csv');
+	}
+	else
+	{
+            $this->dne = false;
+	}
     }
 
     private function modify_filter(&$filter)
@@ -67,7 +76,15 @@ class TicketsDataTable extends SingletonDataTable
                 if($select !== false && !in_array('hash', $select))
                 {
                     unset($res[$i]['hash']);
-                }
+		}
+		if($res[$i]['firstName'] !== '' && $res[$i]['lastName'] !== '' && $this->dne)
+		{
+                    $test = $this->dne->read(new \Data\Filter('firstName eq '.$res[$i]['firstName'].' and lastName eq '.$res[$i]['lastName']));
+		    if(count($test))
+		    {
+                        $res[$i]['contactActual'] = true;
+		    }
+		}
             }
         }
         return $res;
