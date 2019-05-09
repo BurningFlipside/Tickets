@@ -12,6 +12,52 @@ var chartData = {
   }
 };
 
+var chart2 = null;
+var chart2Data = {
+  type: 'bar',
+  data: {
+    labels: [],
+    datasets: [
+    {
+      label: 'Original Sale',
+      data: [],
+      backgroundColor: "#d53e4f"
+    },
+    {
+      label: 'Critical Volunteer',
+      data: [],
+      backgroundColor: "#f46d43"
+    },
+    {
+      label: 'Secondary Sale',
+      data: [],
+      backgroundColor: "#fdae61"
+    },
+    {
+      label: 'Discretionary',
+      data: [],
+      backgroundColor: "#66c2a5"
+    },
+    {
+      label: 'Other',
+      data: []
+    }]
+  },
+  options: {
+    scales: {
+      xAxes: [{
+        stacked: true
+      }],
+      yAxes: [{
+        stacked: true
+      }]
+    },
+    tooltips: {
+      mode: 'index'
+    }
+  }
+};
+
 function gotTicketType(jqXHR){
   if(jqXHR.status !== 200) {
     alert('Unable to get ticket type!');
@@ -23,7 +69,6 @@ function gotTicketType(jqXHR){
   }
   chartData.data.labels.push(this.label);
   chartData.data.datasets[0].data.push(jqXHR.responseJSON['@odata.count']);
-  console.log(chartData);
   //chart.update(chartData);
 }
 
@@ -84,6 +129,16 @@ function gotTickets(jqXHR) {
   cell.append(discretionary);
   cell = $('#ticketsSold tbody tr:nth-child(5) td:nth-child('+this.col+')');
   cell.append(other);
+  if(chart2 == null) {
+    var ctx = $("#ticket_sold_chart").get(0).getContext("2d");
+    chart2 = new Chart(ctx, chart2Data);
+  }
+  chart2Data.data.datasets[0].data[this.col-2] = orig;
+  chart2Data.data.datasets[1].data[this.col-2] = crit;
+  chart2Data.data.datasets[2].data[this.col-2] = secondary;
+  chart2Data.data.datasets[3].data[this.col-2] = discretionary;
+  chart2Data.data.datasets[4].data[this.col-2] = other;
+  chart2.update(chart2Data);
 }
 
 function gotAllYears(years, err) {
@@ -99,6 +154,12 @@ function gotAllYears(years, err) {
     for(var j = 0; j < rows.length; j++) {
       rows[j].innerHTML += '<td></td>';
     }
+    chart2Data.data.labels.push(''+years[i]);
+    chart2Data.data.datasets[0].data.push(0);
+    chart2Data.data.datasets[1].data.push(0);
+    chart2Data.data.datasets[2].data.push(0);
+    chart2Data.data.datasets[3].data.push(0);
+    chart2Data.data.datasets[4].data.push(0);
     var obj = { year: years[i], col: i+1};
     $.ajax({
       url: '../api/v1/tickets?$filter=year eq '+years[i]+' and sold eq 1&$select=pool_id,discretionary',
