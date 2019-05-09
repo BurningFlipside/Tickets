@@ -256,12 +256,7 @@ function history_search_done(data)
 
 function search_failed(jqXHR)
 {
-    if(jqXHR.status === 401) {
-      location.reload();
-    }
-    else {
-      alert('Unable to locate ticket!');
-    }
+  alert('Unable to locate ticket!');
 }
 
 function process_mag_stripe(stripe_value)
