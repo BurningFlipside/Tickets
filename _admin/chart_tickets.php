@@ -25,6 +25,9 @@ array_push($page->content['panels'], array('title'=>'Tickets Sold', 'body'=>'
     </tbody>
   </table> 
 '));
+array_push($page->content['panels'], array('title'=>'Tickets Sold Bar Chart', 'body'=>'
+  <canvas id="ticket_sold_chart" height="150" width="300" style="width: 300px; height: 150px;"></canvas>
+'));
 array_push($page->content['panels'], array('title'=>'Ticket Types', 'body'=>'
   <canvas id="ticket_type_chart" height="150" width="300" style="width: 300px; height: 150px;"></canvas>
 '));

@@ -17,7 +17,12 @@ class TicketHistoryAPI extends Http\Rest\RestAPI
         $odata = $request->getAttribute('odata', new \ODataParams(array()));
         $ticketDataTable = \DataSetFactory::getDataTableByNames('tickets', 'TicketsHistory');
         $filter = $odata->filter;
-        if($filter->contains('year eq current'))
+        if($filter === false)
+        {
+            $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+            $filter = new \Data\Filter('year eq '.$settings['year']);
+        }
+        else if($filter->contains('year eq current'))
         {
             $settings = \Tickets\DB\TicketSystemSettings::getInstance();
             $clause = $filter->getClause('year');
