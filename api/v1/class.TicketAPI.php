@@ -329,8 +329,14 @@ class TicketAPI extends Http\Rest\RestAPI
         {
             throw new \Exception('Missing Required Parameter email!');
         }
+        $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+        $year = $settings['year'];
         $ticket = \Tickets\Ticket::get_ticket_by_hash($hash);
         if($ticket === false || $ticket->void == 1)
+        {
+            return $response->withStatus(404);
+        }
+        if($ticket->year !== $year)
         {
             return $response->withStatus(404);
         }
