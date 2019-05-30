@@ -98,7 +98,7 @@ if($numberOfCurrentTickets != 0)
         $ticketTypes[$ticket['type']]['count']++;
         if($ticketTypes[$ticket['type']]['count'] >= $ticketTypes[$ticket['type']]['max_per_request'])
         {
-            $page->addNotification('You already have the maximum available '.$ticketTypes[$ticket['type']]['description'].' tickets and will not be able to order any more.', FlipPage::NOTIFICATION_WARNING, false);
+            $page->addNotification('You already have the maximum available '.$ticketTypes[$ticket['type']]['description'].' tickets and will not be able to order any more.', TicketPage::NOTIFICATION_WARNING, false);
         }
     }
 }

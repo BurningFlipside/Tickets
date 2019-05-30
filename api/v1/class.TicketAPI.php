@@ -299,7 +299,17 @@ class TicketAPI extends Http\Rest\RestAPI
             $ticket->lastName = $array['lastName'];
         }
         $ticket->transferInProgress = 0;
-        return $response->withJson($ticket->insert_to_db());
+        $res = $ticket->insert_to_db();
+        if($res)
+        {
+            $email_msg = new \Tickets\TicketEmail($ticket);
+            $email_provider = EmailProvider::getInstance();
+            if($email_provider->sendEmail($email_msg) === false)
+            {
+                throw new \Exception('Unable to send ticket email!');
+            }
+        }
+        return $response->withJson($res);
     }
 
     protected function endswith($string, $test)
