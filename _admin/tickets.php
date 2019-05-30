@@ -63,6 +63,7 @@ $page->body .= '
           <div class="col-sm-2">
             <select id="ticketPool" class="form-control">
               <option selected value="*">All</option>
+              <option selected value="-1">None</option>
             </select>
           </div>
         </div>
