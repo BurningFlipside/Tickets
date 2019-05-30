@@ -14,13 +14,10 @@ $page->body .= '
             </div>
         </div>
         <div class="row">
-            <div class="form-group">
-                <label for="request_id" class="col-sm-2 control-label">Request ID:</label>
-                <div class="col-sm-10">
-                    <input class="form-control" type="text" name="request_id" id="request_id" onchange="lookup_request(this)" autofocus/>
-                </div>
+            <label for="request_id" class="col-sm-2 control-label">Request ID:</label>
+            <div class="col-sm-10">
+              <input class="form-control" type="text" name="request_id" id="request_id" onchange="lookup_request(this)" autofocus autocomplete="off"/>
             </div>
-            <div class="clearfix visible-sm visible-md visible-lg"></div>
         </div>
         <div class="row">
             <hr/>
@@ -32,7 +29,7 @@ $page->body .= '
                         <a class="collapsed" data-toggle="collapse" href="#advanced" aria-expanded="false" aria-controls="advanced">Advanced Search</a>
                     </h4>
                 </div>
-                <div id="advanced" class="collapse" role="tabpanel" aria-labelledby="advanced_hdr">
+                <div id="advanced" class="collapse" aria-labelledby="advanced_hdr" data-parent="#advanced_hdr">
                     <div class="card-body">
                         <div class="input-group">
                             <div class="input-group-btn">
@@ -44,7 +41,7 @@ $page->body .= '
                                     <li><a href="#" onclick="change_menu(\'sn\', \'Last Name\');">Last Name</a></li>
                                 </ul>
                             </div>
-                            <input class="form-control" type="text" name="value" id="value" onchange="lookup_request_by_value(this)"/>
+                            <input class="form-control" type="text" name="value" id="value" onchange="lookup_request_by_value(this)" autocomplete="off"/>
                         </div>
                        <div class="clearfix visible-sm visible-md visible-lg"></div>
                     </div>
@@ -55,54 +52,43 @@ $page->body .= '
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
-                        <h4 class="modal-title" id="modal_title"></h4>
+                      <h4 class="modal-title" id="modal_title"></h4>
+                      <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
                     </div>
                     <div class="modal-body">
-                        <div class="form-group">
-                            <label for="given_name" class="col-sm-2 control-label">Given Name:</label>
-                            <div class="col-sm-10">
-                                <input class="form-control" type="text" name="given_name" id="given_name" readonly/>
-                            </div>
+                      <div class="row">
+                        <label for="given_name" class="col-sm-2 control-label">Given Name:</label>
+                        <div class="col-sm-10">
+                          <input class="form-control" type="text" name="given_name" id="given_name" readonly/>
                         </div>
-                        <div class="clearfix visible-sm visible-md visible-lg"></div>
-                        <div class="form-group">
-                            <label for="last_name" class="col-sm-2 control-label">Last Name:</label>
-                            <div class="col-sm-10">
-                                <input class="form-control" type="text" name="last_name" id="last_name" readonly/>
-                            </div>
+                        <div class="w-100"></div>
+                        <label for="last_name" class="col-sm-2 control-label">Last Name:</label>
+                        <div class="col-sm-10">
+                          <input class="form-control" type="text" name="last_name" id="last_name" readonly/>
                         </div>
-                        <div class="clearfix visible-sm visible-md visible-lg"></div>
-                        <form id="req_form">
-                        <div class="form-group">
+                      </div>
+                      <form id="req_form">
+                        <div class="row">
                             <label for="total_due" class="col-sm-2 control-label">Total Due:</label>
                             <div class="col-sm-10">
                                 <input class="form-control" type="text" name="total_due" id="total_due" readonly/>
                             </div>
-                        </div>
-                        <div class="clearfix visible-sm visible-md visible-lg"></div>
-                        <div class="form-group">
+                            <div class="w-100"></div>
                             <label for="total_received" class="col-sm-2 control-label">Total Received:</label>
                             <div class="col-sm-10">
                                 <input class="form-control" type="text" name="total_received" id="total_received" required/>
                             </div>
-                        </div>
-                        <div class="clearfix visible-sm visible-md visible-lg"></div>
-                        <div class="form-group">
+                            <div class="w-100"></div>
                             <label for="status" class="col-sm-2 control-label">Status:</label>
                             <div class="col-sm-10">
                                 <select class="form-control" name="status" id="status"></select>
                             </div>
-                        </div>
-                        <div class="clearfix visible-sm visible-md visible-lg"></div>
-                        <div class="form-group">
+                            <div class="w-100"></div>
                             <label for="comments" class="col-sm-2 control-label">Comments:</label>
                             <div class="col-sm-10">
                                 <textarea class="form-control" name="comments" id="comments"></textarea>
                             </div>
-                        </div>
-                        <div class="clearfix visible-sm visible-md visible-lg"></div>
-                        <div class="form-group">
+                            <div class="w-100"></div>
                             <label for="bucket" class="col-sm-2 control-label">Bucket:</label>
                             <div class="col-sm-10">
                                 <input type="text" class="form-control" name="bucket" id="bucket" readonly/>
@@ -121,8 +107,8 @@ $page->body .= '
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
                         <h4 class="modal-title">Requests</h4>
+                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
                     </div>
                     <div class="modal-body">
                     <table id="request_table" class="table">
