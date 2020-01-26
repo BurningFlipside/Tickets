@@ -183,7 +183,7 @@ class RequestAPI extends Http\Rest\RestAPI
         {
             $filter->addToSQLString(" AND (mail LIKE '%$search%' OR sn LIKE '%$search%' OR givenName LIKE '%$search%')");
         }
-        $requests = $requestDataTable->read($filter, $odata->select, $odata->top, $odata->skip, $odata->orderby);
+        $requests = $requestDataTable->read($filter, $odata->select, $odata->top, $odata->skip, $odata->orderby, !$show_children);
         if($requests === false)
         {
             return $response->withJson(array());

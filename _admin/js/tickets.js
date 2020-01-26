@@ -313,6 +313,9 @@ function requeryTable()
     var ee = $('#earlyEntry').val();
     var pool = $('#ticketPool').val();
     var filter = 'year eq '+year;
+    if(year === '*') {
+      filter = 'year ne 999999';
+    }
     if(sold !== '*')
     {
         filter+=' and sold eq '+sold;
@@ -380,7 +383,11 @@ function gotTicketYears(jqXHR)
     jqXHR.responseJSON.sort().reverse();
     for(var i = 0; i < jqXHR.responseJSON.length; i++)
     {
-        $('#ticket_year').append($('<option/>').attr('value', jqXHR.responseJSON[i]).text(jqXHR.responseJSON[i]));
+        var opt = $('<option/>').attr('value', jqXHR.responseJSON[i]).text(jqXHR.responseJSON[i]);
+        if(i === 0) {
+          opt.attr('selected', true);
+        }
+        $('#ticket_year').append(opt);
     }
     $('#ticket_year').on('change', yearChanged);
     var e = {};

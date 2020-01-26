@@ -167,6 +167,9 @@ function gotAllYears(years, err) {
 }
 
 function gotDonationAmount(donations, err) {
+    if(donations === null) {
+      donations = 0;
+    }
     $('#receivedDonations').html('$'+donations);
 }
 
