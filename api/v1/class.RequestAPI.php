@@ -7,6 +7,7 @@ class RequestAPI extends Http\Rest\RestAPI
         $app->get('/crit_vols', array($this, 'getCritVols'));
         $app->get('/problems[/{view}]', array($this, 'getProblems'));
         $app->get('/countsByStatus[/{year}]', array($this, 'getCountsByStatus'));
+        $app->get('/countsByDay[/{year}]', array($this, 'getCountsByDay'));
         $app->get('/donations', array($this, 'getDonations'));
         $app->get('/{request_id}[/{year}]', array($this, 'getRequest'));
         $app->get('/{request_id}/{year}/pdf', array($this, 'getRequestPdf'));
@@ -183,7 +184,7 @@ class RequestAPI extends Http\Rest\RestAPI
         {
             $filter->addToSQLString(" AND (mail LIKE '%$search%' OR sn LIKE '%$search%' OR givenName LIKE '%$search%')");
         }
-        $requests = $requestDataTable->read($filter, $odata->select, $odata->top, $odata->skip, $odata->orderby, !$show_children);
+        $requests = $requestDataTable->read($filter, $odata->select, $odata->top, $odata->skip, $odata->orderby);
         if($requests === false)
         {
             return $response->withJson(array());
@@ -743,6 +744,47 @@ class RequestAPI extends Http\Rest\RestAPI
         $count = $ticketDataSet->raw_query('SELECT count(*) FROM tblTicketRequest WHERE year='.$year);
         array_push($data, array('all'=>true, 'count'=>intval($count[0]['count(*)'])));
         return $response->withJson($data);
+    }
+
+    public function getCountsByDay($httpRequest, $response, $args)
+    {
+        $this->validateLoggedIn($httpRequest);
+        if(!$this->user->isInGroupNamed('TicketAdmins') && !$this->user->isInGroupNamed('TicketTeam'))
+        {
+             return $response->withStatus(401);
+        }
+        $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+        $year = $settings['year'];
+        if(isset($args['year']))
+        {
+            $year = $args['year'];
+        }
+        $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
+        $requestDataTable = \Tickets\DB\RequestDataTable::getInstance();
+        $results = $requestDataTable->read(new \Data\Filter("year eq $year"), array('revisions', 'modifiedOn'));
+        $count = count($results);
+        for($i = 0; $i < $count; $i++)
+        {
+           if(empty($results[$i]['revisions']))
+           {
+               $results[$i] = $results[$i]['modifiedOn'];
+           }
+           else
+           {
+               $date = new \DateTime($results[$i]['modifiedOn']);
+               $count1 = count($results[$i]['revisions']);
+               for($j = 0; $j < $count1; $j++)
+               {
+                   $testDate = new \DateTime($results[$i]['revisions'][$j]->modifiedOn);
+                   if($testDate < $date)
+                   {
+                       $date = $testDate;
+                   }
+               }
+               $results[$i] = $date->format('Y-m-d H:i:s');
+           }
+        }
+        return $response->withJson($results);
     }
 
     public function getDonations($request, $response)
