@@ -11,7 +11,7 @@ class TicketAPI extends Http\Rest\RestAPI
         $app->get('/{hash}[/]', array($this, 'showTicket'));
         $app->get('/{hash}/pdf[/]', array($this, 'getPdf'));
         $app->patch('/{hash}[/]', array($this, 'updateTicket'));
-        $app->post('/{hash}/Actions/Ticket.SendEmail', array($this, 'sendEmail'));
+        $app->post('/{hash}/Actions/Ticket.SendEmail', array($this, 'sendTicketEmail'));
         $app->post('/{hash}/Actions/Ticket.Claim', array($this, 'claimTicket'));
         $app->post('/{hash}/Actions/Ticket.Transfer', array($this, 'transferTicket'));
         $app->post('/{hash}/Actions/Ticket.SpinHash', array($this, 'spinHash'));
@@ -265,7 +265,7 @@ class TicketAPI extends Http\Rest\RestAPI
         return $response->withJson($ticket_types);
     }
 
-    public function sendEmail($request, $response, $args)
+    public function sendTicketEmail($request, $response, $args)
     {
         $this->validateLoggedIn($request);
         $hash = $args['hash'];
