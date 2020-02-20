@@ -182,7 +182,7 @@ class RequestAPI extends Http\Rest\RestAPI
         }
         if($search !== null && ($this->user->isInGroupNamed('TicketAdmins') || $this->user->isInGroupNamed('TicketTeam')))
         {
-            $filter->addToSQLString(" AND (mail LIKE '%$search%' OR sn LIKE '%$search%' OR givenName LIKE '%$search%')");
+            $filter->addToSQLString(" AND (mail LIKE '%$search%' OR sn LIKE '%$search%' OR givenName LIKE '%$search%' OR request_id LIKE '%$search%')");
         }
         $requests = $requestDataTable->read($filter, $odata->select, $odata->top, $odata->skip, $odata->orderby);
         if($requests === false)
