@@ -171,6 +171,13 @@ function getCSV()
     window.location = uri;
 }
 
+function gotAsyncRequest(data) {
+  this.row.data(data);
+  $('#modal').modal('hide');
+  let myBind = row_clicked.bind(this.row.node());
+  myBind(); 
+}
+
 function row_clicked()
 {
     var tr = $(this).closest('tr');
@@ -182,6 +189,11 @@ function row_clicked()
     $('#givenName').val(data.givenName);
     $('#sn').val(data.sn);
     $('#mail').val(data.mail);
+    if(data.c === undefined) {
+      let myBind = gotAsyncRequest.bind({row: row});
+      ticketSystem.getRequest(myBind, data.request_id, data.year);
+      return;
+    }
     $('#c').val(data.c);
     $('#mobile').val(data.mobile);
     $('#street').val(data.street);
