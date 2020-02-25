@@ -202,6 +202,10 @@ class RequestWithTicketsAPI extends Http\Rest\RestAPI
         for($i = 0; $i < $requestCount; $i++)
         {
             $request = $requests[$i];
+            if(!is_array($request['tickets']))
+            {
+                continue;
+            }
             $ticketCount = count($request['tickets']);
             for($j = 0; $j < $ticketCount; $j++)
             {
