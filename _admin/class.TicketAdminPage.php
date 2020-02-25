@@ -107,7 +107,8 @@ class TicketAdminPage extends \Http\FlipAdminPage
                 'Critical Volunteers' => 'critvols.php',
                 'Discretionary Management' => 'discretionary.php',
                 'Gate Control' => 'gateControl.php',
-                'Pool Management' => 'pools.php'
+                'Pool Management' => 'pools.php',
+                'Status Management' => 'status.php'
             );
             $this->content['header']['sidebar']['AAR'] = array('icon' => 'fa-fire', 'menu' => $aar_menu);
         }

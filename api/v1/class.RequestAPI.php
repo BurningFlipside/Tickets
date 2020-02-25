@@ -16,6 +16,7 @@ class RequestAPI extends Http\Rest\RestAPI
         $app->post('[/]', array($this, 'makeRequest'));
         $app->post('/Actions/Requests.GetRequestID', array($this, 'getRequestId'));
         $app->post('/Actions/SetCritVols', array($this, 'setCritVols'));
+        $app->post('/Actions/ChangePrivateStatus', array($this, 'changePrivateStatus'));
         $app->post('/{request_id}/{year}/Actions/Requests.GetPDF', array($this, 'getRequestPdf'));
         $app->post('/{request_id}/{year}/Actions/Requests.SendEmail', array($this, 'sendRequestEmail'));
         $app->post('/{request_id}/{year}/Actions/Requests.GetBucket', array($this, 'getRequestBucket'));
@@ -400,6 +401,23 @@ class RequestAPI extends Http\Rest\RestAPI
         return $response->withJson(array('processed'=>$processed, 'unprocessed'=>$unprocessed));
     }
 
+    public function changePrivateStatus($httpRequest, $response, $args)
+    {
+        $this->validateLoggedIn($httpRequest);
+        if($this->user->isInGroupNamed('AAR') === false)
+        {
+            return $response->withStatus(401);
+        }
+        $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+        $year = $settings['year'];
+        $data = $this->getParsedBody($httpRequest);
+        $old = $data['old'];
+        $new = $data['new'];
+        $ticketDataSet = DataSetFactory::getDataSetByName('tickets');
+        $data = $ticketDataSet->raw_query("UPDATE tblTicketRequest SET private_status=$new WHERE year=$year AND private_status=$old");
+        var_dump($data); die();
+    }
+
     public function getRequestPdf($httpRequest, $response, $args)
     {
         $this->validateLoggedIn($httpRequest);
@@ -734,10 +752,12 @@ class RequestAPI extends Http\Rest\RestAPI
         }
         $ticketDataSet = DataSetFactory::getDataSetByName('tickets');
         $data = $ticketDataSet->raw_query('SELECT count(*),private_status FROM tblTicketRequest WHERE year='.$year.' GROUP BY private_status');
+        $data2 = $ticketDataSet->raw_query('SELECT * FROM tblRequestStatus');
         $count = count($data);
         for($i = 0; $i < $count; $i++)
         {
             $data[$i]['private_status'] = intval($data[$i]['private_status']);
+            $data[$i]['extended_status'] = $data2[$data[$i]['private_status']];
             $data[$i]['count'] = intval($data[$i]['count(*)']);
             unset($data[$i]['count(*)']);
         }
