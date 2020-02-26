@@ -1,5 +1,10 @@
 function actionComplete(jqXHR) {
-  console.log(jqXHR);
+  if(jqXHR.status !== 200) {
+    alert('Failed to perform action!');
+    console.log(jqXHR);
+    return;
+  }
+  //location.reload();
 }
 
 function changePrivate(elem, newStatus) {
@@ -7,6 +12,19 @@ function changePrivate(elem, newStatus) {
   let obj = {old: oldStatus, 'new': newStatus};
   $.ajax({
     url: '../api/v1/requests/Actions/ChangePrivateStatus',
+    contentType: 'application/json',
+    data: JSON.stringify(obj),
+    type: 'POST',
+    dataType: 'json',
+    complete: actionComplete
+  });
+}
+
+function makePublic(elem) {
+  let status = $(elem).closest('tr').data('status');
+  let obj = {status: status};
+  $.ajax({
+    url: '../api/v1/requests/Actions/MakePublic',
     contentType: 'application/json',
     data: JSON.stringify(obj),
     type: 'POST',
