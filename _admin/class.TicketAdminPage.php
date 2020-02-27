@@ -22,8 +22,8 @@ class TicketAdminPage extends \Http\FlipAdminPage
         $this->secure_root = $this->getSecureRoot();
         $this->content['loginUrl'] = $this->secure_root.'api/v1/login';
 	$this->addCSS('../css/tickets.css');
-        $this->add_links();
         $this->ticketSettings = \Tickets\DB\TicketSystemSettings::getInstance();
+        $this->add_links();
         if($this->ticketSettings->isTestMode())
         {
              if($this->is_admin)
@@ -60,7 +60,7 @@ class TicketAdminPage extends \Http\FlipAdminPage
         $count = $data_table->count(new \Data\Filter('year eq '.$year));
         if($count > 0)
         {
-            $probs = '<span class="badge">'.$count.'</span>';
+            $probs = '<span class="badge  badge-secondary">'.$count.'</span>';
         }
         $charts_menu = array(
             'Request Statistics' => 'chart_requests.php',
