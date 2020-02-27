@@ -10,6 +10,7 @@ function init_table()
             {'data': 'total_due'},
             {'data': 'total_received'},
             {'data': 'comments'},
+            {'data': 'bucket'},
             {'data': 'crit_vol'}
         ]
     });
