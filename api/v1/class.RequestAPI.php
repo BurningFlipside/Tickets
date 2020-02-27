@@ -771,12 +771,23 @@ class RequestAPI extends Http\Rest\RestAPI
         $ticketDataSet = DataSetFactory::getDataSetByName('tickets');
         $data = $ticketDataSet->raw_query('SELECT count(*),private_status FROM tblTicketRequest WHERE year='.$year.' GROUP BY private_status');
         $data2 = $ticketDataSet->raw_query('SELECT * FROM tblRequestStatus');
+        $data3 = $ticketDataSet->raw_query('SELECT count(*),private_status FROM tblTicketRequest WHERE year='.$year.' AND private_status != status GROUP BY private_status');
         $count = count($data);
         for($i = 0; $i < $count; $i++)
         {
             $data[$i]['private_status'] = intval($data[$i]['private_status']);
             $data[$i]['extended_status'] = $data2[$data[$i]['private_status']];
             $data[$i]['count'] = intval($data[$i]['count(*)']);
+            if(!empty($data3))
+            {
+                for($j = 0; $j < count($data3); $j++)
+                {
+                    if(intval($data3[$j]['private_status']) === $data[$i]['private_status'])
+                    {
+                        $data[$i]['not_public'] = intval($data3[$j]['count(*)']);
+                    }
+                }
+            }
             unset($data[$i]['count(*)']);
         }
         $count = $ticketDataSet->raw_query('SELECT count(*) FROM tblTicketRequest WHERE year='.$year);

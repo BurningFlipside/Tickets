@@ -43,7 +43,10 @@ function gotStatusCounts(jqXHR) {
     if(data[i].private_status === undefined) {
       continue;
     }
-    let buttons = '<button type="button" class="btn btn-primary" onClick="makePublic(this);">Make Public</button>';
+    let buttons = '';
+    if(data[i].not_public !== undefined && data[i].not_public > 0) {
+      buttons += '<button type="button" class="btn btn-primary" onClick="makePublic(this);">Make Public</button>';
+    }
     switch(data[i].private_status) {
       case 4:
         buttons += ' <button type="button" class="btn btn-success" onClick="changePrivate(this, 1);">Move to Recieved</button>';
