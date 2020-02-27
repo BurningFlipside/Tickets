@@ -9,6 +9,7 @@ class RequestAPI extends Http\Rest\RestAPI
         $app->get('/countsByStatus[/{year}]', array($this, 'getCountsByStatus'));
         $app->get('/countsByDay[/{year}]', array($this, 'getCountsByDay'));
         $app->get('/donations', array($this, 'getDonations'));
+        $app->get('/moneyReceived', array($this, 'getMoney'));
         $app->get('/{request_id}[/{year}]', array($this, 'getRequest'));
         $app->get('/{request_id}/{year}/pdf', array($this, 'getRequestPdf'));
         $app->get('/{request_id}/{year}/donations', array($this, 'getRequestDonations'));
@@ -834,7 +835,26 @@ class RequestAPI extends Http\Rest\RestAPI
         $settings = \Tickets\DB\TicketSystemSettings::getInstance();
         $year = $settings['year'];
         $ticketDataSet = DataSetFactory::getDataSetByName('tickets');
-        $data = $ticketDataSet->raw_query('SELECT SUM(donationAmount) AS amount FROM tblTicketRequest WHERE year='.$year.' AND private_status IN (6,1)');
+        $data = $ticketDataSet->raw_query('SELECT ROUND(SUM(donationAmount),2) AS amount FROM tblTicketRequest WHERE year='.$year.' AND private_status IN (6,1)');
+        if(empty($data))
+        {
+             return $response->withJson(0);
+        }
+        $data = $data[0];
+        return $response->withJson($data['amount']);
+    }
+
+    public function getMoney($request, $response)
+    {
+        $this->validateLoggedIn($request);
+        if(!$this->user->isInGroupNamed('TicketAdmins'))
+        {
+             return $response->withStatus(401);
+        }
+        $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+        $year = $settings['year'];
+        $ticketDataSet = DataSetFactory::getDataSetByName('tickets');
+        $data = $ticketDataSet->raw_query('SELECT ROUND(SUM(total_received),2) AS amount FROM tblTicketRequest WHERE year='.$year.' AND private_status IN (6,1)');
         if(empty($data))
         {
              return $response->withJson(0);

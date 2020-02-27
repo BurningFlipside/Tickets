@@ -17,6 +17,7 @@ array_push($page->content['panels'], array('title'=>'Request Stats', 'body'=>'
   Problem Request Count: <span id="problemRequestCount">?</span><br/>
   Rejected Request Count: <span id="rejectedRequestCount">?</span><br/>
   Donations Received: <span id="receivedDonations">?</span><br/>
+  Total Money Received: <span id="receivedMoney">?</span><br/>
 '));
 array_push($page->content['panels'], array('title'=>'Request Types', 'body'=>'
   <table id="requestTypesTable" class="table">
