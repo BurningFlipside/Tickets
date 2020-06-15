@@ -1,5 +1,5 @@
 <?php
-class TicketDataTableAPI extends Http\Rest\DataTableAPI
+class TicketDataTableAPI extends Flipside\Http\Rest\DataTableAPI
 {
     public function __construct($dataSet, $dataTable, $primaryKeyName)
     {

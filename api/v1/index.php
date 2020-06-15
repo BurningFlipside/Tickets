@@ -14,7 +14,7 @@ require('class.SecondaryAPI.php');
 require('class.TicketAPI.php');
 require('class.TicketHistoryAPI.php');
 
-$site = new \Http\WebSite();
+$site = new \Flipside\Http\WebSite();
 $site->registerAPI('/', new BaseAPI());
 $site->registerAPI('/earlyEntry', new AdminTicketDataTableAPI('tickets', 'EarlyEntryMap', 'earlyEntrySetting'));
 $site->registerAPI('/globals', new GlobalAPI());

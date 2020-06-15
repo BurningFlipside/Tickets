@@ -1,5 +1,5 @@
 <?php
-class RequestAPI extends Http\Rest\RestAPI
+class RequestAPI extends Flipside\Http\Rest\RestAPI
 {
     public function setup($app)
     {
@@ -31,8 +31,8 @@ class RequestAPI extends Http\Rest\RestAPI
         {
             throw new Exception('Must be logged in', \Http\Rest\ACCESS_DENIED);
         }
-        $dataTable = \DataSetFactory::getDataTableByNames('tickets', 'RequestIDs');
-        $filter = new \Data\Filter('mail eq \''.$this->user->mail.'\'');
+        $dataTable = \Flipside\DataSetFactory::getDataTableByNames('tickets', 'RequestIDs');
+        $filter = new \Flipside\Data\Filter('mail eq \''.$this->user->mail.'\'');
         $request_ids = $dataTable->read($filter);
         if($request_ids !== false && isset($request_ids[0]) && isset($request_ids[0]['request_id']))
         {
@@ -78,7 +78,7 @@ class RequestAPI extends Http\Rest\RestAPI
 
     protected function getRequestByMail($mail, $year, $dataTable)
     {
-        $filter = new \Data\Filter("mail eq '$mail' and year eq $year");
+        $filter = new \Flipside\Data\Filter("mail eq '$mail' and year eq $year");
         $requests = $dataTable->read($filter);
         if($requests !== false && isset($requests[0]))
         {
@@ -158,7 +158,7 @@ class RequestAPI extends Http\Rest\RestAPI
         $requestDataTable = \Tickets\DB\RequestDataTable::getInstance();
         $filter = false;
         $show_children = false;
-        $odata = $request->getAttribute('odata', new \ODataParams(array()));
+        $odata = $request->getAttribute('odata', new \Flipside\ODataParams(array()));
         if(($this->user->isInGroupNamed('TicketAdmins') || $this->user->isInGroupNamed('TicketTeam')) && $odata->filter !== false)
         {
             $filter = $odata->filter;
@@ -175,7 +175,7 @@ class RequestAPI extends Http\Rest\RestAPI
         }
         else
         {
-            $filter = new \Data\Filter('mail eq \''.$this->user->mail.'\'');
+            $filter = new \Flipside\Data\Filter('mail eq \''.$this->user->mail.'\'');
             $show_children = true;
         }
         $search = null;
@@ -214,7 +214,7 @@ class RequestAPI extends Http\Rest\RestAPI
         {
             return $response->withStatus(401);
         }
-        $ticketDataSet = DataSetFactory::getDataSetByName('tickets');
+        $ticketDataSet = \Flipside\DataSetFactory::getDataSetByName('tickets');
         $settings = \Tickets\DB\TicketSystemSettings::getInstance();
         $year = $settings['year'];
         $types = $ticketDataSet->raw_query('SELECT crit_vol,protected,COUNT(*) as count FROM tickets.tblTicketRequest WHERE year='.$year.' GROUP BY crit_vol,protected;');
@@ -249,36 +249,36 @@ class RequestAPI extends Http\Rest\RestAPI
             $email = $this->user->mail;
             if($year === false)
             {
-                $filter = new \Data\Filter("mail eq '$email'");
+                $filter = new \Flipside\Data\Filter("mail eq '$email'");
             }
             else
             {
-                $filter = new \Data\Filter("mail eq '$email' and year eq $year");
+                $filter = new \Flipside\Data\Filter("mail eq '$email' and year eq $year");
             }
         }
         else if($this->user->isInGroupNamed('TicketAdmins'))
         {
             if($year === false)
             {
-                $filter = new \Data\Filter("(request_id eq '$request_id' or mail eq '$request_id')");
+                $filter = new \Flipside\Data\Filter("(request_id eq '$request_id' or mail eq '$request_id')");
             }
             else
             {
-                $filter = new \Data\Filter("(request_id eq '$request_id' or mail eq '$request_id') and year eq $year");
+                $filter = new \Flipside\Data\Filter("(request_id eq '$request_id' or mail eq '$request_id') and year eq $year");
             }
         }
         else
         {
             if($year === false)
             {
-                $filter = new \Data\Filter('mail eq \''.$this->user->mail.'\' and request_id eq \''.$request_id.'\'');
+                $filter = new \Flipside\Data\Filter('mail eq \''.$this->user->mail.'\' and request_id eq \''.$request_id.'\'');
             }
             else
             {
-                $filter = new \Data\Filter('mail eq \''.$this->user->mail.'\' and request_id eq \''.$request_id.'\' and year eq '.$year);
+                $filter = new \Flipside\Data\Filter('mail eq \''.$this->user->mail.'\' and request_id eq \''.$request_id.'\' and year eq '.$year);
             }
         }
-        $odata = $request->getAttribute('odata', new \ODataParams(array()));
+        $odata = $request->getAttribute('odata', new \Flipside\ODataParams(array()));
         $requests = $requestDataTable->read($filter, $odata->select, $odata->top, $odata->skip, $odata->orderby);
         if($requests === false)
         {
@@ -327,7 +327,7 @@ class RequestAPI extends Http\Rest\RestAPI
             unset($request->minor_confirm);
         }
         $requestDataTable = \Tickets\DB\RequestDataTable::getInstance();
-        $filter = new \Data\Filter("request_id eq '".$request->request_id."' and year eq ".$settings['year']);
+        $filter = new \Flipside\Data\Filter("request_id eq '".$request->request_id."' and year eq ".$settings['year']);
         if($requestDataTable->read($filter) === false)
         {
             $res = $requestDataTable->create($request);
@@ -381,7 +381,7 @@ class RequestAPI extends Http\Rest\RestAPI
         }
         $settings = \Tickets\DB\TicketSystemSettings::getInstance();
         $year = $settings['year'];
-        $data_set = DataSetFactory::getDataSetByName('tickets');
+        $data_set = \Flipside\DataSetFactory::getDataSetByName('tickets');
         $data_table = $data_set['TicketRequest'];
         for($i = 0; $i < $count; $i++)
         {
@@ -415,7 +415,7 @@ class RequestAPI extends Http\Rest\RestAPI
         $data = $this->getParsedBody($httpRequest);
         $old = $data['old'];
         $new = $data['new'];
-        $ticketDataSet = DataSetFactory::getDataSetByName('tickets');
+        $ticketDataSet = \Flipside\DataSetFactory::getDataSetByName('tickets');
         $data = $ticketDataSet->raw_query("UPDATE tblTicketRequest SET private_status=$new WHERE year=$year AND private_status=$old");
         return $response->withJson(true);
     }
@@ -431,7 +431,7 @@ class RequestAPI extends Http\Rest\RestAPI
         $year = $settings['year'];
         $data = $this->getParsedBody($httpRequest);
         $status = $data['status'];
-        $ticketDataSet = DataSetFactory::getDataSetByName('tickets');
+        $ticketDataSet = \Flipside\DataSetFactory::getDataSetByName('tickets');
         $data = $ticketDataSet->raw_query("UPDATE tblTicketRequest SET status=$status WHERE year=$year AND private_status=$status");
         return $response->withJson(true);
     }
@@ -495,11 +495,11 @@ class RequestAPI extends Http\Rest\RestAPI
         {
             if($request_id !== $this->returnRequestId())
             {
-                throw new Exception('Cannot view another person\'s donations!', \Http\Rest\ACCESS_DENIED);
+                throw new Exception('Cannot view another person\'s donations!', \Flipside\Http\Rest\ACCESS_DENIED);
             }
         }
-        $filter = new \Data\Filter("request_id eq '$request_id' and year eq $year");
-        $odata = $request->getAttribute('odata', new \ODataParams(array()));
+        $filter = new \Flipside\Data\Filter("request_id eq '$request_id' and year eq $year");
+        $odata = $request->getAttribute('odata', new \Flipside\ODataParams(array()));
         $donations = $requestDataTable->read($filter, array('donations'), $odata->top, $odata->skip, $odata->orderby);
         if($donations !== false)
         {
@@ -540,11 +540,11 @@ class RequestAPI extends Http\Rest\RestAPI
         {
             if($request_id !== $this->returnRequestId())
             {
-                throw new Exception('Cannot view another person\'s tickets!', \Http\Rest\ACCESS_DENIED);
+                throw new Exception('Cannot view another person\'s tickets!', \Flipside\Http\Rest\ACCESS_DENIED);
             }
         }
-        $filter = new \Data\Filter("request_id eq '$request_id' and year eq $year");
-        $odata = $httpRequest->getAttribute('odata', new \ODataParams(array()));
+        $filter = new \Flipside\Data\Filter("request_id eq '$request_id' and year eq $year");
+        $odata = $httpRequest->getAttribute('odata', new \Flipside\ODataParams(array()));
         $tickets = $requestDataTable->read($filter, array('tickets'), $odata->top, $odata->skip, $odata->orderby);
         if($tickets !== false)
         {
@@ -569,7 +569,7 @@ class RequestAPI extends Http\Rest\RestAPI
         }
         $request = $this->getRequestHelper($request_id, $year);
         $email_msg = new \Tickets\Flipside\FlipsideTicketRequestEmail($request);
-        $email_provider = \EmailProvider::getInstance();
+        $email_provider = \Flipside\EmailProvider::getInstance();
         $res = $email_provider->sendEmail($email_msg);
         if($res === false)
         {
@@ -641,7 +641,7 @@ class RequestAPI extends Http\Rest\RestAPI
         {
             if(!isset($request->tickets))
             {
-                throw new Exception('Required Parameter tickets is missing', \Http\Rest\INVALID_PARAM);
+                throw new Exception('Required Parameter tickets is missing', \Flipside\Http\Rest\INVALID_PARAM);
             }
             $request->validateRequestId($this->user->mail);
             if(isset($request->critvol))
@@ -719,7 +719,7 @@ class RequestAPI extends Http\Rest\RestAPI
                 $request->request_id = $old_request->request_id;
             }
             $requestDataTable = \Tickets\DB\RequestDataTable::getInstance();
-            $filter = new \Data\Filter("request_id eq '".$request->request_id."' and year eq ".$settings['year']);
+            $filter = new \Flipside\Data\Filter("request_id eq '".$request->request_id."' and year eq ".$settings['year']);
             $ret = $requestDataTable->update($filter, $request);
             return $response->withJson(true);
         }
@@ -741,15 +741,15 @@ class RequestAPI extends Http\Rest\RestAPI
         {
             $view = $args['view'];
         }
-        $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
+        $ticket_data_set = \Flipside\DataSetFactory::getDataSetByName('tickets');
         $data_table = $ticket_data_set[$view];
-        $odata = $httpRequest->getAttribute('odata', new \ODataParams(array()));
+        $odata = $httpRequest->getAttribute('odata', new \Flipside\ODataParams(array()));
         $filter = $odata->filter;
         if($filter === false)
         {
             $settings = \Tickets\DB\TicketSystemSettings::getInstance();
             $year = $settings['year'];
-            $filter = new \Data\Filter("year eq $year");
+            $filter = new \Flipside\Data\Filter("year eq $year");
         }
         $data = $data_table->read($filter, $odata->select, $odata->top, $odata->skip, $odata->orderby);
         return $response->withJson($data);
@@ -768,7 +768,7 @@ class RequestAPI extends Http\Rest\RestAPI
         {
             $year = $args['year'];
         }
-        $ticketDataSet = DataSetFactory::getDataSetByName('tickets');
+        $ticketDataSet = \Flipside\DataSetFactory::getDataSetByName('tickets');
         $data = $ticketDataSet->raw_query('SELECT count(*),private_status FROM tblTicketRequest WHERE year='.$year.' GROUP BY private_status');
         $data2 = $ticketDataSet->raw_query('SELECT * FROM tblRequestStatus');
         $data3 = $ticketDataSet->raw_query('SELECT count(*),private_status FROM tblTicketRequest WHERE year='.$year.' AND private_status != status GROUP BY private_status');
@@ -808,9 +808,9 @@ class RequestAPI extends Http\Rest\RestAPI
         {
             $year = $args['year'];
         }
-        $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
+        $ticket_data_set = \Flipside\DataSetFactory::getDataSetByName('tickets');
         $requestDataTable = \Tickets\DB\RequestDataTable::getInstance();
-        $results = $requestDataTable->read(new \Data\Filter("year eq $year"), array('revisions', 'modifiedOn'));
+        $results = $requestDataTable->read(new \Flipside\Data\Filter("year eq $year"), array('revisions', 'modifiedOn'));
         $count = count($results);
         for($i = 0; $i < $count; $i++)
         {
@@ -845,7 +845,7 @@ class RequestAPI extends Http\Rest\RestAPI
         }
         $settings = \Tickets\DB\TicketSystemSettings::getInstance();
         $year = $settings['year'];
-        $ticketDataSet = DataSetFactory::getDataSetByName('tickets');
+        $ticketDataSet = \Flipside\DataSetFactory::getDataSetByName('tickets');
         $data = $ticketDataSet->raw_query('SELECT ROUND(SUM(donationAmount),2) AS amount FROM tblTicketRequest WHERE year='.$year.' AND private_status IN (6,1)');
         if(empty($data))
         {
@@ -864,7 +864,7 @@ class RequestAPI extends Http\Rest\RestAPI
         }
         $settings = \Tickets\DB\TicketSystemSettings::getInstance();
         $year = $settings['year'];
-        $ticketDataSet = DataSetFactory::getDataSetByName('tickets');
+        $ticketDataSet = \Flipside\DataSetFactory::getDataSetByName('tickets');
         $data = $ticketDataSet->raw_query('SELECT ROUND(SUM(total_received),2) AS amount FROM tblTicketRequest WHERE year='.$year.' AND private_status IN (6,1)');
         if(empty($data))
         {

@@ -2,7 +2,7 @@
 namespace Tickets;
 require_once('app/TicketAutoload.php');
 
-class Ticket extends \SerializableObject
+class Ticket extends \Flipside\SerializableObject
 {
     private static $data_set = false;
     private static $data_tables = array();
@@ -11,7 +11,7 @@ class Ticket extends \SerializableObject
     {
         if(static::$data_set === false)
         {
-            static::$data_set = \DataSetFactory::getDataSetByName('tickets');
+            static::$data_set = \Flipside\DataSetFactory::getDataSetByName('tickets');
         }
         return static::$data_set;
     }
@@ -137,7 +137,7 @@ class Ticket extends \SerializableObject
             $email = $this->email;
         }
         $mail = new TicketEmail($this, $message);
-        $email_provider = \EmailProvider::getInstance();
+        $email_provider = \Flipside\EmailProvider::getInstance();
         return $email_provider->sendEmail($mail);
     }
 
@@ -227,7 +227,7 @@ class Ticket extends \SerializableObject
 
     static function get_tickets_for_user($user, $filter=false, $select=false, $count=false)
     {
-        $user_filter = new \Data\Filter('email eq \''.$user->mail.'\'');
+        $user_filter = new \Flipside\Data\Filter('email eq \''.$user->mail.'\'');
         if($filter === false)
         {
             $filter = $user_filter;
@@ -241,11 +241,11 @@ class Ticket extends \SerializableObject
 
     static function find_current_from_old_hash($hash)
     {
-        $filter = new \Data\Filter("hash eq '$hash' or previous_hash eq '$hash'");
+        $filter = new \Flipside\Data\Filter("hash eq '$hash' or previous_hash eq '$hash'");
         $current = self::get_tickets($filter);
         if($current === false)
         {
-            $filter = new \Data\Filter("previous_hash eq '$hash'");
+            $filter = new \Flipside\Data\Filter("previous_hash eq '$hash'");
             $history_table = self::get_history_data_table();
             $ticket_data = $history_table->read($filter);
             if($ticket_data === false)
@@ -337,7 +337,7 @@ class Ticket extends \SerializableObject
         {
             return false;
         }
-        $res = new \SerializableObject();
+        $res = new \Flipside\SerializableObject();
         $res->current = $current;
         $res->history = array();
         $ticket = $current;
@@ -464,7 +464,7 @@ class Ticket extends \SerializableObject
             }
             else
             {
-               $filter = new \Data\Filter("sold eq 0 and type eq '$type' and pool_id eq $pool and year=".$settings['year']);
+               $filter = new \Flipside\Data\Filter("sold eq 0 and type eq '$type' and pool_id eq $pool and year=".$settings['year']);
                $tickets = self::get_tickets($filter, false, $qty);
             }
             $sold = 0;

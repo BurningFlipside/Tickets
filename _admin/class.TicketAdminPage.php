@@ -1,8 +1,7 @@
 <?php
-require_once('class.FlipSession.php');
 require_once('app/TicketAutoload.php');
 require_once('../../class.SecurePage.php');
-class TicketAdminPage extends \Http\FlipAdminPage
+class TicketAdminPage extends \Flipside\Http\FlipAdminPage
 {
     use SecureWebPage;
 
@@ -54,10 +53,10 @@ class TicketAdminPage extends \Http\FlipAdminPage
             return;
         }
         $probs = '';
-        $data_set = DataSetFactory::getDataSetByName('tickets');
+        $data_set = \Flipside\DataSetFactory::getDataSetByName('tickets');
         $data_table = $data_set['Problems'];
         $year = $this->ticketSettings['year'];
-        $count = $data_table->count(new \Data\Filter('year eq '.$year));
+        $count = $data_table->count(new \Flipside\Data\Filter('year eq '.$year));
         if($count > 0)
         {
             $probs = '<span class="badge  badge-secondary">'.$count.'</span>';

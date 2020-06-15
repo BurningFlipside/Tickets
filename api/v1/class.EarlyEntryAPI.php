@@ -1,5 +1,5 @@
 <?php
-class EarlyEntryAPI extends Http\Rest\DataTableAPI
+class EarlyEntryAPI extends \Flipside\Http\Rest\DataTableAPI
 {
     public function __construct()
     {

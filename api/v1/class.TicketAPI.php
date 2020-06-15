@@ -1,5 +1,5 @@
 <?php
-class TicketAPI extends Http\Rest\RestAPI
+class TicketAPI extends Flipside\Http\Rest\RestAPI
 {
     public function setup($app)
     {
@@ -24,7 +24,7 @@ class TicketAPI extends Http\Rest\RestAPI
     public function listTickets($request, $response, $app)
     {
         $this->validateLoggedIn($request);
-        $odata = $request->getAttribute('odata', new \ODataParams(array()));
+        $odata = $request->getAttribute('odata', new \Flipside\ODataParams(array()));
         $filter = false;
         if($this->user->isInGroupNamed('TicketAdmins') && $odata->filter !== false)
         {
@@ -72,7 +72,7 @@ class TicketAPI extends Http\Rest\RestAPI
         $this->validateLoggedIn($request);
         $hash = $app['hash'];
         $withHistory = $request->getQueryParam('with_history', false);
-        $odata = $request->getAttribute('odata', new \ODataParams(array()));
+        $odata = $request->getAttribute('odata', new \Flipside\ODataParams(array()));
         if($withHistory === true || $withHistory === '1')
         {
             $ticket = \Tickets\Ticket::get_ticket_history_by_hash($hash);
@@ -106,7 +106,7 @@ class TicketAPI extends Http\Rest\RestAPI
         {
             return $response->withStatus(401);
         }
-        $odata = $request->getAttribute('odata', new \ODataParams(array()));
+        $odata = $request->getAttribute('odata', new \Flipside\ODataParams(array()));
         $tickets = \Tickets\Ticket::get_tickets_for_user_and_pool($this->user, $odata->filter);
         return $response->withJson($tickets);
     }
@@ -152,7 +152,7 @@ class TicketAPI extends Http\Rest\RestAPI
         }
         if($res === false)
         {
-            throw new Exception('Unable to update DB', \Http\Rest\INTERNAL_ERROR);
+            throw new Exception('Unable to update DB', \Flipside\Http\Rest\INTERNAL_ERROR);
         }
         $url = $request->getUri()->getPath();
         $url = substr($url, 0, strrpos($url, '/')+1);
@@ -164,9 +164,9 @@ class TicketAPI extends Http\Rest\RestAPI
         $this->validateLoggedIn($request);
         if(!$this->user->isInGroupNamed('AAR') && !$this->user->isInGroupNamed('AFs'))
         {
-            throw new Exception('Must be member of AAR group', \Http\Rest\ACCESS_DENIED);
+            throw new Exception('Must be member of AAR group', \Flipside\Http\Rest\ACCESS_DENIED);
         }
-        $odata = $request->getAttribute('odata', new \ODataParams(array()));
+        $odata = $request->getAttribute('odata', new \Flipside\ODataParams(array()));
         $ticket_data_table = \Tickets\DB\TicketsDataTable::getInstance();
         $filter = new \Tickets\DB\TicketDefaultFilter($this->user->mail, true);
         $tickets = $ticket_data_table->read($filter, $odata->select, $odata->top, $odata->skip, $odata->orderby);
@@ -205,13 +205,13 @@ class TicketAPI extends Http\Rest\RestAPI
         $this->validateLoggedIn($request);
         if(!$this->user->isInGroupNamed('AAR'))
         {
-            throw new Exception('Must be member of AAR group', \Http\Rest\ACCESS_DENIED);
+            throw new Exception('Must be member of AAR group', \Flipside\Http\Rest\ACCESS_DENIED);
         }
         $ticket_data_table = \Tickets\DB\TicketsDataTable::getInstance();
         $obj = $request->getParsedBody();
         if(!isset($obj['ticketGroups']))
         {
-            throw new Exception('Missing required parameter "ticketGroups"', \Http\Rest\INVALID_PARAM);
+            throw new Exception('Missing required parameter "ticketGroups"', \Flipside\Http\Rest\INVALID_PARAM);
         }
         $settings = \Tickets\DB\TicketSystemSettings::getInstance();
         $year = $settings['year'];
@@ -221,14 +221,14 @@ class TicketAPI extends Http\Rest\RestAPI
         $messages = '';
         for($i = 0; $i < $count; $i++)
         {
-            $group = \AuthProvider::getInstance()->getGroupByName($array[$i]['Group']);
+            $group = \Flipside\AuthProvider::getInstance()->getGroupByName($array[$i]['Group']);
             $ticketCount = $array[$i]['Count'];
             $members = $group->members(true, false, false);
             $count1 = count($members);
             for($j = 0; $j < $count1; $j++)
             {
                 $user = $members[$j];
-                $filter = new \Data\Filter('year eq '.$year.' and type eq \'A\' and pool_id eq -1 and assigned eq 0 and sold eq 0 and discretionary eq 0');
+                $filter = new \Flipside\Data\Filter('year eq '.$year.' and type eq \'A\' and pool_id eq -1 and assigned eq 0 and sold eq 0 and discretionary eq 0');
                 $tickets = $ticket_data_table->read($filter, false, $ticketCount);
                 if($this->assignDiscrtionaryTicketsToUser($tickets, $user, $ticket_data_table) === false)
                 {
@@ -250,9 +250,9 @@ class TicketAPI extends Http\Rest\RestAPI
     public function listTicketTypes($request, $response, $app)
     {
         $this->validateLoggedIn($request);
-        $ticket_data_set = DataSetFactory::getDataSetByName('tickets');
+        $ticket_data_set = \Flipside\DataSetFactory::getDataSetByName('tickets');
         $ticket_type_data_table = $ticket_data_set['TicketTypes'];
-        $odata = $request->getAttribute('odata', new \ODataParams(array()));
+        $odata = $request->getAttribute('odata', new \Flipside\ODataParams(array()));
         $ticket_types = $ticket_type_data_table->read($odata->filter, $odata->select, $odata->top, $odata->skip, $odata->orderby);
         if($ticket_types === false)
         {
@@ -271,7 +271,7 @@ class TicketAPI extends Http\Rest\RestAPI
         $hash = $args['hash'];
         $ticket = \Tickets\Ticket::get_ticket_by_hash($hash);
         $email_msg = new \Tickets\TicketEmail($ticket);
-        $email_provider = EmailProvider::getInstance();
+        $email_provider = \Flipside\EmailProvider::getInstance();
         if($email_provider->sendEmail($email_msg) === false)
         {
             throw new \Exception('Unable to send ticket email!');
@@ -303,7 +303,7 @@ class TicketAPI extends Http\Rest\RestAPI
         if($res)
         {
             $email_msg = new \Tickets\TicketEmail($ticket);
-            $email_provider = EmailProvider::getInstance();
+            $email_provider = \Flipside\EmailProvider::getInstance();
             if($email_provider->sendEmail($email_msg) === false)
             {
                 throw new \Exception('Unable to send ticket email!');
@@ -322,6 +322,7 @@ class TicketAPI extends Http\Rest\RestAPI
 
     public function transferTicket($request, $response, $app)
     {
+        return $response->withStatus(500);
         $this->validateLoggedIn($request);
         $hash = $app['hash'];
         $array = (array)$request->getParsedBody();
@@ -349,7 +350,7 @@ class TicketAPI extends Http\Rest\RestAPI
             $array['email'] = $array['email'].'.com';
         }
         $email_msg = new \Tickets\TicketTransferEmail($ticket, $array['email']);
-        $email_provider = EmailProvider::getInstance();
+        $email_provider = \Flipside\EmailProvider::getInstance();
         if($email_provider->sendEmail($email_msg) === false)
         {
             throw new \Exception('Unable to send ticket email!');
@@ -408,7 +409,7 @@ class TicketAPI extends Http\Rest\RestAPI
         if($res === true)
         {
             $email_msg = new \Tickets\TicketEmail($ticket);
-            $email_provider = EmailProvider::getInstance();
+            $email_provider = \Flipside\EmailProvider::getInstance();
             if($email_provider->sendEmail($email_msg) === false)
             {
                 throw new \Exception('Unable to send ticket email!');
@@ -465,8 +466,8 @@ class TicketAPI extends Http\Rest\RestAPI
             throw new \Exception('Exceeded Ticket Verify Count for this session!');
         }
         $count++;
-        FlipSession::setVar('TicketVerifyCount', $count);
-        $filter = new \Data\Filter('contains(hash,'.$code.') and void eq 0');
+        \Flipside\FlipSession::setVar('TicketVerifyCount', $count);
+        $filter = new \Flipside\Data\Filter('contains(hash,'.$code.') and void eq 0');
         $ticket_data_table = \Tickets\DB\TicketsDataTable::getInstance();
         $res = $ticket_data_table->read($filter);
         return $response->withJson($res);
@@ -489,7 +490,7 @@ class TicketAPI extends Http\Rest\RestAPI
         $settings = \Tickets\DB\TicketSystemSettings::getInstance();
         $year = $settings['year'];
         $ticketDataTable = \Tickets\DB\TicketsDataTable::getInstance();
-        $f = new \Data\Filter("year eq $year and private_status eq 1");
+        $f = new \Flipside\Data\Filter("year eq $year and private_status eq 1");
         $returnVal = array('passed' => 0, 'failed'=> 0, 'messages' => array());
         foreach($types as $type=>$count)
         {
@@ -511,9 +512,9 @@ class TicketAPI extends Http\Rest\RestAPI
         }
         if($autoPopulate)
         {
-            $dataSet = DataSetFactory::getDataSetByName('tickets');
+            $dataSet = \Flipside\DataSetFactory::getDataSetByName('tickets');
             $requestDataTable = $dataSet['TicketRequest'];
-            $unTicketedRequests = $requestDataTable->read(new \Data\Filter("year eq $year and private_status eq 1"));
+            $unTicketedRequests = $requestDataTable->read(new \Flipside\Data\Filter("year eq $year and private_status eq 1"));
             foreach($unTicketedRequests as $request)
             {
                 $request_id = $request['request_id'];
@@ -522,7 +523,7 @@ class TicketAPI extends Http\Rest\RestAPI
                 foreach($requestedTickets as $requestedTicket)
                 {
                     $requestedTicket = (array)$requestedTicket;
-                    $unAssignedTickets = $ticketDataTable->read(new \Data\Filter("sold eq 0 and year eq $year and type eq '{$requestedTicket['type']}'"), false, 1);
+                    $unAssignedTickets = $ticketDataTable->read(new \Flipside\Data\Filter("sold eq 0 and year eq $year and type eq '{$requestedTicket['type']}'"), false, 1);
                     if(!isset($unAssignedTickets[0]))
                     {
                         throw new \Exception('Insufficient tickets of type '.$requestedTicket['type'].' to process all requests!');
@@ -538,7 +539,7 @@ class TicketAPI extends Http\Rest\RestAPI
                         $unAssignedTickets[0]['guardian_first'] = $request['givenName'];
                         $unAssignedTickets[0]['guardian_last'] = $request['sn'];
                     }
-                    $filter = new \Data\Filter("hash eq '{$unAssignedTickets[0]['hash']}'");
+                    $filter = new \Flipside\Data\Filter("hash eq '{$unAssignedTickets[0]['hash']}'");
                     unset($unAssignedTickets[0]['hash_words']);
                     $res = $ticketDataTable->update($filter, $unAssignedTickets[0]);
                     if($res === false)
@@ -550,7 +551,7 @@ class TicketAPI extends Http\Rest\RestAPI
                 if($fullRequest)
                 {
                     $request['private_status'] = 6;
-                    $filter = new \Data\Filter("year eq $year and request_id eq '$request_id'");
+                    $filter = new \Flipside\Data\Filter("year eq $year and request_id eq '$request_id'");
                     $res = $requestDataTable->update($filter, $request);
                     if($res === false)
                     {
