@@ -1,7 +1,7 @@
 <?php
 namespace Tickets\Flipside;
 
-class RequestPDF extends \PDF\PDF
+class RequestPDF extends \Flipside\PDF\PDF
 {
     private $request;
     public  $source;
