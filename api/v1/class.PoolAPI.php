@@ -43,6 +43,10 @@ class PoolAPI extends AdminTicketDataTableAPI
         }
         $dataTable = $this->getDataTable();
         $groups = $this->user->getGroups();
+        if(empty($groups))
+        {
+            return $response->withJson(array());
+        }
         $count = count($groups);
         for($i = 0; $i < $count; $i++)
         {
