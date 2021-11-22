@@ -1,6 +1,6 @@
 <?php
 namespace Tickets;
-require_once('app/TicketAutoload.php');
+//require_once('../TicketAutoload.php');
 
 class Ticket extends \Flipside\SerializableObject
 {
@@ -369,7 +369,7 @@ class Ticket extends \Flipside\SerializableObject
     {
         require("static.words.php");
         $res = substr($hash, 0, 8);
-        $remainder = gmp_init(substr($hash, 8), 16);
+        $remainder = \gmp_init(substr($hash, 8), 16);
         $my_words = '';
         while(gmp_intval($remainder) > 0)
         {

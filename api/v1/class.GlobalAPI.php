@@ -1,5 +1,5 @@
 <?php
-require('app/TicketAutoload.php');
+require('../../app/TicketAutoload.php');
 
 class GlobalAPI extends \Flipside\Http\Rest\RestAPI
 {

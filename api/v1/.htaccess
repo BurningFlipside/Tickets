@@ -3,4 +3,4 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ index.php [QSA,L]
 
-php_value include_path ".:../..:/var/www/common:/usr/share/pear"
+#php_value include_path ".:../..:/var/www/common:/usr/share/pear"

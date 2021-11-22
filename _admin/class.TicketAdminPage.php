@@ -1,5 +1,5 @@
 <?php
-require_once('app/TicketAutoload.php');
+require_once('../app/TicketAutoload.php');
 require_once('../../class.SecurePage.php');
 class TicketAdminPage extends \Flipside\Http\FlipAdminPage
 {
