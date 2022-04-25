@@ -5,12 +5,12 @@ require_once('class.TicketAdminPage.php');
 $page = new TicketAdminPage('Burning Flipside - Tickets');
 $page->setTemplateName('admin-dashboard.html');
 
-$data_set = DataSetFactory::getDataSetByName('tickets');
+$data_set = \Flipside\DataSetFactory::getDataSetByName('tickets');
 $data_table = $data_set['Problems'];
 $settings = \Tickets\DB\TicketSystemSettings::getInstance();
 $year = $settings['year'];
 
-$yearFilter = new \Data\Filter('year eq '.$year);
+$yearFilter = new \Flipside\Data\Filter('year eq '.$year);
 
 $ticketDataTable = \Tickets\DB\TicketsDataTable::getInstance();
 $issuedTicketCount = $ticketDataTable->count($yearFilter);

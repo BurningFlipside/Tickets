@@ -1,7 +1,7 @@
 <?php
 namespace Tickets\Flipside;
 
-class FlipsideTicketRequest extends \SerializableObject
+class FlipsideTicketRequest extends \Flipside\SerializableObject
 {
     function __construct($data = false)
     {
@@ -16,7 +16,7 @@ class FlipsideTicketRequest extends \SerializableObject
 
     function update()
     {
-        $dataSet = \DataSetFactory::getDataSetByName('tickets');
+        $dataSet = \Flipside\DataSetFactory::getDataSetByName('tickets');
         $requestDataTable = $dataSet['TicketRequest'];
         $filter = new FlipsideRequestDefaultFilter($this->request_id, $this->year);
         $copy = (array)$this;
@@ -48,7 +48,7 @@ class FlipsideTicketRequest extends \SerializableObject
          }
          catch(\Exception $e) {}
          $request->total_due = 0;
-         $dataSet = \DataSetFactory::getDataSetByName('tickets');
+         $dataSet = \Flipside\DataSetFactory::getDataSetByName('tickets');
          $donationDataTable = $dataSet['RequestDonation'];
          if(isset($request->donations) && count((array)$request->donations) > 0)
          {
@@ -121,7 +121,7 @@ class FlipsideTicketRequest extends \SerializableObject
             $new_request->year = $settings['year'];
         }
         $new_request->test = $settings['test_mode'];
-        $dataSet = \DataSetFactory::getDataSetByName('tickets');
+        $dataSet = \Flipside\DataSetFactory::getDataSetByName('tickets');
         if(isset($new_request->donations) && count((array)$new_request->donations) > 0)
         {
             if(!isset($old_request->donations) || $old_request->donations === false)
@@ -149,7 +149,7 @@ class FlipsideTicketRequest extends \SerializableObject
                             {
                                 $old_request->donations[$i]['disclose'] = 0;
                             }
-                            $filter = new \Data\Filter('donation_id eq '.$old_request->donations[$i]['donation_id']);
+                            $filter = new \Flipside\Data\Filter('donation_id eq '.$old_request->donations[$i]['donation_id']);
                             $donationDataTable->update($filter, $old_request->donations[$i]);
                         }
                         $old_request->donations[$i] = null;
@@ -202,7 +202,7 @@ class FlipsideTicketRequest extends \SerializableObject
                 {
                      for($i = 0; $i < $old_count; $i++)
                      {
-                         $filter = new \Data\Filter('donation_id eq '.$old_request->donations[$i]['donation_id']);
+                         $filter = new \Flipside\Data\Filter('donation_id eq '.$old_request->donations[$i]['donation_id']);
                          $donationDataTable->delete($filter);
                      }
                 }
@@ -259,7 +259,7 @@ class FlipsideTicketRequest extends \SerializableObject
                      for($i = 0; $i < $count; $i++)
                      {
                           //TODO replace old ticket with new and unset both
-                          $filter = new \Data\Filter('requested_ticket_id eq '.$old_request->tickets[$i]['requested_ticket_id']);
+                          $filter = new \Flipside\Data\Filter('requested_ticket_id eq '.$old_request->tickets[$i]['requested_ticket_id']);
                           $array = array();
                           $array['first']      = $new_request->tickets[$i]->first;
                           $array['last']       = $new_request->tickets[$i]->last;
@@ -291,7 +291,7 @@ class FlipsideTicketRequest extends \SerializableObject
                  {
                      for($i = 0; $i < $old_count; $i++)
                      {
-                         $filter = new \Data\Filter('requested_ticket_id eq '.$old_request->tickets[$i]['requested_ticket_id']);
+                         $filter = new \Flipside\Data\Filter('requested_ticket_id eq '.$old_request->tickets[$i]['requested_ticket_id']);
                          $requestedTicketDataTable->delete($filter);
                      }
                  }
@@ -325,7 +325,7 @@ class FlipsideTicketRequest extends \SerializableObject
     static function getByIDAndYear($request_id, $year)
     {
          $filter = new FlipsideRequestDefaultFilter($request_id, $year);
-         $dataSet = \DataSetFactory::getDataSetByName('tickets');
+         $dataSet = \Flipside\DataSetFactory::getDataSetByName('tickets');
          $requestDataTable = $dataSet['TicketRequest'];
          $requests = $requestDataTable->read($filter);
          if($requests !== false && isset($requests[0]))

@@ -167,7 +167,27 @@ function gotAllYears(years, err) {
 }
 
 function gotDonationAmount(donations, err) {
-    $('#receivedDonations').html('$'+donations);
+  if(donations === null) {
+    donations = 0;
+  }
+  let formatter = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+  });
+  let val = formatter.format(donations);
+  $('#receivedDonations').html(val);
+}
+
+function gotMoney(jqXHR) {
+  if(jqXHR.status !== 200) {
+    return;
+  }
+  let formatter = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+  });
+  let val = formatter.format(jqXHR.responseJSON);
+  $('#receivedMoney').html(val);
 }
 
 function init_page()
@@ -176,6 +196,7 @@ function init_page()
     ticketSystem.getRequestedTicketCountsByType(ticketsDone);
     ticketSystem.getAllYears(gotAllYears);
     ticketSystem.getDonationsAmount(gotDonationAmount);
+    $.ajax({url: '../api/v1/requests/moneyReceived', complete: gotMoney});
 }
 
 $(init_page);

@@ -78,7 +78,7 @@ abstract class KeyValueSingletonDataTable extends SingletonDataTable implements 
         {
             return $this->cache[$offset];
         }
-        $vars = $this->data_table->read(new \Data\Filter($this->getKeyColName()." eq '$offset'"));
+        $vars = $this->data_table->read(new \Flipside\Data\Filter($this->getKeyColName()." eq '$offset'"));
         if($vars === false || !isset($vars))
         {
             return false;
@@ -94,7 +94,7 @@ abstract class KeyValueSingletonDataTable extends SingletonDataTable implements 
         if(isset($this->cache[$offset]))
         {
             //Already in database, update it
-            $this->data_table->update(new \Data\Filter($this->getKeyColName()." eq '$offset'"), array($this->getValueColName()=>$value));
+            $this->data_table->update(new \Flipside\Data\Filter($this->getKeyColName()." eq '$offset'"), array($this->getValueColName()=>$value));
         }
         else
         {
@@ -106,7 +106,7 @@ abstract class KeyValueSingletonDataTable extends SingletonDataTable implements 
     public function offsetUnset($offset)
     {
         unset($this->cache[$offset]);
-        return $this->datatable->delete(new \Data\Filter($this->getKeyColName()." eq '$offset'"));
+        return $this->datatable->delete(new \Flipside\Data\Filter($this->getKeyColName()." eq '$offset'"));
     }
 
     public function jsonSerialize()

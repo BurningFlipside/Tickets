@@ -1,5 +1,5 @@
 <?php
-class BaseAPI extends Http\Rest\RestAPI
+class BaseAPI extends \Flipside\Http\Rest\RestAPI
 {
     public function setup($app)
     {

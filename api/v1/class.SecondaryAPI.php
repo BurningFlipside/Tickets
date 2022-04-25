@@ -1,5 +1,5 @@
 <?php
-class SecondaryAPI extends Http\Rest\RestAPI
+class SecondaryAPI extends Flipside\Http\Rest\RestAPI
 {
     protected $expectedAnswerCount = 5;
 
@@ -29,7 +29,7 @@ class SecondaryAPI extends Http\Rest\RestAPI
     public function getQuestions($request, $response, $args)
     {
         $this->validateLoggedIn($request);
-        $questionDataTable = DataSetFactory::getDataTableByNames('tickets', 'Questions');
+        $questionDataTable = \Flipside\DataSetFactory::getDataTableByNames('tickets', 'Questions');
         $count = $questionDataTable->count(false);
         if($count < $expectedAnswerCount)
         {
@@ -53,7 +53,7 @@ class SecondaryAPI extends Http\Rest\RestAPI
             unset($questions[$i]['answers']);
             $questions[$i]['answerFormat'] = json_decode($questions[$i]['answerFormat']);
         }
-        \FlipSession::setVar('questionIDs', $ids);
+        \Flipside\FlipSession::setVar('questionIDs', $ids);
         $format = $request->getAttribute('format');
         if($format === 'html')
         {
@@ -94,7 +94,7 @@ class SecondaryAPI extends Http\Rest\RestAPI
         {
             return $response->withJson(array('err'=>'Missing CAPTCHA!'));
         }
-        $settings = \Settings::getInstance();
+        $settings = \Flipside\Settings::getInstance();
         $key = $settings->getGlobalSetting('captcha_secret');
         $resp = \Httpful\Request::post('https://www.google.com/recaptcha/api/siteverify?secret='.$key.'&response='.$data['g-recaptcha-response'])->send();
         if($resp->body->success != true)
@@ -102,9 +102,9 @@ class SecondaryAPI extends Http\Rest\RestAPI
             return $response->withJson(array('err'=>'Sorry Google thinks you are a robot!'));
         }
         unset($data['g-recaptcha-response']);
-        $ids = \FlipSession::getVar('questionIDs');
-        $questionDataTable = DataSetFactory::getDataTableByNames('tickets', 'Questions');
-        $wrongDataTable = DataSetFactory::getDataTableByNames('tickets', 'WrongAnswers');
+        $ids = \Flipside\FlipSession::getVar('questionIDs');
+        $questionDataTable = \Flipside\DataSetFactory::getDataTableByNames('tickets', 'Questions');
+        $wrongDataTable = \Flipside\DataSetFactory::getDataTableByNames('tickets', 'WrongAnswers');
         $questions = $questionDataTable->raw_query('SELECT * from tblQuestions WHERE id IN ('.implode(',', $ids).');');
         $count = count($questions);
         if(!isset($data['answer']))
@@ -162,7 +162,7 @@ class SecondaryAPI extends Http\Rest\RestAPI
             }
         }
         $key = bin2hex(openssl_random_pseudo_bytes(32));
-        \FlipSession::setVar('secondaryRequestID', $key);
+        \Flipside\FlipSession::setVar('secondaryRequestID', $key);
         return $response->withJson(array('success'=>true, 'access_key'=>$key));
     }
 
@@ -189,9 +189,9 @@ class SecondaryAPI extends Http\Rest\RestAPI
     public function getSecondaryRequests($request, $response, $args)
     {
         $this->validateLoggedIn($request);
-        $requestDataTable = DataSetFactory::getDataTableByNames('tickets', 'SecondaryRequests');
+        $requestDataTable = \Flipside\DataSetFactory::getDataTableByNames('tickets', 'SecondaryRequests');
         $filter = false;
-        $odata = $request->getAttribute('odata', new \ODataParams(array()));
+        $odata = $request->getAttribute('odata', new \Flipside\ODataParams(array()));
         if($this->user->isInGroupNamed('TicketAdmins') && $odata->filter !== false)
         {
             $filter = $odata->filter;
@@ -204,7 +204,7 @@ class SecondaryAPI extends Http\Rest\RestAPI
         }
         else
         {
-            $filter = new \Data\Filter('mail eq \''.$app->user->mail.'\'');
+            $filter = new \Flipside\Data\Filter('mail eq \''.$app->user->mail.'\'');
         }
         $search = $request->getQueryParam('$search');
         if($search !== null && $app->user->isInGroupNamed('TicketAdmins'))
@@ -233,7 +233,7 @@ class SecondaryAPI extends Http\Rest\RestAPI
         $data = (array)$request->getParsedBody();
         $data['total_due'] = 0;
         $data['valid_tickets'] = array();
-        $key = \FlipSession::getVar('secondaryRequestID', false);
+        $key = \Flipside\FlipSession::getVar('secondaryRequestID', false);
         if($key === false)
         {
             return $response->withJson(array('err'=>'You skipped the question section!'));
@@ -241,7 +241,7 @@ class SecondaryAPI extends Http\Rest\RestAPI
         $settings = \Tickets\DB\TicketSystemSettings::getInstance();
         $ticketDataTable = \Tickets\DB\TicketsDataTable::getInstance();
         $ticketTypeDataTable = \DataSetFactory::getDataTableByNames('tickets', 'TicketTypes');
-        $secondaryTable = \DataSetFactory::getDataTableByNames('tickets', 'SecondaryRequests');
+        $secondaryTable = \Flipside\DataSetFactory::getDataTableByNames('tickets', 'SecondaryRequests');
         $maxTotalTickets = $settings['max_tickets_per_request'];
         $currentTickets = $ticketDataTable->read(new \Tickets\DB\TicketDefaultFilter($app->user->mail));
         $numberOfCurrentTickets = count($currentTickets);
@@ -284,7 +284,7 @@ class SecondaryAPI extends Http\Rest\RestAPI
                 }
             }
         }
-        $requests = $secondaryTable->read(new \Data\Filter('mail eq "'.$app->user->mail.'"'));
+        $requests = $secondaryTable->read(new \Flipside\Data\Filter('mail eq "'.$app->user->mail.'"'));
         if(!empty($requests))
         {
             return $response->withJson(array('err'=>'You already have a secondary request!'));
@@ -321,10 +321,10 @@ class SecondaryAPI extends Http\Rest\RestAPI
         {
             $year = $settings['year'];
         }
-        $filter = new \Data\Filter('request_id eq "'.$request_id.'" and year eq '.$year);
+        $filter = new \Flipside\Data\Filter('request_id eq "'.$request_id.'" and year eq '.$year);
         if($request_id === 'me')
         {
-            $filter = new \Data\Filter('mail eq "'.$app->user->mail.'" and year eq '.$year);
+            $filter = new \Flipside\Data\Filter('mail eq "'.$app->user->mail.'" and year eq '.$year);
         }
         $request = $secondaryTable->read($filter);
         if(empty($request))
@@ -352,10 +352,10 @@ class SecondaryAPI extends Http\Rest\RestAPI
         {
             $year = $settings['year'];
         }
-        $filter = new \Data\Filter('request_id eq "'.$request_id.'" and year eq '.$year);
+        $filter = new \Flipside\Data\Filter('request_id eq "'.$request_id.'" and year eq '.$year);
         if($request_id === 'me')
         {
-            $filter = new \Data\Filter('mail eq "'.$app->user->mail.'" and year eq '.$year);
+            $filter = new \Flipside\Data\Filter('mail eq "'.$app->user->mail.'" and year eq '.$year);
         }
         $request = $secondaryTable->read($filter);
         if(empty($request))
@@ -393,15 +393,15 @@ class SecondaryAPI extends Http\Rest\RestAPI
         $request_id = $args['request_id'];
         $year = $args['year'];
         $settings = \Tickets\DB\TicketSystemSettings::getInstance();
-        $secondaryTable = \DataSetFactory::getDataTableByNames('tickets', 'SecondaryRequests');
+        $secondaryTable = \Flipside\DataSetFactory::getDataTableByNames('tickets', 'SecondaryRequests');
         if($year === 'current')
         {
             $year = $settings['year'];
         }
-        $filter = new \Data\Filter('request_id eq "'.$request_id.'" and year eq '.$year);
+        $filter = new \Flipside\Data\Filter('request_id eq "'.$request_id.'" and year eq '.$year);
         if($request_id === 'me')
         {
-            $filter = new \Data\Filter('mail eq "'.$app->user->mail.'" and year eq '.$year);
+            $filter = new \Flipside\Data\Filter('mail eq "'.$app->user->mail.'" and year eq '.$year);
         }
         $request = $secondaryTable->read($filter);
         if(empty($request))
@@ -409,7 +409,7 @@ class SecondaryAPI extends Http\Rest\RestAPI
             return $response->withStatus(404);
         }
         $request = $request[0];
-        $pdf = new \PDF\PDF();
+        $pdf = new \Flipside\PDF\PDF();
         $html = '<style type="text/css">body {
             font-family: helvetica, arial, sans-serif;
             font-size: 12px;

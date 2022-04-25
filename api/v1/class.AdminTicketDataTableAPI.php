@@ -1,5 +1,5 @@
 <?php
-class AdminTicketDataTableAPI extends Http\Rest\DataTableAPI
+class AdminTicketDataTableAPI extends \Flipside\Http\Rest\DataTableAPI
 {
     public function __construct($dataSetName, $dataTableName, $primaryKeyName = false)
     {
@@ -61,7 +61,12 @@ class AdminTicketDataTableAPI extends Http\Rest\DataTableAPI
         {
             $body = $request->getBody();
             $body->rewind();
-            $obj = array('value'=>json_decode($body->getContents()));
+            $tmp = $body->getContents();
+            $obj = array('value'=>json_decode($tmp));
+            if($obj['value'] === null)
+            {
+                $obj['value'] = $tmp;
+            }
         }
         if($this->validateUpdate($obj, $request, $entry) === false)
         {

@@ -11,7 +11,9 @@ $page->addWellKnownCSS(CSS_BOOTSTRAP_FH);
 
 $page->content['pageHeader'] = 'Ticket Requests';
 $page->content['selectors'] = '
-  Request Year: <select id="year" onchange="change_year(this)"></select>
+  Request Year: <select id="year" onchange="change_year(this)">
+    <option value="*">All</option>
+  </select>
   Request Status: <select id="statusFilter" onchange="changeStatusFilter(this)">
     <option value="*">All</option>
   </select>

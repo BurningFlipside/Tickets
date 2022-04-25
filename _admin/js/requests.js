@@ -4,13 +4,19 @@ function requeryTable()
 {
     var year = $('#year').val();
     var status = $('#statusFilter').val();
-    var filter = 'year eq '+year;
+    var filter = '';
+    if(year !== '*') {
+      filter = 'year eq '+year;
+    } 
+    else {
+      filter = 'year ne 999999';
+    }
     if(status !== '*')
     {
         filter+=' and private_status eq '+status;
     }
     var table = $('#requests').DataTable();
-    table.ajax.url(ticketSystem.getRequestDataTableUri(filter)).load();
+    table.ajax.url(ticketSystem.getRequestDataTableUri(filter)+'&$select=request_id,year,givenName,sn,mail,total_due').load();
 }
 
 function change_year(control)
@@ -165,6 +171,13 @@ function getCSV()
     window.location = uri;
 }
 
+function gotAsyncRequest(data) {
+  this.row.data(data);
+  $('#modal').modal('hide');
+  let myBind = row_clicked.bind(this.row.node());
+  myBind(); 
+}
+
 function row_clicked()
 {
     var tr = $(this).closest('tr');
@@ -176,6 +189,11 @@ function row_clicked()
     $('#givenName').val(data.givenName);
     $('#sn').val(data.sn);
     $('#mail').val(data.mail);
+    if(data.c === undefined) {
+      let myBind = gotAsyncRequest.bind({row: row});
+      ticketSystem.getRequest(myBind, data.request_id, data.year);
+      return;
+    }
     $('#c').val(data.c);
     $('#mobile').val(data.mobile);
     $('#street').val(data.street);
@@ -255,7 +273,12 @@ function gotTicketYears(jqXHR)
     jqXHR.responseJSON.sort().reverse();
     for(var i = 0; i < jqXHR.responseJSON.length; i++)
     {
-        $('#year').append($('<option/>').attr('value', jqXHR.responseJSON[i]).text(jqXHR.responseJSON[i]));
+        if(i === 0) {
+          $('#year').append($('<option/>').attr('value', jqXHR.responseJSON[i]).text(jqXHR.responseJSON[i]).attr('selected', true));
+        }
+        else {
+          $('#year').append($('<option/>').attr('value', jqXHR.responseJSON[i]).text(jqXHR.responseJSON[i]));
+        }
     }
     change_year($('#year'));
 }

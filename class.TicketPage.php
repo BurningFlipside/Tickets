@@ -1,6 +1,5 @@
 <?php
 require_once('../class.SecureLoginRequiredPage.php');
-require_once('class.FlipSession.php');
 require_once('app/TicketAutoload.php');
 class TicketPage extends SecureLoginRequiredPage
 {

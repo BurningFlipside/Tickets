@@ -1,5 +1,5 @@
 <?php
-class TicketHistoryAPI extends Http\Rest\RestAPI
+class TicketHistoryAPI extends Flipside\Http\Rest\RestAPI
 {
     public function setup($app)
     {
@@ -14,13 +14,13 @@ class TicketHistoryAPI extends Http\Rest\RestAPI
         {
             return $response->withStatus(401);
         }
-        $odata = $request->getAttribute('odata', new \ODataParams(array()));
-        $ticketDataTable = \DataSetFactory::getDataTableByNames('tickets', 'TicketsHistory');
+        $odata = $request->getAttribute('odata', new \Flipside\ODataParams(array()));
+        $ticketDataTable = \Flipside\DataSetFactory::getDataTableByNames('tickets', 'TicketsHistory');
         $filter = $odata->filter;
         if($filter === false)
         {
             $settings = \Tickets\DB\TicketSystemSettings::getInstance();
-            $filter = new \Data\Filter('year eq '.$settings['year']);
+            $filter = new \Flipside\Data\Filter('year eq '.$settings['year']);
         }
         else if($filter->contains('year eq current'))
         {
@@ -51,7 +51,7 @@ class TicketHistoryAPI extends Http\Rest\RestAPI
             return $response->withStatus(401);
         }
         $hash = $args['hash'];
-        $odata = $request->getAttribute('odata', new \ODataParams(array()));
+        $odata = $request->getAttribute('odata', new \Flipside\ODataParams(array()));
         $withHistory = $request->getQueryParam('with_history', false);
         if($withHistory === true && $withHistory === '1')
         {

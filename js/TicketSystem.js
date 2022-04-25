@@ -226,25 +226,31 @@ TicketSystem.prototype.getUnsoldTicketCount = function(callback) {
         complete: parseResults});
 }
 
-TicketSystem.prototype.getUsedTicketCount = function(callback) {
+TicketSystem.prototype.getUsedTicketCount = function(callback, year) {
+    if(year === undefined) {
+        year = 'current';
+    }
     var obj = {
         callback: callback,
         parser: getODataCount};
     var parseResults = ticketSystemGenericResults.bind(obj);
     $.ajax({
-        url: this.apiRoot+'/tickets?$filter=year eq current and used eq 1&$count=true&$select=@odata.count',
+        url: this.apiRoot+'/tickets?$filter=year eq '+year+' and used eq 1&$count=true&$select=@odata.count',
         type: 'get',
         dataType: 'json',
         complete: parseResults});
 }
 
-TicketSystem.prototype.getUnusedTicketCount = function(callback) {
+TicketSystem.prototype.getUnusedTicketCount = function(callback, year) {
+    if(year === undefined) {
+        year = 'current';
+    }
     var obj = {
         callback: callback,
         parser: getODataCount};
     var parseResults = ticketSystemGenericResults.bind(obj);
     $.ajax({
-        url: this.apiRoot+'/tickets?$filter=year eq current and used eq 0 and sold eq 1&$count=true&$select=@odata.count',
+        url: this.apiRoot+'/tickets?$filter=year eq '+year+' and used eq 0 and sold eq 1&$count=true&$select=@odata.count',
         type: 'get',
         dataType: 'json',
         complete: parseResults});

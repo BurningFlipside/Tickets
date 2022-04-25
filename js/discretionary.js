@@ -141,6 +141,11 @@ function rowCreated(row, data, index)
     }
 }
 
+function short_hash_disc(data, type, row, meta)
+{
+    return '<a href="#" onclick="show_long_id(\''+data+'\')">'+data.substring(0,8)+'</a>';
+}
+
 function init_d_table()
 {
     $('#discretionary').dataTable({
@@ -150,7 +155,7 @@ function init_d_table()
             {'data': 'firstName'},
             {'data': 'lastName'},
             {'data': 'type'},
-            {'data': 'hash', 'render': short_hash},
+            {'data': 'hash', 'render': short_hash_disc},
             {'data': 'hash', 'render': make_d_action, 'class': 'action-buttons', 'orderable': false}
         ],
         paging: false,

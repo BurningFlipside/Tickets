@@ -16,6 +16,7 @@ function save()
     $.ajax({
         url: '../api/v1/globals/long_text/'+$('#ticket_text_name').val(),
         type: 'PATCH',
+        contentType: 'text/html',
         data: $('#pdf-source').val(),
         processData: false,
         complete: saveDone});

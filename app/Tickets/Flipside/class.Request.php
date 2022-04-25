@@ -1,7 +1,7 @@
 <?php
 namespace Tickets\Flipside;
 
-class Request extends \SerializableObject
+class Request extends \Flipside\SerializableObject
 {
     protected static $statuses = false;
 
@@ -61,7 +61,7 @@ class Request extends \SerializableObject
     {
         if(static::$statuses === false)
         {
-            $dataTable = \DataSetFactory::getDataTableByNames('tickets', 'RequestStatus');
+            $dataTable = \Flipside\DataSetFactory::getDataTableByNames('tickets', 'RequestStatus');
             $statusesData = $dataTable->read(false);
             $count = count($statusesData);
             static::$statuses = array();
@@ -84,7 +84,7 @@ class Request extends \SerializableObject
         {
             throw new Exception('Too many tickets for request', INVALID_PARAM);
         }
-        $ticketDataSet = \DataSetFactory::getDataSetByName('tickets');
+        $ticketDataSet = \Flipside\DataSetFactory::getDataSetByName('tickets');
         
         $typeCounts = array();
         for($i = 0; $i < $count; $i++)
@@ -130,7 +130,7 @@ class Request extends \SerializableObject
                 $type = \Tickets\TicketType::getTicketType($keys[$i]);
                 if($type->maxPerRequest < $typeCounts[$keys[$i]])
                 {
-                    throw new \Exception('Too many tickets of type '.$keys[$i].' for request', \Http\Rest\INVALID_PARAM);
+                    throw new \Exception('Too many tickets of type '.$keys[$i].' for request', \Flipside\Http\Rest\INVALID_PARAM);
                 }
             }
         }
@@ -139,17 +139,17 @@ class Request extends \SerializableObject
 
     public function validateRequestId($email)
     {
-        $ticketDataSet = \DataSetFactory::getDataSetByName('tickets');
+        $ticketDataSet = \Flipside\DataSetFactory::getDataSetByName('tickets');
         $requestIdTable = $ticketDataSet['RequestIDs'];
-        $filter = new \Data\Filter("mail eq '$email'");
+        $filter = new \Flipside\Data\Filter("mail eq '$email'");
         $requestIds = $requestIdTable->read($filter);
         if($requestIds === false || !isset($requestIds[0]) || !isset($requestIds[0]['request_id']))
         {
-            throw new \Exception('Request ID not retrievable! Call GetRequestID first.', \Http\Rest\INVALID_PARAM);
+            throw new \Exception('Request ID not retrievable! Call GetRequestID first.', \Flipside\Http\Rest\INVALID_PARAM);
         }
         if($requestIds[0]['request_id'] !== $this->request_id)
         {
-            throw new \Exception('Request ID not correct!', \Http\Rest\INVALID_PARAM);
+            throw new \Exception('Request ID not correct!', \Flipside\Http\Rest\INVALID_PARAM);
         }
     }
 
@@ -221,7 +221,7 @@ class Request extends \SerializableObject
             $ret['donations'] = 'null';
         }
         $requestDataTable = \Tickets\DB\RequestDataTable::getInstance();
-        $filter = new \Data\Filter("request_id eq '".$this->request_id."' and year eq ".$this->year);
+        $filter = new \Flipside\Data\Filter("request_id eq '".$this->request_id."' and year eq ".$this->year);
         $requests = $requestDataTable->read($filter);
         if($requests === false)
         {

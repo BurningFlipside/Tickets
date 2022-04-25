@@ -15,7 +15,9 @@ $page->body .= '
         </div>
         <div class="row">
           <div class="col-sm-1 col-form-label">Year:</div>
-          <div class="col-sm-1"><select id="ticket_year" class="form-control"></select></div>
+          <div class="col-sm-1"><select id="ticket_year" class="form-control">
+            <option value="*">All</option>
+          </select></div>
           <div class="col-sm-1 col-form-label">Sold:</div>
           <div class="col-sm-1">
             <select id="ticketSold" class="form-control">
@@ -63,6 +65,7 @@ $page->body .= '
           <div class="col-sm-2">
             <select id="ticketPool" class="form-control">
               <option selected value="*">All</option>
+              <option selected value="-1">None</option>
             </select>
           </div>
         </div>

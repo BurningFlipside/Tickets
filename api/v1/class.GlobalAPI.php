@@ -1,7 +1,7 @@
 <?php
-require('app/TicketAutoload.php');
+require('../../app/TicketAutoload.php');
 
-class GlobalAPI extends Http\Rest\RestAPI
+class GlobalAPI extends \Flipside\Http\Rest\RestAPI
 {
     public function setup($app)
     {
@@ -19,7 +19,7 @@ class GlobalAPI extends Http\Rest\RestAPI
         $settings = \Tickets\DB\TicketSystemSettings::getInstance();
         $constraints = array();
         $constraints['max_tickets_per_request'] = intval($settings['max_tickets_per_request']);
-        $dataTable = \DataSetFactory::getDataTableByNames('tickets', 'TicketTypes');
+        $dataTable = \Flipside\DataSetFactory::getDataTableByNames('tickets', 'TicketTypes');
         $ticketTypes = $dataTable->read(false);
         if($ticketTypes === false)
         {
@@ -74,7 +74,7 @@ class GlobalAPI extends Http\Rest\RestAPI
         {
             return $response->withStatus(401);
         }
-        $settings = \Settings::getInstance();
+        $settings = \Flipside\Settings::getInstance();
         $profilesUrl = $settings->getGlobalSetting('profiles_url', 'https://profiles.burningflipside.com/');
         $context = [ 'http' => [ 'method' => 'GET' ], 'ssl' => [ 'verify_peer' => false, 'allow_self_signed'=> true, 'verify_peer_name'=>false] ];
         $context = stream_context_create($context);
@@ -136,7 +136,7 @@ class GlobalAPI extends Http\Rest\RestAPI
         {
             return $response->withStatus(401);
         }
-        $dataSet = DataSetFactory::getDataSetByName('tickets');
+        $dataSet = \Flipside\DataSetFactory::getDataSetByName('tickets');
         $res = $dataSet->raw_query('SELECT DISTINCT(year) from tblTicketRequest');
         $count = count($res);
         for($i = 0; $i < $count; $i++)

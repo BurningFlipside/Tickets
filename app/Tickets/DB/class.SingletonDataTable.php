@@ -1,7 +1,7 @@
 <?php
 namespace Tickets\DB;
 
-abstract class SingletonDataTable extends \Data\DataTable
+abstract class SingletonDataTable extends \Flipside\Data\DataTable
 {
     protected static $data_set = false;
 
@@ -25,7 +25,7 @@ abstract class SingletonDataTable extends \Data\DataTable
     {
         if(static::$data_set === false)
         {
-            static::$data_set = \DataSetFactory::getDataSetByName('tickets');
+            static::$data_set = \Flipside\DataSetFactory::getDataSetByName('tickets');
         }
         return static::$data_set;
     }

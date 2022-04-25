@@ -531,7 +531,7 @@ function expandCard(e) {
 }
 
 function initIndex() {
-  if(TicketSystem === undefined) {
+  if(window.TicketSystem === undefined || window.getParameterByName === undefined) {
     setTimeout(initIndex, 100);
     return;
   }

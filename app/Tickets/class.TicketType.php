@@ -1,7 +1,7 @@
 <?php
 namespace Tickets;
 
-class TicketType extends \SerializableObject
+class TicketType extends \Flipside\SerializableObject
 {
     private static $types = array();
     private static $dataTable = null;
@@ -20,7 +20,7 @@ class TicketType extends \SerializableObject
 
     static function getDataTable()
     {
-        $dataSet = \DataSetFactory::getDataSetByName('tickets');
+        $dataSet = \Flipside\DataSetFactory::getDataSetByName('tickets');
         static::$dataTable = $dataSet['TicketTypes'];
     }
 
@@ -48,7 +48,7 @@ class TicketType extends \SerializableObject
         {
             static::getDataTable();
         }
-        $types = static::$dataTable->read(new \Data\Filter("typeCode eq '$typeCode'"));
+        $types = static::$dataTable->read(new \Flipside\Data\Filter("typeCode eq '$typeCode'"));
         if($types === false || !isset($types[0]))
         {
             throw new \Exception('No such type '.$typeCode.'!');

@@ -1,5 +1,5 @@
 <?php
-class RequestWithTicketsAPI extends Http\Rest\RestAPI
+class RequestWithTicketsAPI extends Flipside\Http\Rest\RestAPI
 {
     public function setup($app)
     {
@@ -14,7 +14,7 @@ class RequestWithTicketsAPI extends Http\Rest\RestAPI
         $this->validateLoggedIn($request);
         $requestDataTable = \Tickets\DB\RequestDataTable::getInstance();
         $filter = false;
-        $odata = $request->getAttribute('odata', new \ODataParams(array()));
+        $odata = $request->getAttribute('odata', new \Flipside\ODataParams(array()));
         if($this->user->isInGroupNamed('TicketAdmins') && $odata->filter !== false)
         {
             $filter = $odata->filter;
@@ -27,7 +27,7 @@ class RequestWithTicketsAPI extends Http\Rest\RestAPI
         }
         else
         {
-            $filter = new \Data\Filter('mail eq \''.$this->user->mail.'\'');
+            $filter = new \Flipside\Data\Filter('mail eq \''.$this->user->mail.'\'');
         }
         $requests = $requestDataTable->read($filter);
         if($requests === false)
@@ -66,7 +66,7 @@ class RequestWithTicketsAPI extends Http\Rest\RestAPI
         $this->validateLoggedIn($request);
         $requestDataTable = \Tickets\DB\RequestDataTable::getInstance();
         $filter = false;
-        $odata = $request->getAttribute('odata', new \ODataParams(array()));
+        $odata = $request->getAttribute('odata', new \Flipside\ODataParams(array()));
         if(!$this->user->isInGroupNamed('TicketAdmins'))
         {
             return $response->withJson(array());
@@ -74,7 +74,7 @@ class RequestWithTicketsAPI extends Http\Rest\RestAPI
         else if($odata->filter === false)
         {
             $settings = \Tickets\DB\TicketSystemSettings::getInstance();
-            $filter = new \Data\Filter('year eq '.$settings['year'].' and private_status eq 6');
+            $filter = new \Flipside\Data\Filter('year eq '.$settings['year'].' and private_status eq 6');
         }
         else
         {
@@ -151,7 +151,7 @@ class RequestWithTicketsAPI extends Http\Rest\RestAPI
         {
             $filter_str += ' and mail eq '+$app->user->mail;
         }
-        $filter = new \Data\Filter($filter_str);
+        $filter = new \Flipside\Data\Filter($filter_str);
         $requests = $requestDataTable->read($filter);
         if($requests === false)
         {
@@ -176,7 +176,7 @@ class RequestWithTicketsAPI extends Http\Rest\RestAPI
                 array_push($returnArray, $tmp);
             }
         }
-        $odata = $request->getAttribute('odata', new \ODataParams(array()));
+        $odata = $request->getAttribute('odata', new \Flipside\ODataParams(array()));
         $requests = $odata->filterArrayPerSelect($returnArray);
         if($odata->count)
         {
@@ -196,12 +196,16 @@ class RequestWithTicketsAPI extends Http\Rest\RestAPI
         $year = $settings['year'];
     
         $requestDataTable = \Tickets\DB\RequestDataTable::getInstance();
-        $requests = $requestDataTable->read(new \Data\Filter('year eq '.$year), array('tickets,private_status'));
+        $requests = $requestDataTable->read(new \Flipside\Data\Filter('year eq '.$year), array('tickets,private_status'));
         $tmp = array();
         $requestCount = count($requests);
         for($i = 0; $i < $requestCount; $i++)
         {
             $request = $requests[$i];
+            if(!is_array($request['tickets']))
+            {
+                continue;
+            }
             $ticketCount = count($request['tickets']);
             for($j = 0; $j < $ticketCount; $j++)
             {
@@ -217,7 +221,7 @@ class RequestWithTicketsAPI extends Http\Rest\RestAPI
                 $tmp[$ticket->type]['count']++;
             }
         }
-        $typeDataTable = DataSetFactory::getDataTableByNames('tickets', 'TicketTypes');
+        $typeDataTable = \Flipside\DataSetFactory::getDataTableByNames('tickets', 'TicketTypes');
         $types = $typeDataTable->read(false, array('typeCode', 'description'));
         $count = count($types);
         for($i = 0; $i < $count; $i++)

@@ -1,6 +1,6 @@
 <?php
 namespace Tickets\DB;
-require_once('Autoload.php');
+//require_once('Autoload.php');
 
 class TicketSystemSettings extends KeyValueSingletonDataTable
 {

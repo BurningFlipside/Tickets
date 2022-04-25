@@ -1,8 +1,7 @@
 <?php
-require_once('class.FlipSession.php');
-require_once('app/TicketAutoload.php');
+require_once('../app/TicketAutoload.php');
 require_once('../../class.SecurePage.php');
-class TicketAdminPage extends \Http\FlipAdminPage
+class TicketAdminPage extends \Flipside\Http\FlipAdminPage
 {
     use SecureWebPage;
 
@@ -22,8 +21,8 @@ class TicketAdminPage extends \Http\FlipAdminPage
         $this->secure_root = $this->getSecureRoot();
         $this->content['loginUrl'] = $this->secure_root.'api/v1/login';
 	$this->addCSS('../css/tickets.css');
-        $this->add_links();
         $this->ticketSettings = \Tickets\DB\TicketSystemSettings::getInstance();
+        $this->add_links();
         if($this->ticketSettings->isTestMode())
         {
              if($this->is_admin)
@@ -54,13 +53,13 @@ class TicketAdminPage extends \Http\FlipAdminPage
             return;
         }
         $probs = '';
-        $data_set = DataSetFactory::getDataSetByName('tickets');
+        $data_set = \Flipside\DataSetFactory::getDataSetByName('tickets');
         $data_table = $data_set['Problems'];
         $year = $this->ticketSettings['year'];
-        $count = $data_table->count(new \Data\Filter('year eq '.$year));
+        $count = $data_table->count(new \Flipside\Data\Filter('year eq '.$year));
         if($count > 0)
         {
-            $probs = '<span class="badge">'.$count.'</span>';
+            $probs = '<span class="badge  badge-secondary">'.$count.'</span>';
         }
         $charts_menu = array(
             'Request Statistics' => 'chart_requests.php',
@@ -107,7 +106,8 @@ class TicketAdminPage extends \Http\FlipAdminPage
                 'Critical Volunteers' => 'critvols.php',
                 'Discretionary Management' => 'discretionary.php',
                 'Gate Control' => 'gateControl.php',
-                'Pool Management' => 'pools.php'
+                'Pool Management' => 'pools.php',
+                'Status Management' => 'status.php'
             );
             $this->content['header']['sidebar']['AAR'] = array('icon' => 'fa-fire', 'menu' => $aar_menu);
         }

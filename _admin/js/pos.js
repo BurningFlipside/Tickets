@@ -200,6 +200,9 @@ function getTicketTypesDone(jqXHR)
 
 function updateControl(index, element)
 {
+    if(tickets === null) {
+      return;
+    }
     var control = $(element);
     var type = control.data('type');
     if(tickets[selectedPool] === undefined || tickets[selectedPool][type] === undefined)
