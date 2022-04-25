@@ -1,7 +1,7 @@
 <?php
 namespace Tickets;
 require_once('Autoload.php');
-require_once('app/TicketAutoload.php');
+require_once(__DIR__.'/../TicketAutoload.php');
 
 
 class TicketTransferEmail extends TicketEmail

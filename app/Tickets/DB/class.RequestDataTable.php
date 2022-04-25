@@ -22,7 +22,7 @@ class RequestDataTable extends \Flipside\Data\ObjectDataTable
         return parent::create($data);
     }
 
-    function update($filter, $data)
+    function update($filter, $data, $bypassQuote = false)
     {
         if($this->settings->isTestMode())
         {

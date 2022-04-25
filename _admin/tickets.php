@@ -65,7 +65,7 @@ $page->body .= '
           <div class="col-sm-2">
             <select id="ticketPool" class="form-control">
               <option selected value="*">All</option>
-              <option selected value="-1">None</option>
+              <option value="-1">None</option>
             </select>
           </div>
         </div>
@@ -158,15 +158,15 @@ $page->body .= '
                             </div>
                           </div>
                         </form>
-                        <div class="col-md-6" style="text-align: center;"><a onclick="prev_ticket()" style="cursor: pointer;" id="left_arrow"><span class="fa fa-chevron-left"></span></a></div>
-                        <div class="col-md-6" style="text-align: center;"><a onclick="next_ticket()" style="cursor: pointer;" id="right_arrow"><span class="fa fa-chevron-right"></span></a></div>
+                        <div class="col-md-6" style="text-align: center;"><a onclick="prevTicket()" style="cursor: pointer;" id="left_arrow"><span class="fa fa-chevron-left"></span></a></div>
+                        <div class="col-md-6" style="text-align: center;"><a onclick="nextTicket()" style="cursor: pointer;" id="right_arrow"><span class="fa fa-chevron-right"></span></a></div>
                         <div class="clearfix visible-sm visible-md visible-lg"></div>
                     </div></div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                         <button type="button" class="btn btn-info" onclick="resendTicketEmail();">Resend Ticket Email</button>
                         <button type="button" class="btn btn-outline-info" onclick="spinHash();">Assign New ID</button>
-                        <button type="button" class="btn btn-primary" id="saveticket" onclick="save_ticket()">Save changes</button>
+                        <button type="button" class="btn btn-primary" id="saveticket" onclick="saveTicket()">Save changes</button>
                     </div>
                 </div>
             </div>

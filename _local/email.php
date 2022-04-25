@@ -5,7 +5,7 @@ require_once('../app/TicketAutoload.php');
 
 $settings = \Tickets\DB\TicketSystemSettings::getInstance();
 $year = $settings['year'];
-$filter = new \Data\Filter("year eq $year and assigned eq 0 and sold eq 1");
+$filter = new \Flipside\Data\Filter("year eq $year and assigned eq 0 and sold eq 1");
 
 $ticketDataTable = \Tickets\DB\TicketsDataTable::getInstance();
 $unProcessedTickets = $ticketDataTable->read($filter, false, 100);
@@ -15,10 +15,10 @@ for($i = 0; $i < $count; $i++)
     $ticket = new \Tickets\Ticket($unProcessedTickets[$i]);
     $hash = $unProcessedTickets[$i]['hash'];
     $email_msg = new \Tickets\TicketEmail($ticket);
-    $email_provider = EmailProvider::getInstance();
+    $email_provider = \Flipside\EmailProvider::getInstance();
     if($email_provider->sendEmail($email_msg) !== false)
     {
-        $filter = new \Data\Filter("hash eq '$hash'");
+        $filter = new \Flipside\Data\Filter("hash eq '$hash'");
         $res = $ticketDataTable->update($filter, array('assigned'=>1));
         if($res === false)
         {

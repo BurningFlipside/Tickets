@@ -72,7 +72,7 @@ function final_post_done(jqXHR)
     $('.next').attr('disabled', false);
     if(jqXHR.status !== 200 || jqXHR.responseJSON === undefined)
     {
-        alert('Unable to get ticket pools!');
+        alert('Failed to sell ticket! '+jqXHR.status);
         return;
     }
     data = jqXHR.responseJSON;
@@ -180,7 +180,7 @@ function getTicketTypesDone(jqXHR)
             url: '/tickets/api/v1/tickets/pos?$filter=sold eq 0',
             type: 'GET',
             dataType: 'json',
-            success: get_tickets_done
+            complete: get_tickets_done
         });
     }
     else
@@ -228,8 +228,13 @@ function poolChanged(control)
     inputs.each(updateControl);
 }
 
-function get_tickets_done(data)
+function get_tickets_done(jqXHR)
 {
+    if(jqXHR.status !== 200) {
+        alert('Unable to obtain tickets! '+jqXHR.status);
+        return;
+    }
+    var data = jqXHR.responseJSON;
     if(data.length == 0)
     {
         var control = $('#poswizard');

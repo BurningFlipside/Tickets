@@ -1,51 +1,45 @@
-function verifyCodeDone(jqXHR)
-{
-    if(jqXHR.status !== 200)
-    {
-        $('#verified').html('?');
-        $('#verified').css('background-color', 'gray');
-        $('#verified').css('color', 'black');
-        $('#verified').attr('title', '');
-        return;
-    }
-    var data = jqXHR.responseJSON;
-    if(data)
-    {
-            $('#verified').html('<span class="fa fa-check"></span>');
-            $('#verified').css('background-color', 'GreenYellow');
-            $('#verified').css('color', 'green');
-            $('#verified').attr('title', 'Ticket Code is valid!');
-    }
-    else
-    {
-            $('#verified').html('<span class="fa fa-times"></span>');
-            $('#verified').css('background-color', 'red');
-            $('#verified').css('color', 'DarkRed');
-            $('#verified').attr('title', 'Ticket Code is not valid.');
-    }
-    $('#verified').tooltip({'placement': 'bottom'});
-    console.log(data);
+/* global $, getParameterByName */
+function verifyCodeDone(jqXHR) {
+  if(jqXHR.status !== 200) {
+    $('#verified').html('?');
+    $('#verified').css('background-color', 'gray');
+    $('#verified').css('color', 'black');
+    $('#verified').attr('title', '');
+    return;
+  }
+  var data = jqXHR.responseJSON;
+  if(data) {
+    $('#verified').html('<span class="fa fa-check"></span>');
+    $('#verified').css('background-color', 'GreenYellow');
+    $('#verified').css('color', 'green');
+    $('#verified').attr('title', 'Ticket Code is valid!');
+  } else {
+    $('#verified').html('<span class="fa fa-times"></span>');
+    $('#verified').css('background-color', 'red');
+    $('#verified').css('color', 'DarkRed');
+    $('#verified').attr('title', 'Ticket Code is not valid.');
+  }
+  $('#verified').tooltip({'placement': 'bottom'});
 }
 
-function verify_code()
-{
-   var code = $('#short_code').val();
-   if(code.length < 8 || code.length > 10) return;
-   $.ajax({
-        url: 'api/v1/tickets/Actions/VerifyShortCode/'+encodeURIComponent(code),
-        type: 'post',
-        dataType: 'json',
-        complete: verifyCodeDone});
+function verifyCode() {
+  var code = $('#short_code').val();
+  if(code.length < 8 || code.length > 10) {
+    return;
+  }
+  $.ajax({
+    url: 'api/v1/tickets/Actions/VerifyShortCode/'+encodeURIComponent(code),
+    type: 'post',
+    dataType: 'json',
+    complete: verifyCodeDone});
 }
 
-function init_page()
-{
-    var id = getParameterByName('id');
-    if(id !== null)
-    {
-        $('#short_code').val(id);
-        verify_code();
-    }
+function initPage() {
+  var id = getParameterByName('id');
+  if(id !== null) {
+    $('#short_code').val(id);
+    verifyCode();
+  }
 }
 
-$(init_page);
+$(initPage);

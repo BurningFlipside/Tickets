@@ -44,6 +44,7 @@ function save()
         type: 'PATCH',
         data: $('#pdf-source').val(),
         processData: false,
+	contentType: 'text/html',
         complete: saveDone});
 }
 

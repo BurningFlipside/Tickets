@@ -162,7 +162,7 @@ if($page->user)
                 <a href="static/MinorAffidavit03222010.doc" target="_blank"><img src="/images/MS_word_DOC_icon.svg" style="width: 40px; height: 40px;" alt="Word Doc"/></a>
                 <a href="static/MinorAffidavit03222010.pdf" target="_blank"><img src="/images/Adobe_PDF_Icon.svg" style="width: 40px; height: 40px;" alt="PDF"/></a>
                 </center>
-                <input type="checkbox" id="minor_affirm" onchange="minor_affirm_clicked()">&nbsp;<label for="minor_affirm">I have read and understand the above policies.</label>
+                <input type="checkbox" id="minor_affirm" onchange="minorAffirmClicked()">&nbsp;<label for="minor_affirm">I have read and understand the above policies.</label>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Oops! I don\'t have any children attending the event!</button>

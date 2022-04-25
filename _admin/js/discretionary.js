@@ -26,14 +26,19 @@ function drawTable(disc)
     }
 }
 
-function gotUsers()
-{
-    console.log(arguments);
-    for(var i = 0; i < arguments.length; i++)
-    {
-        if(arguments[i].length === 0 || arguments[i][0].length === 0) continue;
-        var user = arguments[i][0][0];
-        disc[user.mail]['Name'] = user.displayName;
+function gotUsers() {
+    for(let arg of arguments) {
+        if(Array.isArray(arg)) {
+            let user = arg[0];
+            if(Array.isArray(user)) {
+                user = user[0];
+            }
+            if(user === false) {
+                //API call failed... skip!
+                continue;
+            }
+            disc[user.mail]['Name'] = user.displayName;
+        }
     }
     drawTable(disc);
 }
@@ -50,13 +55,13 @@ function gotDiscretionaryTickets(jqXHR)
     var calls = [];
     for(var i = 0; i < data.length; i++)
     {
-        var email = data[i].discretionaryOrig;
+        let email = data[i].discretionaryOrig;
         if(disc[email] === undefined)
         {
             disc[email] = {};
             calls.push(
                 $.ajax({
-                url: window.profilesUrl+'/api/v1/users?$filter=mail eq '+email,
+                url: window.profilesUrl+'/api/v1/users?$filter=mail eq \''+email+'\'',
                 type: 'get',
                 dataType: 'json',
                 xhrFields: {withCredentials: true},
@@ -80,27 +85,49 @@ function gotDiscretionaryTickets(jqXHR)
     $.when.apply($, calls).done(gotUsers);
 }
 
-function getCSV()
-{
+function getCSV() {
     window.location = '../api/v1/tickets?$format=csv&$filter=discretionary eq 1 and year eq current';
 }
 
-function gotGroups(jqXHR)
-{
-    if(jqXHR.status !== 200 || jqXHR.responseJSON === undefined)
-    {
+function gotGroups(jqXHR) {
+    if(jqXHR.status !== 200 || jqXHR.responseJSON === undefined) {
         alert('Unable to obtain groups!');
         return;
     }
     var data = jqXHR.responseJSON;
-    for(var i = 0; i < data.length; i++)
-    {
+    for(var i = 0; i < data.length; i++) {
         $('#group').append('<option value="'+data[i].cn+'">'+data[i].cn+'</option>');
     }
 }
 
-function initPage()
-{
+function assignedTickets(jqXHR) {
+  if(jqXHR.status !== 200 || jqXHR.responseJSON === undefined) {
+    console.log(jqXHR);
+    alert('Unable to assign tickets!');
+    return;
+  }
+  location.reload();
+}
+
+function assignTickets() {
+  let groupName = $('#group').val();
+  let count = $('#count').val();
+  let obj = {'ticketGroups': [{'Group':groupName}]}
+  obj.ticketGroups[0].Count = parseInt(count);
+  if(isNaN(obj.ticketGroups[0].Count)) {
+      alert('Count not specified!');
+      return;
+  }
+  $.ajax({
+      url: '../api/v1/tickets/discretionary',
+      method: 'POST',
+      data: JSON.stringify(obj),
+      contentType: 'application/json',
+      complete: assignedTickets
+  });
+}
+
+function initPage() {
     $.ajax({
         url: '../api/v1/tickets?$filter=discretionary eq 1 and year eq current',
         type: 'get',
