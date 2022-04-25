@@ -20,6 +20,9 @@ class TicketAPI extends Flipside\Http\Rest\RestAPI
         $app->post('/Actions/VerifyShortCode/{code}', array($this, 'verifyShortCode'));
 	$app->post('/Actions/GenerateTickets', array($this, 'generateTickets'));
 	$app->post('/Actions/CheckDNE', array($this, 'checkDNE'));
+        $app->post('/Actions/GenerateTickets', array($this, 'generateTickets'));
+        $app->post('/Actions/PopulatePool', array($this, 'populatePool'));
+        $app->post('/Actions/submitWaiver', array($this, 'submitWaiver'));
     }
 
     public function listTickets($request, $response, $app)
@@ -323,7 +326,6 @@ class TicketAPI extends Flipside\Http\Rest\RestAPI
 
     public function transferTicket($request, $response, $app)
     {
-        return $response->withStatus(500);
         $this->validateLoggedIn($request);
         $hash = $app['hash'];
         $array = (array)$request->getParsedBody();
@@ -374,6 +376,10 @@ class TicketAPI extends Flipside\Http\Rest\RestAPI
         if($ticket === false)
         {
             return $response->withStatus(404);
+        }
+        if($ticket->transferInProgress === '1')
+        {
+            $ticket->transferInProgress = '0';
         }
         return $response->withJson($ticket->insert_to_db());
     }
@@ -461,7 +467,7 @@ class TicketAPI extends Flipside\Http\Rest\RestAPI
     {
         $this->validateLoggedIn($request);
         $code = $args['code'];
-        $count = FlipSession::getVar('TicketVerifyCount', 0);
+        $count = \Flipside\FlipSession::getVar('TicketVerifyCount', 0);
         if($count > 20)
         {
             throw new \Exception('Exceeded Ticket Verify Count for this session!');
@@ -566,23 +572,75 @@ class TicketAPI extends Flipside\Http\Rest\RestAPI
 
     public function checkDNE($request, $response, $args)
     {
+	$this->validateLoggedIn($request);
+        if(!$this->user->isInGroupNamed('TicketAdmins'))
+        {
+		return $response->withStatus(401);
+	}
+	if(!file_exists(dirname(__FILE__).'/../../dne.csv'))
+        {
+            return $response->withStatus(404);
+        }
+        $dne = new \Data\CSVDataTable(dirname(__FILE__).'/../../dne.csv');
+        $body = $request->getParsedBody();
+        $test = $dne->read(new \Data\Filter('firstName eq '.$body['firstName'].' and lastName eq '.$body['lastName']));
+        if(count($test) === 0)
+        {
+            return $response->withStatus(404);
+        }
+        return $response->withJson(true);
+    }
+
+    public function populatePool($request, $response, $args)
+    {
         $this->validateLoggedIn($request);
         if(!$this->user->isInGroupNamed('TicketAdmins'))
         {
             return $response->withStatus(401);
-	}
-	if(!file_exists(dirname(__FILE__).'/../../dne.csv'))
-	{
-            return $response->withStatus(404);
-	}
-	$dne = new \Data\CSVDataTable(dirname(__FILE__).'/../../dne.csv');
-	$body = $request->getParsedBody();
-	$test = $dne->read(new \Data\Filter('firstName eq '.$body['firstName'].' and lastName eq '.$body['lastName']));
-	if(count($test) === 0)
-	{
-            return $response->withStatus(404);
-	}
-	return $response->withJson(true);
+        }
+        $obj = (array)$request->getParsedBody();
+        if(!isset($obj['PoolID']) || !isset($obj['Count']))
+        {
+            //Missing required parameters
+            return $response->withStatus(400);
+        }
+        if(!isset($obj['Type']))
+        {
+            //Assume adult if not specified...
+            $obj['Type'] = 'A';
+        }
+        $ticketType = $obj['Type'];
+        //I'm going to assume the admin specifying the poolid did so correctly...
+        $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+        $year = $settings['year'];
+        $ticketDataTable = \Tickets\DB\TicketsDataTable::getInstance();
+        $desiredCount = (int)$obj['Count'];
+        $res = $ticketDataTable->raw_query("SELECT hash FROM tblTickets WHERE year = $year AND pool_id = -1 AND sold = 0 AND used = 0 AND discretionary = 0 AND type = '$ticketType' LIMIT $desiredCount;");
+        $count = count($res);
+        if($count !== $desiredCount)
+        {
+            return $response->withJson(array('message'=>'Not enough available tickets to create pool!'), 400);
+        }
+        $it = new RecursiveIteratorIterator(new RecursiveArrayIterator($res));
+        $flat = array();
+        foreach($it as $v)
+        {
+            array_push($flat, $v);
+        }
+        $ids = "'".implode("','", $flat)."'";
+        $pool = (int)$obj['PoolID'];
+        $res = $ticketDataTable->raw_query("UPDATE tblTickets SET pool_id = $pool WHERE hash IN ($ids);");
+        if($res !== false)
+        {
+            $res = true;
+        }
+        return $response->withJson($res);
+    }
+
+    public function submitWaiver($request, $response, $args)
+    {
+        file_put_contents('/tmp/waiver.fdf', $request->getBody()->getContents());
+        return $response->withStatus(200);
     }
 }
 /* vim: set tabstop=4 shiftwidth=4 expandtab: */

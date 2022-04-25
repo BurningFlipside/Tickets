@@ -151,6 +151,11 @@ function gotRequests(requests, err) {
 }
 
 function gotAllYears(years, err) {
+    if(err && err.httpStatus === 401) {
+        return;
+    } else if(err && err.httpStatus !== 200) {
+        alert('Failed to get ticket system years!');
+    }
     years.sort();
     var thead = $('#requestOverTimeTable thead tr');
     var rows = $('#requestOverTimeTable tbody tr');

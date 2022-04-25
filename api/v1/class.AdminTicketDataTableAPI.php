@@ -72,7 +72,7 @@ class AdminTicketDataTableAPI extends \Flipside\Http\Rest\DataTableAPI
         {
             return $response->withStatus(400);
         }
-        $ret = $dataTable->update($filter, $obj);
+        $ret = $dataTable->update($filter, $obj, true);
         return $response->withJson($ret);
     }
 

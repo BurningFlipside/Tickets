@@ -54,7 +54,7 @@ class RequestPDF extends \Flipside\PDF\PDF
         }
         $ticket_table   = '<table style="margin-left:auto; margin-right:auto; width:100%;">';
         $ticket_table  .= '<tr><td></td><th>First Name</th><th>Last Name</th><th>Ticket Type</th><th>Cost</th></tr>';
-        $count = count($this->request->tickets);
+	$count = count($this->request->tickets);
         for($i = 0; $i < $count; $i++)
         {
             $ticket_table .= '<tr>';

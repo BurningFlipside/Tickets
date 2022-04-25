@@ -356,10 +356,11 @@ class FlipsideTicketRequest extends \Flipside\SerializableObject
         $request->modifiedByIP = '127.0.0.1';
         $request->modifiedOn   = 'today';
         $request->tickets      = array();
-        $request->donations    = array();
+	$request->donations    = array();
+	$request->total_due    = '999';
 
-        array_push($request->tickets, array('first'=>'Test', 'last'=>'User', 'type'=>'A'));
-        array_push($request->tickets, array('first'=>'Test', 'last'=>'Kid', 'type'=>'K'));
+        array_push($request->tickets, (object)array('first'=>'Test', 'last'=>'User', 'type'=>'A'));
+        array_push($request->tickets, (object)array('first'=>'Test', 'last'=>'Kid', 'type'=>'K'));
         return $request;
     }
 }

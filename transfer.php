@@ -22,7 +22,7 @@ function ticket_id_entry_form()
             </div>';
 }
 
-if(!FlipSession::isLoggedIn())
+if(!\Flipside\FlipSession::isLoggedIn())
 {
     $page->body .= '
 <div id="content">
@@ -42,7 +42,7 @@ else
         if($ticket === false)
         {
             $ticket = \Tickets\Ticket::find_current_from_old_hash($hash);
-            if($ticket !== false && \Tickets\Ticket::user_has_ticket($ticket->hash, FlipSession::getUser()))
+            if($ticket !== false && \Tickets\Ticket::user_has_ticket($ticket->hash, \Flipside\FlipSession::getUser()))
             {
                 $page->addNotification('The specified ticket no longer exists!. However, the new copy is currently in your possession. Look <a href="index.php" class="alert-link">here</a> for a list of all your tickets.', TicketPage::NOTIFICATION_INFO);
             }
@@ -55,7 +55,7 @@ else
         }
         else
         {
-            if(\Tickets\Ticket::user_has_ticket($hash, FlipSession::getUser()))
+            if(\Tickets\Ticket::user_has_ticket($hash, \Flipside\FlipSession::getUser()))
             {
                 /*This user already owns the ticket. Let them send it to someone else or just change the name*/
                 $page->body .= '<div id="content">

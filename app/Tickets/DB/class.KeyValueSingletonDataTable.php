@@ -40,7 +40,7 @@ abstract class KeyValueSingletonDataTable extends SingletonDataTable implements 
         return $this->data_table->read($filter, $db_select, $count, $skip, $sort, $params);
     }
 
-    function update($filter, $data)
+    function update($filter, $data, $bypassQuote = false)
     {
         $this->cache = array();
         return $this->data_table->update($filter, $data);

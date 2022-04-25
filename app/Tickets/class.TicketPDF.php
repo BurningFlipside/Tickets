@@ -1,8 +1,8 @@
 <?php
 namespace Tickets;
-require_once('app/TicketAutoload.php');
+require_once(__DIR__.'/../TicketAutoload.php');
 
-class TicketPDF extends \PDF\PDF
+class TicketPDF extends \Flipside\PDF\PDF
 {
     private $ticket;
     public  $source;

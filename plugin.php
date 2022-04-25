@@ -1,5 +1,9 @@
 <?php
-class TicketPlugin extends SecurePlugin
+if(is_readable('../SecurePlugin.php'))
+{
+    require_once('../SecurePlugin.php');
+}
+class TicketPlugin extends \Flipside\Secure\SecurePlugin
 {
     function get_secure_menu_entries($page, $user)
     {

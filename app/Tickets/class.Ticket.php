@@ -336,7 +336,7 @@ class Ticket extends \Flipside\SerializableObject
         }
         if($res === false || !isset($res[0]))
         {
-            return self::getDiscretionaryTicketsForUser($user, $criteria, $count);
+            return self::getDiscretionaryTicketsForUser($user, $criteria, $maxCount);
         }
         else if(!is_array($res))
         {
@@ -481,11 +481,11 @@ class Ticket extends \Flipside\SerializableObject
             $tickets = false;
             if($pool === false)
             {
-               $tickets = self::get_tickets_for_user_and_pool($user, new \Data\Filter("sold eq 0 and type eq '$type'"), $qty);
+               $tickets = self::get_tickets_for_user_and_pool($user, new \Flipside\Data\Filter("sold eq 0 and type eq '$type'"), $qty);
             }
             else if($pool === -1 || $pool === '-1')
             {
-               $tickets = self::getDiscretionaryTicketsForUser($user, new \Data\Filter("type eq '$type'"), $qty);
+               $tickets = self::getDiscretionaryTicketsForUser($user, new \Flipside\Data\Filter("type eq '$type'"), $qty);
             }
             else
             {

@@ -1,7 +1,7 @@
 <?php
 namespace Tickets\Flipside;
 
-class FlipsideTicketRequestEmail extends \Email\Email
+class FlipsideTicketRequestEmail extends \Flipside\Email\Email
 {
     private $request;
     private $settings;

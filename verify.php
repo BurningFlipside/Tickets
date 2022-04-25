@@ -4,7 +4,7 @@ error_reporting(E_ALL);
 require_once('class.TicketPage.php');
 $page = new TicketPage('Burning Flipside - Tickets');
 
-if(!FlipSession::isLoggedIn())
+if(!\Flipside\FlipSession::isLoggedIn())
 {
     $page->body .= '
 <div id="content">
@@ -16,7 +16,7 @@ else
     $page->body .= '
 <div id="content">
     <div class="input-group">
-        <input type="text" class="form-control" placeholder="Short Ticket Code" id="short_code" onchange="verify_code()">
+        <input type="text" class="form-control" placeholder="Short Ticket Code" id="short_code" onchange="verifyCode()">
         <div class="input-group-append">
           <span class="input-group-text" id="verified">?</span>
         </div>

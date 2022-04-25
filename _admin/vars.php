@@ -24,7 +24,7 @@ $page->addWellKnownCSS(CSS_DATATABLE);
                             <div class="input-group">
                                 <input type="text" class="form-control" id="year" name="year"/>
                                 <span class="input-group-btn">
-                                    <button type="button" class="btn btn-default" id="known_change_year" for="year" onclick="known_change(this)"><span class="fa fa-check"></span></button>
+                                    <button type="button" class="btn btn-default" id="known_change_year" for="year" onclick="knownChange(this)"><span class="fa fa-check"></span></button>
                                 </span>
                             </div>
                         </div>
@@ -32,7 +32,7 @@ $page->addWellKnownCSS(CSS_DATATABLE);
                     <div class="form-group">
                         <label class="col-sm-2 control-label" for="test_mode">Test Mode</label>
                         <div class="col-sm-8">
-                            <select class="form-control" id="test_mode" name="test_mode" onchange="known_change(this)">
+                            <select class="form-control" id="test_mode" name="test_mode" onchange="knownChange(this)">
                                 <option value="0">Off</option>
                                 <option value="1">On</option>
                             </select>
@@ -43,7 +43,7 @@ $page->addWellKnownCSS(CSS_DATATABLE);
                     <div class="form-group">
                         <label class="col-sm-2 control-label" for="request_start_date">Start Date for Request Window</label>
                         <div class="col-sm-8">
-                            <input type="date" class="form-control" id="request_start_date" name="request_start_date" onchange="known_change(this)"/>
+                            <input type="date" class="form-control" id="request_start_date" name="request_start_date" onchange="knownChange(this)"/>
                         </div>
                         <div class="col-sm-2">
                         </div>
@@ -51,7 +51,7 @@ $page->addWellKnownCSS(CSS_DATATABLE);
                     <div class="form-group">
                         <label class="col-sm-2 control-label" for="mail_start_date">Start Date for Mail Window</label>
                         <div class="col-sm-8">
-                            <input type="date" class="form-control" id="mail_start_date" name="mail_start_date" onchange="known_change(this)"/>
+                            <input type="date" class="form-control" id="mail_start_date" name="mail_start_date" onchange="knownChange(this)"/>
                         </div>
                         <div class="col-sm-2">
                         </div>
@@ -59,7 +59,7 @@ $page->addWellKnownCSS(CSS_DATATABLE);
                     <div class="form-group">
                         <label class="col-sm-2 control-label" for="request_stop_date">Stop Date for Request/Mail Window</label>
                         <div class="col-sm-8">
-                            <input type="date" class="form-control" id="request_stop_date" name="request_stop_date" onchange="known_change(this)"/>
+                            <input type="date" class="form-control" id="request_stop_date" name="request_stop_date" onchange="knownChange(this)"/>
                         </div>
                         <div class="col-sm-2">
                         </div>
@@ -73,7 +73,7 @@ $page->addWellKnownCSS(CSS_DATATABLE);
                             <div class="input-group">
                                 <input type="text" class="form-control" id="max_tickets_per_request" name="max_tickets_per_request"/>
                                 <span class="input-group-btn">
-                                    <button type="button" class="btn btn-default" id="known_change_max_tickets_per_request" for="max_tickets_per_request" onclick="known_change(this)"><span class="fa fa-check"></span></button>
+                                    <button type="button" class="btn btn-default" id="known_change_max_tickets_per_request" for="max_tickets_per_request" onclick="knownChange(this)"><span class="fa fa-check"></span></button>
                                 </span>
                             </div>
                         </div>
@@ -84,7 +84,7 @@ $page->addWellKnownCSS(CSS_DATATABLE);
                             <div class="input-group">
                                 <input type="text" class="form-control" id="max_buckets" name="max_buckets"/>
                                 <span class="input-group-btn">
-                                    <button type="button" class="btn btn-default" id="known_change_max_buckets" for="max_buckets" onclick="known_change(this)"><span class="fa fa-check"></span></button>
+                                    <button type="button" class="btn btn-default" id="known_change_max_buckets" for="max_buckets" onclick="knownChange(this)"><span class="fa fa-check"></span></button>
                                 </span>
                             </div>
                         </div>

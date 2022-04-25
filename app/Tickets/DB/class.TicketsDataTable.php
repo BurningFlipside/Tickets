@@ -90,7 +90,7 @@ class TicketsDataTable extends SingletonDataTable
         return $res;
     }
 
-    function update($filter, $data)
+    function update($filter, $data, $bypassQuote = false)
     {
         $this->modify_filter($filter);
         if($this->settings->isTestMode())
