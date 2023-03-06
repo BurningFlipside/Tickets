@@ -34,6 +34,7 @@ class Request extends \Flipside\SerializableObject
                         case 'crit_vol':
                         case 'protected':
                         case 'envelopeArt':
+                        case 'survivalGuide':
                             $this->{$key} = boolval($value);
                             break;
                         case 'tickets':
@@ -203,6 +204,10 @@ class Request extends \Flipside\SerializableObject
         $this->ticketAmount = $this->calculateTicketTotal();
         $this->donationAmount = $this->calculateDonationTotal();
         $this->total_due = $this->ticketAmount + $this->donationAmount;
+        if(property_exists($this, 'survivalGuide') && $this->survivalGuide)
+        {
+            $this->total_due += 2;
+        }
         $ret = (array)$this;
         if(isset($ret['tickets']))
         {
