@@ -15,6 +15,7 @@ class TicketType extends \Flipside\SerializableObject
             $this->cost          = $data['cost'];
             $this->maxPerRequest = $data['max_per_request'];
             $this->isMinor       = $data['is_minor'];
+            $this->squareCost    = $data['squareCost'];
         }
     }
 

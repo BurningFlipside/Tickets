@@ -9,7 +9,9 @@ class GlobalAPI extends \Flipside\Http\Rest\RestAPI
         $app->get('/lists', array($this, 'showLists'));
         $app->get('/window', array($this, 'showWindow'));
         $app->get('/users', array($this, 'getTicketUsers'));
+        $app->post('/users', array($this, 'addTicketUsers'));
         $app->get('/years', array($this, 'getYears'));
+        $app->get('/posTypes', array($this, 'getPosTypes'));
         $app->post('/Actions/generatePreview/{class:.*}', array($this, 'previewPDF'));
     }
 
@@ -75,13 +77,13 @@ class GlobalAPI extends \Flipside\Http\Rest\RestAPI
             return $response->withStatus(401);
         }
         $settings = \Flipside\Settings::getInstance();
-        $profilesUrl = $settings->getGlobalSetting('profiles_url', 'https://profiles.burningflipside.com/');
+        $profilesUrl = $settings->getGlobalSetting('profiles_url', 'https://profiles.burningflipside.com');
         $context = [ 'http' => [ 'method' => 'GET' ], 'ssl' => [ 'verify_peer' => false, 'allow_self_signed'=> true, 'verify_peer_name'=>false] ];
         $context = stream_context_create($context);
         $full = array();
-        $res = file_get_contents($profilesUrl.'api/v1/groups/TicketAdmins?$expand=member&$select=member.givenName,member.sn,member.mail,member.uid,cn', false, $context);
+        $res = file_get_contents($profilesUrl.'/api/v1/groups/TicketAdmins?$expand=member&$select=member.givenName,member.sn,member.mail,member.uid,cn', false, $context);
         $full[0] = json_decode($res, true);
-        $res = file_get_contents($profilesUrl.'api/v1/groups/TicketTeam?$expand=member&$select=member.givenName,member.sn,member.mail,member.uid,cn', false, $context);
+        $res = file_get_contents($profilesUrl.'/api/v1/groups/TicketTeam?$expand=member&$select=member.givenName,member.sn,member.mail,member.uid,cn', false, $context);
         $full[1] = json_decode($res, true);
         $res = array();
         foreach($full[0]['member'] as $member)
@@ -129,6 +131,40 @@ class GlobalAPI extends \Flipside\Http\Rest\RestAPI
         return $response->withJson($res);
     }
 
+    public function addTicketUsers($request, $response)
+    {
+        $this->validateLoggedIn($request);
+        if($this->user->isInGroupNamed('TicketAdmins') === false)
+        {
+            return $response->withStatus(401);
+        }
+        $obj = $request->getParsedBody();
+        $token = strtok($obj['text'], "\r\n,");
+        $success = array();
+        $fails = array();
+        $auth = \Flipside\AuthProvider::getInstance();
+        $group = $auth->getGroupByName('TicketTeam');
+        while($token !== false)
+        {
+            $filter = new \Flipside\Data\Filter("mail eq '$token'");
+            $users = $auth->getUsersByFilter($filter);
+            if($users === false || !isset($users[0]))
+            {
+                array_push($fails, $token);
+            }
+            if($group->addMember($users[0]->uid) === false)
+            {
+                array_push($fails, $token);
+            }
+            else
+            {
+                array_push($success, $token);
+            }
+            $token = strtok("\r\n,");
+        }
+        return $response->withJson(array('success'=>$success, 'fails'=>$fails));
+    }
+
     public function getYears($request, $response, $args)
     {
         $this->validateLoggedIn($request);
@@ -165,6 +201,20 @@ class GlobalAPI extends \Flipside\Http\Rest\RestAPI
         $response = $response->withHeader('Content-Type', 'text/html');
         $response->getBody()->write(base64_encode($pdf->toPDFBuffer()));
         return $response;
+    }
+
+    public function getPosTypes($request, $response)
+    {
+        $this->validateLoggedIn($request);
+        if($this->user->isInGroupNamed('TicketAdmins') === false)
+        {
+            return $response->withStatus(401);
+        }
+        if($this->user->isInGroupNamed('AAR') === true)
+        {
+            return $response->withJson(array('cash'=>'Cash or Cash Equivalent', 'square'=>'Square Payment Link'));    
+        }
+        return $response->withJson(array('square'=>'Square Payment Link'));
     }
 }
 /* vim: set tabstop=4 shiftwidth=4 expandtab: */
