@@ -1,17 +1,17 @@
 /* global $ */
-/* exported process_bulk */
-function uploadDone(data) {
-  var json = eval('('+data+')');
-  console.log(json);
+/* exported processBulk */
+function uploadDone(jqXHR) {
+  if(jqXHR.status !== 200) {
+    alert('Upload failed!');
+    return;
+  }
+  let json = jqXHR.responseJSON;
   $('#success_count').html(json.success.length);
   $('#fail_count').html(json.fails.length);
   $('#successes').empty();
   $('#failures').empty();
   for(let success of json.success) {
-    $('#successes').append(success.token+' => '+success.name+'<br/>');
-    for(let ticket of success.tickets) {
-      $('#successes').append('&hellip;'+ticket.first+' '+ticket.last+'<br/>');
-    }
+    $('#successes').append(success+'<br/>');
   }
   for(let fail of json.fails) {
     $('#failures').append(fail+'<br/>');
@@ -30,14 +30,13 @@ function sendFileToServer(formData) {
     success: uploadDone}); 
 }
 
-function process_bulk() {
+function processBulk() {
   $.ajax({
-    url:  'users_upload.php?data='+$('#bulk_text').val(),
+    url:  '../api/v1/globals/users',
     type: 'POST',
-    contentType: false,
-    processData: false,
-    cache: false,
-    success: uploadDone});
+    contentType: 'application/json',
+    data: JSON.stringify({text: $('#bulk_text').val()}),
+    complete: uploadDone});
 }
 
 function handleFileUpload(files) {

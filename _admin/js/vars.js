@@ -103,7 +103,7 @@ function knownChange(control) {
 
 function populateRawTable(vars) {
   var tbody = $('#raw tbody');
-  for(let variable in vars) {
+  for(let variable of vars) {
     addRowToTable(tbody, variable.name, variable.value);
   }
   //Add empty row for adding
@@ -113,7 +113,7 @@ function populateRawTable(vars) {
 }
 
 function populateKnownForm(vars) {
-  for(let variable in vars) {
+  for(let variable of vars) {
     let control = $('#'+variable.name);
     if(control.length > 0) {
       control.val(variable.value);

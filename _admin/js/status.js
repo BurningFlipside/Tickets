@@ -1,3 +1,5 @@
+/*global $*/
+/*exported changePrivate, makePublic*/
 function actionComplete(jqXHR) {
   if(jqXHR.status !== 200) {
     alert('Failed to perform action!');
@@ -39,19 +41,19 @@ function gotStatusCounts(jqXHR) {
   }
   let data = jqXHR.responseJSON;
   let tbody = $('#statues tbody');
-  for(let i = 0; i < data.length; i++) {
-    if(data[i].private_status === undefined) {
+  for(let status of data) {
+    if(status.private_status === undefined) {
       continue;
     }
     let buttons = '';
-    if(data[i].not_public !== undefined && data[i].not_public > 0) {
+    if(status.not_public !== undefined && status.not_public > 0) {
       buttons += '<button type="button" class="btn btn-primary" onClick="makePublic(this);">Make Public</button>';
     }
-    switch(data[i].private_status) {
+    switch(status.private_status) {
       case 4:
-        buttons += ' <button type="button" class="btn btn-success" onClick="changePrivate(this, 1);">Move to Recieved</button>';
+        buttons += ' <button type="button" class="btn btn-success" onClick="changePrivate(this, 1);">Move to Received</button>';
     }
-    tbody.append('<tr data-status="'+data[i].private_status+'"><td>'+data[i].extended_status.name+'</td><td>'+data[i].count+'</td><td>'+buttons+'</td></tr>');
+    tbody.append('<tr data-status="'+status.private_status+'"><td>'+status.extended_status.name+'</td><td>'+status.count+'</td><td>'+buttons+'</td></tr>');
   }
 }
 
