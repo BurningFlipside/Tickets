@@ -9,12 +9,12 @@ abstract class SingletonDataTable extends \Flipside\Data\DataTable
 
     public static function getInstance()
     {
-        static $instance = null;
-        if(null === $instance)
+        static $instance = [];
+        if(!isset($instance[static::class]))
         {
-            $instance = new static();
+            $instance[static::class] = new static();
         }
-        return $instance;
+        return $instance[static::class];
     }
 
     protected function __construct()
