@@ -11,7 +11,7 @@ $page->addWellKnownCSS(CSS_BOOTSTRAP_FH);
 
 $page->content['pageHeader'] = 'Ticket Requests';
 $page->content['selectors'] = '
-  Request Year: <select id="year" onchange="change_year(this)">
+  Request Year: <select id="year" onchange="changeYear(this)">
     <option value="*">All</option>
   </select>
   Request Status: <select id="statusFilter" onchange="changeStatusFilter(this)">
@@ -143,8 +143,8 @@ $page->body .= '
                        </form>
                   </div>
                   <div class="modal-footer">
-                      <button type="button" class="btn btn-primary" onclick="save_request(this)">Ok</button>
-                      <button type="button" class="btn btn-outline-primary" onclick="edit_request(this)">Edit Tickets/Donations</button>
+                      <button type="button" class="btn btn-primary" onclick="saveRequest(this)">Ok</button>
+                      <button type="button" class="btn btn-outline-primary" onclick="editRequest(this)">Edit Tickets/Donations</button>
                       <button type="button" class="btn btn-outline-secondary" onclick="getPDF(this)">Get PDF</button>
                       <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                   </div>

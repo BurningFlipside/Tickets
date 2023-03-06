@@ -25,7 +25,7 @@ array_push($page->content['panels'], array('title'=>'Single Critical Volunteer',
 '));
 array_push($page->content['panels'], array('title'=>'Automatic Critical Volunteers', 'body'=>'
   <p>This option will automatically set all members of the AAR, AF, and Lead Groups to Critvol status.</p>
-  <button class="btn btn-primary" onclick="auto_critvol()">Automatically Set Critvols</button>
+  <button class="btn btn-primary" onclick="autoCritvol()">Automatically Set Critvols</button>
 '));
 array_push($page->content['panels'], array('title'=>'Bulk Critical Volunteers', 'body'=>'
   <p>You can upload a file with a different request ID or email address seperated by new lines or commas. Each request will then be set to crit vol status. A summary of the actions taken both requests that were changed and requests that were not will be printed to the screen when it is done.</p>

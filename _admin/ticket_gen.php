@@ -20,14 +20,14 @@ $page->body .= '
         </div>
         <br/>
         <div class="row">
-            <form id="gen_form">
+            <form id="gen_form" class="col-lg-12">
                 '.$new_table.'
                 <div class="form-group">
                     <input type="checkbox" id="auto_populate" name="auto_populate" checked/>
-                    <label for="auto_populate" class="col-sm-2 control-label">Auto populate tickets from valid recieved requests?</label>
+                    <label for="auto_populate" class="col-sm-4 control-label">Auto populate tickets from valid received requests?</label>
                 </div>
                 <input type="hidden" name="action" value="generate"/>
-                <button type="button" class="btn btn-default" onclick="gen_tickets(this)">Generate Tickets</button>
+                <button type="button" class="btn btn-primary" onclick="genTickets(this)">Generate Tickets</button>
             </form>
         </div>
     </div>

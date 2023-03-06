@@ -6,6 +6,7 @@ $page = new TicketAdminPage('Burning Flipside - Tickets');
 
 $page->addWellKnownJS(JS_DATATABLE);
 $page->addWellKnownCSS(CSS_DATATABLE);
+$page->addJS('https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js');
 
 $page->body .= '
         <div class="row">
@@ -36,6 +37,13 @@ $page->body .= '
                                 </select>
                             </div>
                         </div>
+                        <div class="form-group">
+                            <label for="posType" class="col-sm-2 control-label">Payment Type:</label>
+                            <div class="col-sm-10">
+                                <select class="form-control" name="pool" id="posType">
+                                </select>
+                            </div>
+                        </div>
                         <table class="table" id="ticket_select">
                             <thead>
                                 <tr>
@@ -51,7 +59,7 @@ $page->body .= '
                         <div class="form-group">
                             <label for="email" class="col-sm-2 control-label">Email Address:</label>
                             <div class="col-sm-10">
-                                <input class="form-control" type="text" name="email" id="email" required/>
+                                <input class="form-control" type="email" name="email" id="email" required/>
                             </div>
                         </div>
                         <div class="clearfix visible-sm visible-md visible-lg"></div>
@@ -97,8 +105,8 @@ $page->body .= '
               </div>
               <nav>
                 <ul class="pagination">
-                  <li class="page-item previous disabled"><a class="page-link" href="#" onclick="prev_tab(event)"><span aria-hidden="true">&larr;</span> Previous</a></li>
-                  <li class="page-item next"><a class="page-link" href="#" onclick="next_tab(event)">Next <span aria-hidden="true">&rarr;</span></a></li>
+                  <li class="page-item previous disabled"><a class="page-link" href="#" onclick="prevTab(event)"><span aria-hidden="true">&larr;</span> Previous</a></li>
+                  <li class="page-item next"><a class="page-link" href="#" onclick="nextTab(event)">Next <span aria-hidden="true">&rarr;</span></a></li>
                 </ul>
               </nav>
             </div>

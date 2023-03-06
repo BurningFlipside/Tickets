@@ -7,7 +7,11 @@ $page = new TicketAdminPage('Burning Flipside - Tickets');
 $page->addWellKnownJS(JS_DATATABLE);
 $page->addWellKnownCSS(CSS_DATATABLE);
 $page->addWellKnownJS(JS_BOOTBOX);
-$page->addJS('../js/instascan.min.js', false);
+//$page->addJS('js/extern/pspdfkit.min.js', false);
+$page->addJS('//unpkg.com/pdf-lib', false);
+//$page->addJS('//cdn.jsdelivr.net/npm/pdfjs-dist@2.13.216/build/pdf.min.js', false);
+$page->addJS('//cdn.jsdelivr.net/npm/pdfjs-dist@2.13.216/build/pdf.js', false);
+$page->addJS('//cdn.jsdelivr.net/npm/fabric@5.2.1/dist/fabric.min.js', false);
 
 $page->body .= '
     <div class="row">
@@ -19,37 +23,25 @@ $page->body .= '
         </div>
     </div>
     <div class="row">
-        <div class="form-group">
-            <label for="ticket_search" class="col-sm-2 control-label">Search:</label>
-            <div class="col-sm-10 input-group">
-		<input class="form-control" type="text" name="ticket_search" id="ticket_search"/>
-		<span class="input-group-btn">
-                    <button class="btn btn-default" id="ticketCodeScan" type="button" data-toggle="modal" data-target="#qrcodeScan"><i class="fa fa-qrcode" aria-hidden="true"></i></button>
-                </span>
-            </div>
+        <label for="ticket_search" class="col-sm-2 control-label">Search:</label>
+        <div class="col-sm-10 input-group">
+		    <input class="form-control" type="text" name="ticket_search" id="ticket_search"/>
+		    <span class="input-group-btn">
+                <button class="btn btn-default" id="ticketCodeScan" type="button" data-toggle="modal" data-target="#qrcodeScan"><i class="fa fa-qrcode" aria-hidden="true"></i></button>
+            </span>
         </div>
     </div>
     <div class"row"><br/><br/><br/><br/><br/></div>
     <div class="row">
-        <div class="panel-group" id="gate" role="tablist" aria-multiselectable="true">
-            <div class="panel panel-default">
-                <div class="panel-heading" role="tab" id="history_heading">
-                    <h4 class="panel-title">
-                        <a data-toggle="collapse" data-parent="#gate" href="#history" aria-expanded="true" aria-controls="history">Ticket History Search</a>
-                    </h4>
-                </div>
-                <div id="history" class="panel-collapse collapse" role="tabpanel" aria-labelledby="history_heading">
-                    <div class="panel-body">
-                        <div class="form-group">
-                            <label for="history_search" class="col-sm-2 control-label">History Search:</label>
-                            <div class="col-sm-10">
-                                <input class="form-control" type="text" name="history_search" id="history_search"/>
-                            </div>
-                        </div>
-                    </div>
+        <a class="btn btn-primary" data-toggle="collapse" href="#history" role="button" aria-expanded="false" aria-controls="history">Ticket History Search</a>
+    </div>
+    <div id="history" class="row collapse">
+            <div class="card card-body">
+                <label for="history_search" class="col-sm-2 control-label">History Search:</label>
+                <div class="col-sm-10">
+                    <input class="form-control" type="text" name="history_search" id="history_search"/>
                 </div>
             </div>
-        </div>
     </div>
     <div class="modal fade" aria-hidden="true" id="process_ticket_modal" style="display: none;" data-backdrop="static" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
@@ -122,7 +114,7 @@ $page->body .= '
                   </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-primary" onclick="process_ticket()">Process</button>
+                    <button type="button" class="btn btn-outline-primary" onclick="processTicket()">Process</button>
                     <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
                 </div>
             </div>
@@ -219,13 +211,13 @@ $page->body .= '
                         </div>
                     </div>
                     <div class="row">
-                      <div class="col-md-6" style="text-align: center;"><a onclick="prev_ticket()" style="cursor: pointer;" id="left_arrow"><span class="fa fa-chevron-left"></span></a></div>
-                      <div class="col-md-6" style="text-align: center;"><a onclick="next_ticket()" style="cursor: pointer;" id="right_arrow"><span class="fa fa-chevron-right"></span></a></div>
+                      <div class="col-md-6" style="text-align: center;"><a onclick="prevTicket()" style="cursor: pointer;" id="left_arrow"><span class="fa fa-chevron-left"></span></a></div>
+                      <div class="col-md-6" style="text-align: center;"><a onclick="nextTicket()" style="cursor: pointer;" id="right_arrow"><span class="fa fa-chevron-right"></span></a></div>
                     </div>
                   </div>
                 </div>
                 <div class="modal-footer">
-                    <button id="process_history" type="button" class="btn btn-default" onclick="process_history_ticket()">Process</button>
+                    <button id="process_history" type="button" class="btn btn-default" onclick="processHistoryTicket()">Process</button>
                     <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
                 </div>
             </div>
@@ -278,6 +270,7 @@ $page->body .= '
             </div>
         </div>
     </div>
+    <div id="waiverModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false"><div class="modal-dialog modal-lg"><div class="modal-content" id="waiverPDF" style="width: 100%; height: 100vh;"></div></div></div>
 ';
 
 $page->printPage();

@@ -9,7 +9,7 @@ $page->addWellKnownCSS(CSS_DATATABLE);
 
 $page->content['pageHeader'] = 'Requested Tickets';
 $page->content['selectors'] = '
-  Request Year: <select id="year" onchange="change_year(this)"></select>
+  Request Year: <select id="year" onchange="changeYear(this)"></select>
 ';
 $page->content['table'] = array('id' => 'tickets', 'headers'=>array('Request ID', 'First Name', 'Last Name', 'Type'));
 

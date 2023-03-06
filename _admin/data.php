@@ -16,7 +16,7 @@ $page->body .= '
         <div class="row">
             <label for="request_id" class="col-sm-2 control-label">Request ID:</label>
             <div class="col-sm-10">
-              <input class="form-control" type="text" name="request_id" id="request_id" onchange="lookup_request(this)" autofocus autocomplete="off"/>
+              <input class="form-control" type="text" name="request_id" id="request_id" onchange="lookupRequest(this)" autofocus autocomplete="off"/>
             </div>
         </div>
         <div class="row">
@@ -35,13 +35,13 @@ $page->body .= '
                             <div class="input-group-btn">
                                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false" id="type" data-type="*">All <span class="caret"></span></button>
                                 <ul class="dropdown-menu" role="menu">
-                                    <li><a href="#" onclick="change_menu(\'*\', \'All\');">All</a></li>
-                                    <li><a href="#" onclick="change_menu(\'mail\', \'Email\');">Email</a></li>
-                                    <li><a href="#" onclick="change_menu(\'givenName\', \'First Name\');">First Name</a></li>
-                                    <li><a href="#" onclick="change_menu(\'sn\', \'Last Name\');">Last Name</a></li>
+                                    <li><a href="#" onclick="changeMenu(\'*\', \'All\');">All</a></li>
+                                    <li><a href="#" onclick="changeMenu(\'mail\', \'Email\');">Email</a></li>
+                                    <li><a href="#" onclick="changeMenu(\'givenName\', \'First Name\');">First Name</a></li>
+                                    <li><a href="#" onclick="changeMenu(\'sn\', \'Last Name\');">Last Name</a></li>
                                 </ul>
                             </div>
-                            <input class="form-control" type="text" name="value" id="value" onchange="lookup_request_by_value(this)" autocomplete="off"/>
+                            <input class="form-control" type="text" name="value" id="value" onchange="lookupRequestByValue(this)" autocomplete="off"/>
                         </div>
                        <div class="clearfix visible-sm visible-md visible-lg"></div>
                     </div>
@@ -99,7 +99,7 @@ $page->body .= '
                         <input type="hidden" name="id" id="request_id_hidden"/>
                         </form>
                     </div>
-                    <div class="modal-footer"><button type="button" class="btn btn-default" id="save_btn" onclick="save_request(this)">Ok</button><button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button></div>
+                    <div class="modal-footer"><button type="button" class="btn btn-default" id="save_btn" onclick="saveRequest(this)">Ok</button><button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button></div>
                 </div>
             </div>
         </div>
