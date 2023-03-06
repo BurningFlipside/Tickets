@@ -63,7 +63,7 @@ abstract class KeyValueSingletonDataTable extends SingletonDataTable implements 
         return $this->cache;
     } 
 
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         if(!isset($this->cache[$offset]))
         {
@@ -72,7 +72,7 @@ abstract class KeyValueSingletonDataTable extends SingletonDataTable implements 
         return isset($this->cache[$offset]);
     }
 
-    public function offsetGet($offset)
+    public function offsetGet($offset): mixed
     {
         if(isset($this->cache[$offset]))
         {
@@ -87,7 +87,7 @@ abstract class KeyValueSingletonDataTable extends SingletonDataTable implements 
         return $this->cache[$offset];
     }
 
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
         //First cache all the current variables
         $this->toArray();
@@ -103,18 +103,18 @@ abstract class KeyValueSingletonDataTable extends SingletonDataTable implements 
         $this->cache[$offset] = $value;
     }
 
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         unset($this->cache[$offset]);
-        return $this->datatable->delete(new \Flipside\Data\Filter($this->getKeyColName()." eq '$offset'"));
+        $this->datatable->delete(new \Flipside\Data\Filter($this->getKeyColName()." eq '$offset'"));
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return $this->toArray();
     }
 
-    public function count($filter = false)
+    public function count($filter = false): int
     {
         return $this->data_table->count($filter);
     }
