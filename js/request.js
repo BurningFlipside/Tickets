@@ -1,6 +1,6 @@
 /* global $, TicketSystem, add_notification, browser_supports_cors, getParameterByName */
 /* exported deleteTicket, minorAffirmClicked */
-var ticketSystem = new TicketSystem('api/v1');
+var ticketSystem;
 
 var ticketConstraints = null;
 var tableRow = 0;
@@ -266,6 +266,7 @@ function addDonationTypeToTable(table, donation) {
   cell.appendTo(row);
   cell = $('<td/>', {style: 'vertical-align:middle; horizontal-align:left'});
   var id = 'donation_amount_'+donation.entityName;
+  id = id.replace(/ /g,'_');
   var dropdown = $('<select />', {id: id, name: id, 'class':'form-control'});
   $('<option/>', {value: '0', text: '$0'}).appendTo(dropdown);
   $('<option/>', {value: '5', text: '$5'}).appendTo(dropdown);
@@ -299,20 +300,20 @@ function donationsAjaxDone(jqXHR) {
     div.hide();
   }
 }
-/*
+
 function getTicketCount(type) {
   var values = $('[value="'+type+'"]').filter(':selected');
   return values.length;
-}*/
+}
 
 function shouldBeChecked(condition) {
   if(condition === '1') {
     return true;
   }
-  //var A = getTicketCount('A');
-  //var T = getTicketCount('T');
-  //var C = getTicketCount('C');
-  //var K = getTicketCount('K');
+  let A = getTicketCount('A');
+  let T = getTicketCount('T');
+  let C = getTicketCount('C');
+  let K = getTicketCount('K');
   var res = eval(condition);
   return res;
 }
@@ -389,6 +390,10 @@ function revertDonationForm() {
   }
 }
 
+function getPosition(string, subString, index) {
+  return string.split(subString, index).join(subString).length;
+}
+
 function requestDataSubmitted() {
   $('[id^=donation_amount_]').each(fixupDonationForm);
   var obj = {};
@@ -414,10 +419,13 @@ function requestDataSubmitted() {
       if(obj['donations'] === undefined) {
         obj['donations'] = {};
       }
-      if(obj['donations'][split[2]] === undefined) {
-        obj['donations'][split[2]] = {};
+      let type = name.substring(getPosition(name, '_', 2)+1);
+      type = type.replace(/_/g,' ');
+      if(obj['donations'][type] === undefined) {
+        obj['donations'][type] = {};
       }
-      obj['donations'][split[2]][split[1]] = item.value;
+      obj['donations'][type][split[1]] = item.value;
+      console.log(obj);
     } else {
       obj[`${name}`] = item.value;
     }
@@ -465,20 +473,25 @@ function currentRequestDone(request) {
           if(request[`${propertyName}`] === null) {
             continue;
           }
-          for(let donation of request.donations) {
-            var id = 'donation_amount_'+donation.type;
+          for(let donationName in request.donations) {
+            var id = 'donation_amount_'+donationName.replace(/ /g,'_');
             var dropdown = $('#'+id);
-            dropdown.val(donation.amount);
-            if(dropdown.val() === null) {
+            let donation = request.donations[donationName];
+            let amount = donation.amount;
+            dropdown.val(amount);
+            if(dropdown.val() === null || dropdown.val() === undefined) {
               dropdown.val('other');
-              var box = $('<input/>', {name: id, id: id+'_text', type: 'text', value: donation.amount});
+              var box = $('<input/>', {name: id, id: id+'_text', type: 'text', value: amount});
               box.appendTo(dropdown.parent());
             }
             if(donation.disclose !== undefined && donation.disclose === '1') {
-              $('#donation_disclose_'+donation.type).prop('checked', true);
+              $('#donation_disclose_'+donationName).prop('checked', true);
             }
           }
           break;
+        case 'survivalGuide':
+	  $('#survivalGuide')[0].checked = request.survivalGuide;
+	  break;
         default:
           $('#'+propertyName).val(request[`${propertyName}`]);
           break;
@@ -555,6 +568,11 @@ function startPopulateForm() {
 }
 
 function initInThread() {
+  if(window.TicketSystem === undefined) {
+    setTimeout(initInThread, 10);
+    return;
+  }
+  ticketSystem = new TicketSystem('api/v1');
   if($('#request_id').length > 0) {
     setTimeout(startPopulateForm, 0);
     $('[title]').tooltip();

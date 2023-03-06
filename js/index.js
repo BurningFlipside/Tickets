@@ -1,5 +1,5 @@
 /* global $, add_notification, getParameterByName, NOTIFICATION_SUCCESS, NOTIFICATION_WARNING, TicketSystem,  */
-/* exported copy_request, download_ticket, editTicket, showLongId, transfer_ticket, viewTicket */
+/* exported copy_request, downloadTicket, editTicket, showLongId, transferTicket, viewTicket, saveTicket */
 var ticketSystem = null;
 
 var outOfWindow = false;
@@ -40,7 +40,7 @@ function showLongId(hash) {
 function findTicketInTableByHash(table, hash) {
   var json = table.DataTable().ajax.json();
   for(let ticket of json.data) {
-    if(ticket.hash === hash) {
+    if(ticket.hash === hash) { // eslint-disable-line security/detect-possible-timing-attacks
       return ticket;
     }
   }
@@ -79,7 +79,7 @@ function saveTicketDone(data) {
   location.reload();
 }
 
-function save_ticket() {
+function saveTicket() {
   $.ajax({
     url: 'api/v1/tickets/'+$('#show_short_code').data('hash'),
     type: 'patch',
@@ -106,13 +106,13 @@ function editTicket(control) {
   $('#ticket_edit_modal').modal('show');
 }
 
-function download_ticket(control) {
+function downloadTicket(control) {
   var jq = $(control);
   var id = jq.attr('for');
-  window.open('api/v1/tickets/'+id+'/pdf', '_blank');  
+  window.open('api/v1/tickets/'+id+'/pdf', '_blank');  // eslint-disable-line security/detect-non-literal-fs-filename
 }
 
-function transfer_ticket(control) {
+function transferTicket(control) {
   var jq = $(control);
   var id = jq.attr('for');
   var ticket = getTicketDataByHash(id);
@@ -192,7 +192,7 @@ function getPDFButton(data) {
 }
 
 function getTransferButton(data) {
-  var transferOptions = createButtonOptions('Transfer Ticket<br/>Use this option to send<br/>the ticket to someone else', 'transfer_ticket(this)', data);
+  var transferOptions = createButtonOptions('Transfer Ticket<br/>Use this option to send<br/>the ticket to someone else', 'transferTicket(this)', data);
   return makeGlyphButton(transferOptions, 'fa fa-envelope');
 }
 
@@ -215,9 +215,9 @@ function initTable() {
     return;
   }
   if ($.fn.dataTable.isDataTable('#ticketList')) {
-    table = $('#ticketList').DataTable();
+    $('#ticketList').DataTable();
   } else {
-    table = $('#ticketList').dataTable({
+    $('#ticketList').dataTable({
       'ajax': 'api/v1/ticket?fmt=data-table',
       columns: [
         { 'data': 'firstName' },
@@ -251,7 +251,7 @@ function addButtonsToRow(row, request) {
   var html = makeGlyphLink(editOptions, 'fa fa-pencil-alt', 'request.php?request_id='+request.request_id+'&year='+request.year);
   cell.append(html);
 
-  html = makeGlyphButton(mailOptions, 'fa fa-envelope', request.sendEmail.bind(request));
+  html = makeGlyphButton(mailOptions, 'fa fa-envelope', request.sendEmail());
   cell.append(html);
 
   html = makeGlyphLink(pdfOptions, 'fa fa-download', request.getPdfUri());
@@ -266,11 +266,6 @@ function toggleHiddenRequests() {
   } else {
     rows.show();
   }
-}
-
-function copyRequest(e) {
-  var request = $(e.currentTarget).data('request');
-  window.location.assign('copy_request.php?id='+request.request_id+'&year='+request.year);
 }
 
 function addOldRequestToTable(tbody, request) {
@@ -289,12 +284,6 @@ function addOldRequestToTable(tbody, request) {
     row.append('<td>'+request.tickets.length+'</td>');
   }
   row.append('<td>$'+request.total_due+'</td>');
-  var cell = $('<td>');
-  //var button = $('<button class="btn btn-link btn-sm" data-toggle="tooltip" data-placement="top" title="Copy Old Request"><span class="fa fa-clipboard"></span></button>');
-  //button.data('request', request);
-  //button.on('click', copyRequest);
-  //cell.append(button);
-  row.append(cell);
   container.after(row);
 }
 
