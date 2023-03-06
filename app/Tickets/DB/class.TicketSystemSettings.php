@@ -4,29 +4,35 @@ namespace Tickets\DB;
 
 class TicketSystemSettings extends KeyValueSingletonDataTable
 {
-    function getTableName()
+    function getTableName(): string
     {
         return 'Variables';
     }
 
-    function getKeyColName()
+    function getKeyColName(): string
     {
         return 'name';
     }
 
-    function getValueColName()
+    function getValueColName(): string
     {
         return 'value';
     }
 
-    public function isTestMode()
+    public function isTestMode(): bool
     {
         return $this['test_mode'] === '1';
     }
 
-    public function count($filter = false)
+    public function count($filter = false): int
     {
         return count((array)$this);
+    }
+
+    public static function getYear(): int
+    {
+        $settings = static::getInstance();
+        return $settings['year'];
     }
 }
 ?>
