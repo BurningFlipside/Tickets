@@ -64,16 +64,16 @@ $page->body .= '
                         </div>
                         <div class="clearfix visible-sm visible-md visible-lg"></div>
                         <div class="form-group">
-                            <label for="message" class="col-sm-2 control-label">First Name (Optional):</label>
+                            <label for="message" class="col-sm-2 control-label">First Name:</label>
                             <div class="col-sm-10">
-                                <input class="form-control" type="text" name="firstName" id="firstName"/>
+                                <input class="form-control" type="text" name="firstName" id="firstName" required/>
                             </div>
                         </div>
                         <div class="clearfix visible-sm visible-md visible-lg"></div>
                         <div class="form-group">
-                            <label for="message" class="col-sm-2 control-label">Last Name (Optional):</label>
+                            <label for="message" class="col-sm-2 control-label">Last Name:</label>
                             <div class="col-sm-10">
-                                <input class="form-control" type="text" name="lastName" id="lastName"/>
+                                <input class="form-control" type="text" name="lastName" id="lastName" required/>
                             </div>
                         </div>
                         <div class="clearfix visible-sm visible-md visible-lg"></div>
