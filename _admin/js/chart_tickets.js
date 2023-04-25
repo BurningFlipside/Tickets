@@ -136,17 +136,42 @@ function gotTickets(jqXHR) {
   chart2.update(chart2Data);
 }
 
+function gotSoldTicketsByYear(jqXHR) {
+  if(jqXHR.status !== 200) {
+    return;
+  }
+  let types = jqXHR.responseJSON;
+  let context = this;
+  for(let year of types) {
+    let row = $('#ticketsSoldByYear tbody tr#'+year.type);
+    if(row.length === 0) {
+      row = $('#ticketsSoldByYear tbody').append('<tr id='+year.type+'><th>'+year.type+'</th></tr>').children('#'+year.type);
+      for(let i = 0; i < context.total; i++) {
+        row.append('<td/>');
+      }
+    }
+    let col = row.children('td:nth-child('+context.col+')');
+    if(col.length === 0) {
+      continue;
+    }
+    col[0].innerHTML = year.count;
+  }
+}
+
 function gotAllYears(years) {
   years.sort();
   var thead = $('#ticketsSold thead tr');
+  let thead2 = $('#ticketsSoldByYear thead tr');
   var rows = $('#ticketsSold tbody tr');
   thead.append('<th></th>');
+  thead2.append('<th></th>');
   let i = 0;
   for(let year of years) {
     if(year === 0) {
       continue;
     }
     thead.append('<th>'+year+'</th>');
+    thead2.append('<th>'+year+'</th>');
     for(var j = 0; j < rows.length; j++) {
       rows[j].innerHTML += '<td></td>'; // eslint-disable-line security/detect-object-injection
     }
@@ -156,12 +181,18 @@ function gotAllYears(years) {
     chart2Data.data.datasets[2].data.push(0);
     chart2Data.data.datasets[3].data.push(0);
     chart2Data.data.datasets[4].data.push(0);
-    var obj = { year: year, col: i+2};
+    var obj = { year: year, col: i+2, total: years.length};
     $.ajax({
       url: '../api/v1/tickets?$filter=year eq '+year+' and sold eq 1&$select=pool_id,discretionary',
       type: 'GET',
       context: obj,
       complete: gotTickets
+    });
+    $.ajax({
+      url: '../api/v1/tickets/types/'+year,
+      type: 'GET',
+      context: obj,
+      complete: gotSoldTicketsByYear
     });
     i++;
   }
