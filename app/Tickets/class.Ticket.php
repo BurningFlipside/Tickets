@@ -290,10 +290,20 @@ class Ticket extends \Flipside\SerializableObject
     {
         $settings = \Tickets\DB\TicketSystemSettings::getInstance();
         $groups = $user->getGroups();
-        $count = count($groups);
+	$count = count($groups);
+	$af = false;
         for($i = 0; $i < $count; $i++)
         {
-            $groups[$i] = '\''.$groups[$i]->getGroupName().'\'';
+            $name = $groups[$i]->getGroupName();
+            $groups[$i] = '\''.$name.'\'';
+            if($name === 'AAR')
+            {
+                $af = true;
+            }
+        }
+        if($af)
+        {
+            array_push($groups, '\'AFs\'');
         }
         $groups = implode(',', $groups);
         $data_table = self::getDataTableByName('PoolMap');
