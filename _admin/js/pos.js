@@ -25,13 +25,18 @@ function validateCurrent() {
       var qtyControls = $('[name^=Qty]');
       var cost = 0;
       var found = false;
+      let posType = $('#posType').val();
       for(let qtyControl of qtyControls) {
         var control = $(qtyControl);
         var qty = control.val();
         if(qty.length > 0) {
           qty = parseInt(qty, 10);
           found = true;
-          cost += qty*parseInt(control.data('cost'),10);
+          if(posType === 'square') {
+	    cost += qty*parseInt(control.data('squarecost'),10);
+          } else {
+            cost += qty*parseInt(control.data('cost'),10);
+	  }
           if(qty > parseInt(control.data('max'),10)) {
             alert('Not enough tickets to fullfil request!');
             return false;
@@ -60,6 +65,10 @@ function finalPostDone(jqXHR) {
   $('.next').attr('disabled', false);
   if(jqXHR.status !== 200 || jqXHR.responseJSON === undefined) {
     alert('Failed to sell ticket! '+jqXHR.status);
+    Sentry.configureScope(function(scope) {
+  	  scope.setExtra("server_data", jqXHR);
+      Sentry.captureException(new Error('Failed to sell ticket!'));
+	  });
     return;
   }
   let data = jqXHR.responseJSON;
@@ -75,6 +84,10 @@ function didSquareSale(jqXHR) {
   $('.next').attr('disabled', false);
   if(jqXHR.status !== 200 || jqXHR.responseJSON === undefined) {
     alert('Failed to sell ticket! '+jqXHR.status);
+    Sentry.configureScope(function(scope) {
+  	  scope.setExtra("server_data", jqXHR);
+      Sentry.captureException(new Error('Failed to sell ticket!'));
+	  });
     return;
   }
   let data = jqXHR.responseJSON;
@@ -167,7 +180,7 @@ function getTicketTypesDone(jqXHR) {
     return;
   }
   for(let type of data) {
-    tbody.append('<tr><td><input class="form-control" type="number" name="Qty'+type.typeCode+'" data-type="'+type.typeCode+'" data-cost="'+type.cost+'" data-max="0" disabled/></td><td>'+type.description+'</td></tr>');
+    tbody.append('<tr><td><input class="form-control" type="number" name="Qty'+type.typeCode+'" data-type="'+type.typeCode+'" data-cost="'+type.cost+'" data-squarecost="'+type.squareCost+'" data-max="0" disabled/></td><td>'+type.description+'</td></tr>');
   }
   if(id === null) {
     $.ajax({
