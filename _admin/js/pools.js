@@ -79,6 +79,71 @@ function createPool() {
   });
 }
 
+function doTicketAssignment(poolId, assignTypes) {
+  $.ajax({
+    url: '../api/v1/pools/'+poolId+'/Actions/Pool.Assign',
+    contentType: 'application/json',
+    method: 'post',
+    data: JSON.stringify(assignTypes),
+    processData: false,
+    complete: opDone
+  });
+}
+
+function gotUnassignedTickets(jqXHR) {
+  let poolId = this;
+  if(jqXHR.status !== 200 || jqXHR.responseJSON === undefined) {
+    alert('Unable to obtain unassigned tickets!');
+    return;
+  }
+  let types = {};
+  for(let ticket of jqXHR.responseJSON) {
+    let type = ticket.type;
+    if(types[type] === undefined) {
+      types[type] = 1;
+      continue;
+    }
+    types[type]++;
+  }
+  let msg = 'Available Tickets:<br/>';
+  for(let type in types) {
+    msg+= '&nbsp;&nbsp;'+type+': '+types[type]+'<input class="form-control" type="number" name="'+type+'" id="'+type+'" min="0" max="'+types[type]+'"><br/>';
+  }
+  bootbox.dialog({
+    title: 'Available tickets for Pool #'+this,
+    message: msg,
+    buttons: {
+      cancel: {
+        label: 'Cancel',
+        className: 'btn-danger'
+      },
+      ok: {
+        label: 'Assign',
+        className: 'btn-info',
+        callback: function() {
+          let assignTypes = {};
+          for(let type in types) {
+            let val = $('#'+type).val();
+            if(val > 0) {
+              assignTypes[type]=val;
+            }
+          }
+          doTicketAssignment(poolId, assignTypes);
+        }
+      }
+    }
+  });
+}
+
+function poolAssign(poolId) {
+  $.ajax({
+    url: '../api/v1/tickets?$filter=year eq current and pool_id eq -1 and assigned eq 0',
+    method: 'get',
+    context: poolId,
+    complete: gotUnassignedTickets
+  });
+}
+
 function gotPoolTickets(jqXHR) {
   if(jqXHR.status !== 200 || jqXHR.responseJSON === undefined) {
     alert('Unable to obtain pools!');
@@ -146,6 +211,7 @@ function gotPools(jqXHR) {
     tbody.append('<tr><td><button class="btn btn-link" onclick="deletePoolDialog('+myID+')" title="Delete Pool"><i class="fa fa-times"></i></button>'+
                  '<button class="btn btn-link" onclick="editDialogPool('+myID+')" title="Edit Pool"><i class="fa fa-pencil-alt"></i></button>'+
                  '<button class="btn btn-link" onclick="poolStats('+myID+')" title="Pool Stats"><i class="fa fa-chart-bar"></i></button>'+
+	         '<button class="btn btn-link" onclick="poolAssign('+myID+')" title="Assign Tickets to Pool"><i class="fa fa-plus-square"></i></button>'+
                  '</td><td>'+myID+'</td><td>'+pool.pool_name+'</td><td>'+pool.group_name+'</td></tr>');
   }
   tbody.append('<tr><td><button class="btn btn-link" onclick="newPool()" title="Add Pool"><i class="fa fa-plus"></i></button></td><td colspan=3"></td></tr>');
@@ -190,3 +256,4 @@ function initPage() {
 }
 
 $(initPage);
+// vim: set tabstop=2 shiftwidth=2 expandtab:
