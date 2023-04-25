@@ -5,6 +5,7 @@ class TicketAPI extends Flipside\Http\Rest\RestAPI
     {
         $app->get('[/]', array($this, 'listTickets'));
         $app->get('/types[/]', array($this, 'listTicketTypes'));
+        $app->get('/types/{year}[/]', array($this, 'listSoldTicketTypeByYear'));
         $app->get('/discretionary[/]', array($this, 'listDiscretionaryTickets'));
         $app->post('/discretionary[/]', array($this, 'assignDiscretionaryTickets'));
         $app->get('/pos[/]', array($this, 'getSellableTickets'));
@@ -268,6 +269,19 @@ class TicketAPI extends Flipside\Http\Rest\RestAPI
         return $response->withJson($ticket_types);
     }
 
+    public function listSoldTicketTypeByYear($request, $response, $args)
+    {
+        $this->validateLoggedIn($request);
+        $year = (int)$args['year'];
+        if(!$this->user->isInGroupNamed('TicketAdmins'))
+        {
+            return $response->withStatus(401);
+        }
+        $ticketDataTable = \Tickets\DB\TicketsDataTable::getInstance();
+        $data = $ticketDataTable->raw_query("SELECT type,COUNT(*) as count FROM tblTickets WHERE YEAR=$year AND sold=1 GROUP BY TYPE;");
+        return $response->withJson($data);
+    }
+
     public function sendTicketEmail($request, $response, $args)
     {
         $this->validateLoggedIn($request);
@@ -430,6 +444,10 @@ class TicketAPI extends Flipside\Http\Rest\RestAPI
         if(!isset($obj['posType']))
         {
             $obj['posType'] = 'cash';
+        }
+        if(!isset($obj['email']) || !isset($obj['firstName']) || !isset($obj['lastName']))
+        {
+            throw new \Exception('Missing Required Parameter email, firstName, or lastName!');
         }
         if($obj['posType'] === 'square')
         {
