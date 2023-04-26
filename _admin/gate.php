@@ -50,7 +50,7 @@ $page->body .= '
                     <h4 class="modal-title" id="modal_title">Process Ticket</h4>
                     <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body" style="height: 70vh; overflow-y: auto;">
                   <div class="container-fluid">
                     <div class="row" style="margin-top: 10px">
                         <label for="hash" class="col-sm-2 col-form-label">Code:</label>
@@ -270,7 +270,7 @@ $page->body .= '
             </div>
         </div>
     </div>
-    <div id="waiverModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false"><div class="modal-dialog modal-lg"><div class="modal-content" id="waiverPDF" style="width: 100%; height: 100vh;"></div></div></div>
+    <div id="waiverModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false"><div class="modal-dialog modal-lg" style="width: 90%; max-width:90%;"><div class="modal-content" id="waiverPDF" style="width: 100%; height: 100vh;"></div></div></div>
 ';
 
 $page->printPage();

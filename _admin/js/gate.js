@@ -85,51 +85,18 @@ function startLocalWaivers(jqXHR) {
   $('#waiverPDF').empty();
   $('#waiverModal').modal('show');
   let data = jqXHR.responseJSON;
-  let bundle = 'MinorBundle.pdf';
-  if(data.type === 'A') {
-    //Display adult waivers
-    bundle = 'AdultBundle.pdf';
-  }
-  let today = new Date();
   let ticketID = data.physical_ticket_id;
   if(ticketID.trim().length === 0) {
     //Use the ticket short code...
     ticketID = data.hash.substring(0, 8);
   }
-  fetch(bundle).then((res) => {
-    res.arrayBuffer().then((buff) => {
-      PDFLib.PDFDocument.load(buff).then((pdfDoc) => {
-        let form = pdfDoc.getForm();
-        form.getTextField('TicketID').setText(ticketID);
-        form.getTextField('SigDate').setText((today.getMonth()+1)+'/'+(today.getDate())+'/'+today.getFullYear());
-        console.log(form);
-        pdfDoc.saveAsBase64().then((pdfDataUri) => {
-          displayPDF('#waiverPDF', pdfDataUri);
-        });
-      });
-    });
-  });
-/*
-    
-    PSPDFKit.unload('#waiverPDF');
-    
-    PSPDFKit.load({
-      document: bundle,
-      container: '#waiverPDF'
-    }).then((instance) => {
-      let toolbar = [{type: 'pager'}, {type: 'pan'}, {type: 'zoom-out'}, {type: 'zoom-in'}, {type: 'custom', title: 'Submit', onPress: () => {submitClick(instance)}}];
-      instance.setToolbarItems(toolbar);
-      let today = new Date();
-      let ticketID = data.physical_ticket_id;
-      if(ticketID.trim().length === 0) {
-          //Use the ticket short code...
-          ticketID = data.hash.substring(0, 8);
-      }
-      instance.setFormFieldValues({
-        "TicketID": ticketID,
-        "SigDate": (today.getMonth()+1)+'/'+(today.getDate())+'/'+today.getFullYear()
-      });
-    });*/
+  let minor = '&minor=true';
+  if(data.type === 'A') {
+    //Display adult waivers
+    minor='';
+  }
+  $('#waiverModal').modal('show');
+  $('#waiverPDF').append('<iframe src="waiver.php?TicketID='+ticketID+minor+'" style="width: 100%; height: 100vh;"/>');
 }
 
 function startJotFormWaivers(jqXHR) {
@@ -222,10 +189,10 @@ function foundTicket(data) {
   $('#search_ticket_modal').modal('hide');
   console.log(data);
   $('#process_ticket_modal .modal-body .alert').remove();
-  if(data.used !== '0') {
+  if(data.used !== 0) {
     add_notification($('#process_ticket_modal .modal-body'), 'Ticket is already used!', NOTIFICATION_FAILED, false);
   }
-  if(data['void'] !== '0') {
+  if(data['void'] !== 0) {
     add_notification($('#process_ticket_modal .modal-body'), 'Ticket is void!', NOTIFICATION_FAILED, false);
     $('#void').attr('checked', true);
   } else {
@@ -634,8 +601,18 @@ function enumError(err) {
   console.log(err);
 }
 
+function handleMessage(event) {
+  if(event.data === 'waiverDone') {
+    alert('Waiver successfully submitted! Please give system back to Gate Staff.');
+    $('#waiverModal').modal('hide');
+  }
+}
+
 function initGatePage() {
   waiverMode = getParameterByName('waiverMode');
+  if(waiverMode === null) {
+    waiverMode = 'local';
+  }
   $.ajax({
     url: '../api/v1/globals/vars/currentEarlyEntry',
     type: 'get',
@@ -664,6 +641,7 @@ function initGatePage() {
   $('#search_ticket_table').on('click', 'tr', ticketClicked);
   $('#history_ticket_table').on('click', 'tr', historyClicked);
   enumError(null);
+  window.addEventListener('message', handleMessage, false);
 }
 
 $(initGatePage);
