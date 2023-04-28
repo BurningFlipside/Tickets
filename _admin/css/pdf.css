@@ -1,0 +1,48 @@
+:root {
+    --annotation-unfocused-field-background: url("data:image/svg+xml;charset=UTF-8,<svg width='1px' height='1px' xmlns='http://www.w3.org/2000/svg'><rect width='100%' height='100%' style='fill:rgba(0, 54, 255, 0.13);'/></svg>");
+    --input-focus-border-color: Highlight;
+    --input-focus-outline: 1px solid Canvas;
+    --input-unfocused-border-color: transparent;
+    --input-disabled-border-color: transparent;
+    --input-hover-border-color: black;
+    --link-outline: none;
+}
+
+.annotationLayer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    transform-origin: 0 0;
+    z-index: 3;
+}
+
+.annotationLayer canvas {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.annotationLayer section {
+    position: absolute;
+    text-align: initial;
+    pointer-events: auto;
+    box-sizing: border-box;
+    transform-origin: 0 0;
+}
+
+.annotationLayer .textWidgetAnnotation input,
+.annotationLayer .textWidgetAnnotation textarea,
+.annotationLayer .choiceWidgetAnnotation select,
+.annotationLayer .buttonWidgetAnnotation.checkBox input,
+.annotationLayer .buttonWidgetAnnotation.radioButton input,
+.annotationLayer .signatureAnnotation button {
+  background-image: var(--annotation-unfocused-field-background);
+  border: 2px solid var(--input-unfocused-border-color);
+  box-sizing: border-box;
+  font: calc(9px * var(--scale-factor)) sans-serif;
+  height: 100%;
+  margin: 0;
+  vertical-align: top;
+  width: 100%;
+}
