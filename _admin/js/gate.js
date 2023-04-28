@@ -2,7 +2,30 @@
 /*exported nextTicket, prevTicket, processHistoryTicket, processTicket, submitClick*/
 var historyData = null;
 var earlyEntry;
+var scanner;
+var myCameras;
 var waiverMode = null;
+
+function processedNameChange(jqXHR) {
+  if(jqXHR.status === 200 && jqXHR.responseJSON === true) {
+    add_notification($('#process_ticket_modal .modal-body'), 'Name corresponds to Denial of Entry list. Please contact Actual.', NOTIFICATION_FAILED, false);
+  }
+}
+
+function nameChanged() {
+  var data = {};
+  data.firstName = $('#firstName').val();
+  data.lastName  = $('#lastName').val();
+  $.ajax({
+    url:  '../api/v1/tickets/Actions/CheckDNE',
+    contentType: 'application/json',
+    type: 'POST',
+    dataType: 'json',
+    data: JSON.stringify(data),
+    processData: false,
+    complete: processedNameChange
+  });
+}
 
 function submitClick(pdfInstance) {
   let promises = [];
@@ -33,7 +56,6 @@ function submitClick(pdfInstance) {
       console.log(buffer);
       $('#waiverModal').modal('hide');
     });
-  });
 }
 
 function displayPDF(location, pdfSrc) {
@@ -189,6 +211,9 @@ function foundTicket(data) {
   $('#search_ticket_modal').modal('hide');
   console.log(data);
   $('#process_ticket_modal .modal-body .alert').remove();
+  if(data.contactActual === true) {
+    add_notification($('#process_ticket_modal .modal-body'), 'Name corresponds to Denial of Entry list. Please contact Actual.', NOTIFICATION_FAILED, false);
+  }
   if(data.used !== 0) {
     add_notification($('#process_ticket_modal .modal-body'), 'Ticket is already used!', NOTIFICATION_FAILED, false);
   }
@@ -597,8 +622,14 @@ function gotEarlyEntry(jqXHR) {
 }
 
 function enumError(err) {
-  $('#ticketCodeScan').hide();
-  console.log(err);
+    $('#ticketCodeScan').hide();
+    console.log(err);
+}
+
+function codeScanned(content) {
+    console.log(content);
+    $('#qrcodeScan').modal('hide');
+    get_ticket(content);
 }
 
 function handleMessage(event) {
@@ -640,7 +671,15 @@ function initGatePage() {
   });
   $('#search_ticket_table').on('click', 'tr', ticketClicked);
   $('#history_ticket_table').on('click', 'tr', historyClicked);
-  enumError(null);
+  if(navigator.getUserMedia !== undefined) {
+    Instascan.Camera.getCameras().then(gotCameras).catch(enumError);
+    scanner = new Instascan.Scanner({video: document.getElementById('v'), mirror: false});
+    scanner.addListener('scan', codeScanned);
+  } else {
+    enumError(null);
+  }
+  $('#firstName').change(nameChanged)
+  $('#lastName').change(nameChanged);
   window.addEventListener('message', handleMessage, false);
 }
 

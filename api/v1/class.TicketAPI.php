@@ -19,7 +19,8 @@ class TicketAPI extends Flipside\Http\Rest\RestAPI
         $app->post('/{hash}/Actions/Ticket.Sell', array($this, 'sellTicket'));
         $app->post('/pos/sell', array($this, 'sellMultipleTickets'));
         $app->post('/Actions/VerifyShortCode/{code}', array($this, 'verifyShortCode'));
-        $app->post('/Actions/GenerateTickets', array($this, 'generateTickets'));
+	$app->post('/Actions/GenerateTickets', array($this, 'generateTickets'));
+	$app->post('/Actions/CheckDNE', array($this, 'checkDNE'));
         $app->post('/Actions/PopulatePool', array($this, 'populatePool'));
         $app->post('/Actions/submitWaiver', array($this, 'submitWaiver'));
         $app->post('/Actions/EE', array($this, 'doEarlyEntry'));
@@ -615,6 +616,27 @@ class TicketAPI extends Flipside\Http\Rest\RestAPI
             }
         }
         return $response->withJson($returnVal);
+    }
+
+    public function checkDNE($request, $response, $args)
+    {
+	$this->validateLoggedIn($request);
+        if(!$this->user->isInGroupNamed('TicketAdmins'))
+        {
+		return $response->withStatus(401);
+	}
+	if(!file_exists(dirname(__FILE__).'/../../dne.csv'))
+        {
+            return $response->withStatus(404);
+        }
+        $dne = new \Flipside\Data\CSVDataTable(dirname(__FILE__).'/../../dne.csv');
+        $body = $request->getParsedBody();
+        $test = $dne->read(new \Data\Filter('firstName eq '.$body['firstName'].' and lastName eq '.$body['lastName']));
+        if(count($test) === 0)
+        {
+            return $response->withStatus(404);
+        }
+        return $response->withJson(true);
     }
 
     public function populatePool($request, $response, $args)
