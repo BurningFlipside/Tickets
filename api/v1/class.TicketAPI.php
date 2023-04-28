@@ -20,7 +20,6 @@ class TicketAPI extends Flipside\Http\Rest\RestAPI
         $app->post('/Actions/VerifyShortCode/{code}', array($this, 'verifyShortCode'));
 	$app->post('/Actions/GenerateTickets', array($this, 'generateTickets'));
 	$app->post('/Actions/CheckDNE', array($this, 'checkDNE'));
-        $app->post('/Actions/GenerateTickets', array($this, 'generateTickets'));
         $app->post('/Actions/PopulatePool', array($this, 'populatePool'));
         $app->post('/Actions/submitWaiver', array($this, 'submitWaiver'));
     }
@@ -581,7 +580,7 @@ class TicketAPI extends Flipside\Http\Rest\RestAPI
         {
             return $response->withStatus(404);
         }
-        $dne = new \Data\CSVDataTable(dirname(__FILE__).'/../../dne.csv');
+        $dne = new \Flipside\Data\CSVDataTable(dirname(__FILE__).'/../../dne.csv');
         $body = $request->getParsedBody();
         $test = $dne->read(new \Data\Filter('firstName eq '.$body['firstName'].' and lastName eq '.$body['lastName']));
         if(count($test) === 0)

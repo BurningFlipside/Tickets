@@ -14,7 +14,7 @@ class Ticket extends \Flipside\SerializableObject
 	{
             if(file_exists(dirname(__FILE__).'/../../dne.csv'))
 	    {
-                static::$dne = new \Data\CSVDataTable(dirname(__FILE__).'/../../dne.csv');
+                static::$dne = new \Flipside\Data\CSVDataTable(dirname(__FILE__).'/../../dne.csv');
             }
 	    else
 	    {
@@ -24,7 +24,7 @@ class Ticket extends \Flipside\SerializableObject
         parent::__construct($data);
 	if($this->firstName !== '' && $this->lastName !== '' && static::$dne)
 	{
-            $test = static::$dne->read(new \Data\Filter('firstName eq '.$this->firstName.' and lastName eq '.$this->lastName));
+            $test = static::$dne->read(new \Flipside\Data\Filter('firstName eq '.$this->firstName.' and lastName eq '.$this->lastName));
             if(count($test))
 	    {
                 $this->contactActual = true;

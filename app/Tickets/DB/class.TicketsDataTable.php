@@ -14,7 +14,7 @@ class TicketsDataTable extends SingletonDataTable
 	$this->settings = TicketSystemSettings::getInstance();
 	if(file_exists(dirname(__FILE__).'/../../../dne.csv'))
 	{
-            $this->dne = new \Data\CSVDataTable(dirname(__FILE__).'/../../../dne.csv');
+            $this->dne = new \Flipside\Data\CSVDataTable(dirname(__FILE__).'/../../../dne.csv');
 	}
 	else
 	{
@@ -79,7 +79,7 @@ class TicketsDataTable extends SingletonDataTable
 		}
 		if($res[$i]['firstName'] !== '' && $res[$i]['lastName'] !== '' && $this->dne)
 		{
-                    $test = $this->dne->read(new \Data\Filter('firstName eq '.$res[$i]['firstName'].' and lastName eq '.$res[$i]['lastName']));
+                    $test = $this->dne->read(new \Flipside\Data\Filter('firstName eq '.$res[$i]['firstName'].' and lastName eq '.$res[$i]['lastName']));
 		    if(count($test))
 		    {
                         $res[$i]['contactActual'] = true;
