@@ -21,6 +21,7 @@ require('class.RequestWithTicketsAPI.php');
 require('class.SecondaryAPI.php');
 require('class.TicketAPI.php');
 require('class.TicketHistoryAPI.php');
+require('class.Square.php');
 
 $site = new \Flipside\Http\WebSite();
 $site->registerAPI('/', new BaseAPI());
@@ -36,6 +37,7 @@ $site->registerAPI('/requests', new RequestAPI());
 $site->registerAPI('/request', new RequestAPI());
 $site->registerAPI('/requests_w_tickets', new RequestWithTicketsAPI());
 $site->registerAPI('/secondary', new SecondaryAPI());
+$site->registerAPI('/square', new SquareAPI());
 $site->registerAPI('/ticket', new TicketAPI());
 $site->registerAPI('/tickets', new TicketAPI());
 $site->registerAPI('/tickets_history', new TicketHistoryAPI());

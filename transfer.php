@@ -92,7 +92,7 @@ else
                                                 <input class="form-control" type="text" name="lastName" id="lastName" data-toggle="tooltip" data-placement="top" title="The last name that matches the legal photo ID that will be presented at the Burning Flipside gate." value="'.$ticket->lastName.'"/>
                                             </div>
                                         </div>
-                                        <button type="button" class="btn btn-primary" onclick="claim_ticket()">Claim Ticket</button>
+                                        <button type="button" class="btn btn-primary" onclick="claimTicket()">Claim Ticket</button>
                                     </formset>
                                 </div>';
             }

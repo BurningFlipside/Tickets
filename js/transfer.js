@@ -1,5 +1,5 @@
 /* global $, browser_supports_input_type */
-/* exported claim_ticket, transfer */
+/* exported claimTicket, transfer */
 function changeNameDone(jqXHR) {
   var data = jqXHR.responseJSON;
   if(data !== undefined && data.error !== undefined) {
@@ -30,7 +30,7 @@ function transfer() {
     success: transferDone});
 }
 
-function claim_ticket() {
+function claimTicket() {
   var obj = {};
   obj.firstName = $('#firstName').val();
   obj.lastName  = $('#lastName').val();

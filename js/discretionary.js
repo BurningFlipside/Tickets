@@ -11,11 +11,14 @@ function sellTicket(control) {
   window.location = '_admin/pos.php?id='+ticket.hash;
 }
 
-function makeDiscretionaryAction(data) {
+function makeDiscretionaryAction(data, type, fullTicket) {
   var res = '';
   var viewOptions = {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'View Ticket Code', for: data, onclick: 'view_ticket(this)'};
-  var pdfOptions =  {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Download PDF', for: data, onclick: 'download_ticket(this)'};
+  var pdfOptions =  {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Download PDF', for: data, onclick: 'downloadTicket(this)'};
   var sellOptions = {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Sell Ticket<br/>Use this option to sell<br/>the ticket to someone else', 'data-html': true, for: data, onclick: 'sellTicket(this)'};
+  if(fullTicket.transferInProgress === 1) {
+    return 'Ticket Sale in Progress';
+  }
   if(browser_supports_font_face()) {
     if($(window).width() < 768) {
       viewOptions.type = 'button';

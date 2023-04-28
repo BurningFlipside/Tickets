@@ -44,7 +44,7 @@ $page->body .= '
                                 Drag and Drop files here
                             </div>
                             <textarea id="bulk_text" placeholder="Or you can enter emails here" rows=10 cols=40></textarea><br/>
-                            <button class="btn btn-default" onclick="process_bulk()">Process</button>
+                            <button class="btn btn-default" onclick="processBulk()">Process</button>
                         </div>
                     </div>
                 </div>

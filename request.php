@@ -117,6 +117,13 @@ if($page->user)
             </label>
         </fieldset>
         <fieldset>
+            <legend>Survival Guide</legend>
+            <input id="survivalGuide" name="survivalGuide" type="checkbox"/>&nbsp;
+            <label for="survivalGuide">
+                For $2 please mail me a physical copy of the survival guide. The survival guide is available to everyone electronically. 
+            </label>
+        </fieldset>
+        <fieldset>
             <legend>Mailing Lists</legend>
             It is highly recommended that all Burning Flipside participants sign up for one or more email lists to allow
             AAR, LLC to communicate important details about Burning Flipside before and after the event.<br/>

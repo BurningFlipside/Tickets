@@ -1,12 +1,12 @@
 /* global $ */
-/* exported save */
+/* exported save, genPreview */
 function genPreviewDone(jqXHR) {
   if(jqXHR.status !== 200) {
     alert('Unable to generate a preview!');
     console.log(jqXHR);
     return;
   }
-  var pdfWin = window.open('data:application/pdf;base64, '+jqXHR.responseText);
+  var pdfWin = window.open('data:application/pdf;base64, '+jqXHR.responseText); // eslint-disable-line security/detect-non-literal-fs-filename
   if(!pdfWin) {
     alert('Popup was blocked!');
   }
@@ -21,7 +21,7 @@ function saveDone(jqXHR) {
   console.log(jqXHR);
 }
 
-function gen_preview() {
+function genPreview() {
   $.ajax({
     url: '../api/v1/globals/Actions/generatePreview/Tickets/TicketPDF',
     type: 'post',

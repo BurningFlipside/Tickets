@@ -152,7 +152,10 @@ class Ticket extends \Flipside\SerializableObject
         {
             $datatable = self::get_data_table();
         }
-        return $datatable->update($this->jsonSerialize());
+        $data = $this->jsonSerialize();
+        unset($data['hash']);
+        unset($data['hash_words']);
+        return $datatable->update(new \Flipside\Data\Filter('hash eq "'.$this->hash.'"'), $data);
     }
 
     function sendEmail($email = false, $attachment = true, $message = false)
@@ -187,6 +190,7 @@ class Ticket extends \Flipside\SerializableObject
     {
         $this->email = $email;
         $this->sold  = 1;
+        $this->transferInProgress = 0;
         if($firstName !== false)
         {
             $this->firstName = $firstName;
@@ -311,10 +315,20 @@ class Ticket extends \Flipside\SerializableObject
     {
         $settings = \Tickets\DB\TicketSystemSettings::getInstance();
         $groups = $user->getGroups();
-        $count = count($groups);
+	$count = count($groups);
+	$af = false;
         for($i = 0; $i < $count; $i++)
         {
-            $groups[$i] = '\''.$groups[$i]->getGroupName().'\'';
+            $name = $groups[$i]->getGroupName();
+            $groups[$i] = '\''.$name.'\'';
+            if($name === 'AAR')
+            {
+                $af = true;
+            }
+        }
+        if($af)
+        {
+            array_push($groups, '\'AFs\'');
         }
         $groups = implode(',', $groups);
         $data_table = self::getDataTableByName('PoolMap');
@@ -481,15 +495,15 @@ class Ticket extends \Flipside\SerializableObject
             $tickets = false;
             if($pool === false)
             {
-               $tickets = self::get_tickets_for_user_and_pool($user, new \Flipside\Data\Filter("sold eq 0 and type eq '$type'"), $qty);
+               $tickets = self::get_tickets_for_user_and_pool($user, new \Flipside\Data\Filter("sold eq 0 and transferInProgress eq 0 and type eq '$type'"), $qty);
             }
             else if($pool === -1 || $pool === '-1')
             {
-               $tickets = self::getDiscretionaryTicketsForUser($user, new \Flipside\Data\Filter("type eq '$type'"), $qty);
+               $tickets = self::getDiscretionaryTicketsForUser($user, new \Flipside\Data\Filter("type eq '$type' and transferInProgress eq 0"), $qty);
             }
             else
             {
-               $filter = new \Flipside\Data\Filter("sold eq 0 and type eq '$type' and pool_id eq $pool and year=".$settings['year']);
+               $filter = new \Flipside\Data\Filter("sold eq 0 and type eq '$type' and pool_id eq $pool and transferInProgress eq 0 and year=".$settings['year']);
                $tickets = self::get_tickets($filter, false, $qty);
             }
             $sold = 0;

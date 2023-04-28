@@ -197,6 +197,10 @@ class RequestWithTicketsAPI extends Flipside\Http\Rest\RestAPI
     
         $requestDataTable = \Tickets\DB\RequestDataTable::getInstance();
         $requests = $requestDataTable->read(new \Flipside\Data\Filter('year eq '.$year), array('tickets,private_status'));
+        if(empty($requests))
+        {
+            $requests = array();
+        }
         $tmp = array();
         $requestCount = count($requests);
         for($i = 0; $i < $requestCount; $i++)
@@ -227,8 +231,16 @@ class RequestWithTicketsAPI extends Flipside\Http\Rest\RestAPI
         for($i = 0; $i < $count; $i++)
         {
             $typeCode = $types[$i]['typeCode'];
-            $types[$i]['count'] = $tmp[$typeCode]['count'];
-            $types[$i]['receivedCount'] = $tmp[$typeCode]['receivedCount'];
+            if(isset($tmp[$typeCode]))
+            {
+                $types[$i]['count'] = $tmp[$typeCode]['count'];
+                $types[$i]['receivedCount'] = $tmp[$typeCode]['receivedCount'];
+            }
+            else
+            {
+                $types[$i]['count'] = 0;
+                $types[$i]['receivedCount'] = 0;
+            }
         }
         return $response->withJson($types);
     }

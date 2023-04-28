@@ -18,7 +18,7 @@ $page->addJS('//cdn.ckeditor.com/4.7.0/full/adapters/jquery.js', false);
     <textarea id="pdf-source" style="width: 100%"></textarea>
 </div>
 <div class="row">
-    <button onclick="gen_preview()">Preview</button><button onclick="save()">Save</button>
+    <button onclick="genPreview()">Preview</button><button onclick="save()">Save</button>
 </div>
 <div class="row">
     {$ticket_count}    => The number of tickets in the request<br/>

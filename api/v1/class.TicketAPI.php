@@ -5,6 +5,7 @@ class TicketAPI extends Flipside\Http\Rest\RestAPI
     {
         $app->get('[/]', array($this, 'listTickets'));
         $app->get('/types[/]', array($this, 'listTicketTypes'));
+        $app->get('/types/{year}[/]', array($this, 'listSoldTicketTypeByYear'));
         $app->get('/discretionary[/]', array($this, 'listDiscretionaryTickets'));
         $app->post('/discretionary[/]', array($this, 'assignDiscretionaryTickets'));
         $app->get('/pos[/]', array($this, 'getSellableTickets'));
@@ -22,6 +23,7 @@ class TicketAPI extends Flipside\Http\Rest\RestAPI
 	$app->post('/Actions/CheckDNE', array($this, 'checkDNE'));
         $app->post('/Actions/PopulatePool', array($this, 'populatePool'));
         $app->post('/Actions/submitWaiver', array($this, 'submitWaiver'));
+        $app->post('/Actions/EE', array($this, 'doEarlyEntry'));
     }
 
     public function listTickets($request, $response, $app)
@@ -268,6 +270,19 @@ class TicketAPI extends Flipside\Http\Rest\RestAPI
         return $response->withJson($ticket_types);
     }
 
+    public function listSoldTicketTypeByYear($request, $response, $args)
+    {
+        $this->validateLoggedIn($request);
+        $year = (int)$args['year'];
+        if(!$this->user->isInGroupNamed('TicketAdmins'))
+        {
+            return $response->withStatus(401);
+        }
+        $ticketDataTable = \Tickets\DB\TicketsDataTable::getInstance();
+        $data = $ticketDataTable->raw_query("SELECT type,COUNT(*) as count FROM tblTickets WHERE YEAR=$year AND sold=1 GROUP BY TYPE;");
+        return $response->withJson($data);
+    }
+
     public function sendTicketEmail($request, $response, $args)
     {
         $this->validateLoggedIn($request);
@@ -332,8 +347,7 @@ class TicketAPI extends Flipside\Http\Rest\RestAPI
         {
             throw new \Exception('Missing Required Parameter email!');
         }
-        $settings = \Tickets\DB\TicketSystemSettings::getInstance();
-        $year = $settings['year'];
+        $year = \Tickets\DB\TicketSystemSettings::getYear();
         $ticket = \Tickets\Ticket::get_ticket_by_hash($hash);
         if($ticket === false || $ticket->void == 1)
         {
@@ -428,6 +442,41 @@ class TicketAPI extends Flipside\Http\Rest\RestAPI
     {
         $this->validateLoggedIn($request);
         $obj = (array)$request->getParsedBody();
+        if(!isset($obj['posType']))
+        {
+            $obj['posType'] = 'cash';
+        }
+        if(!isset($obj['email']) || !isset($obj['firstName']) || !isset($obj['lastName']))
+        {
+            throw new \Exception('Missing Required Parameter email, firstName, or lastName!');
+        }
+        if($obj['posType'] === 'square')
+        {
+            $firstName = null;
+            if(isset($obj['firstName']))
+            {
+                $firstName = $obj['firstName'];
+            }
+            $lastName = null;
+            if(isset($obj['lastName']))
+            {
+                $lastName = $obj['lastName'];
+            }
+            $pool = false;
+            if(isset($obj['pool']))
+            {
+                $pool = $obj['pool'];
+            }
+            $message = '';
+            if(isset($obj['message']))
+            {
+                $message = $obj['message'];
+            }
+            $square = new \Tickets\SquarePurchase($this->user, $obj['email'], $firstName, $lastName, $pool, $message);
+            $square->addTickets($obj['tickets']);
+            $uri = $square->createLink();
+            return $response->withJson(array('uri'=>$uri));
+        }
         foreach($obj['tickets'] as $type=>$qty)
         {
             if($qty > 0)
@@ -640,6 +689,82 @@ class TicketAPI extends Flipside\Http\Rest\RestAPI
     {
         file_put_contents('/tmp/waiver.fdf', $request->getBody()->getContents());
         return $response->withStatus(200);
+    }
+
+    public function doEarlyEntry($request, $response)
+    {
+        $this->validateLoggedIn($request);
+        if(!$this->user->isInGroupNamed('TicketAdmins'))
+        {
+            return $response->withStatus(401);
+        }
+        $obj = (array)$request->getParsedBody();
+        if(!isset($obj['eeType']))
+        {
+            $obj['eeType'] = (int)$request->getQueryParam('eeType', $default = -2);
+            if($obj['eeType'] === -2)
+            {
+                return $response->withStatus(400);
+            }
+        }
+        if(!isset($obj['emailList']) && !isset($obj['codeList']))
+        {
+            $body = $request->getBody();
+            $body->rewind();
+            $content = $body->getContents();
+            $data = str_getcsv($content, "\n");
+            $obj['emailList'] = $data;
+        }
+        $ret = array();
+        $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+        $year = $settings['year'];
+        $ticketDataTable = \Tickets\DB\TicketsDataTable::getInstance();
+        $eeType = (int)$obj['eeType'];
+        if(isset($obj['codeList']))
+        {
+            $count = count($obj['codeList']);
+            for($i = 0; $i < $count; $i++)
+            {
+                $code = $obj['codeList'][$i];
+                $ticket = $ticketDataTable->read(new \Flipside\Data\Filter("year eq $year and hash contains '$code'"));
+                if($ticket === false) 
+                {
+                    $ret[$code] = 'No Ticket!';
+                    continue;
+                }
+                $hash = $ticket[0]['hash'];
+                $res = $ticketDataTable->raw_query("UPDATE tblTickets SET earlyEntryWindow=$eeType WHERE hash='$hash';");
+                $ret[$code] = ($res !== false);
+            }
+        }
+        else
+        {
+            $count = count($obj['emailList']);
+            for($i = 0; $i < $count; $i++)
+            {
+                $email = $obj['emailList'][$i];
+                $ticket = $ticketDataTable->read(new \Flipside\Data\Filter("year eq $year and email contains '$email'"));
+                if($ticket === false) 
+                {
+                    $ret[$email] = 'No Ticket!';
+                    continue;
+                }
+                if(count($ticket) > 1)
+                {
+                    $ret[$email] = 'Too many tickets!';
+                    continue;
+                }
+                $hash = $ticket[0]['hash'];
+                if((int)$ticket[0]['earlyEntryWindow'] > $eeType)
+                {
+                    $ret[$email] = 'Already has better EE!';
+                    continue;
+                }
+                $res = $ticketDataTable->raw_query("UPDATE tblTickets SET earlyEntryWindow=$eeType WHERE hash='$hash';");
+                $ret[$email] = ($res !== false);
+            }
+        }
+        var_dump($ret);
     }
 }
 /* vim: set tabstop=4 shiftwidth=4 expandtab: */

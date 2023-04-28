@@ -7,6 +7,8 @@ $page = new TicketAdminPage('Burning Flipside - Tickets');
 $page->addWellKnownJS(JS_DATATABLE);
 $page->addWellKnownCSS(CSS_DATATABLE);
 
+$sgFilterStr='$select=request_id,street,l,st,zip,givenName,sn&$filter=year%20eq%20current%20and%20private_status%20eq%206%20and%20survivalGuide%20eq%201';
+
 $page->body .= '
         <div class="row">
             <div class="col-lg-12">
@@ -17,7 +19,7 @@ $page->body .= '
             <h3>Mailings</h3>
             <ul>
               <li>
-                Survival Guide Mail List: <a href="../api/v1/requests_w_tickets?$select=request_id,street,l,st,zip,first,last,type&$filter=year%20eq%20current%20and%20private_status%20eq%206&fmt=csv">CSV</a> | <a href="../api/v1/requests_w_tickets?$select=request_id,street,l,st,zip,first,last,type&$filter=year%20eq%20current%20and%20private_status%20eq%206&fmt=xls">XLS</a> | <a href="../api/v1/requests_w_tickets?$select=request_id,street,l,st,zip,first,last,type&$filter=year%20eq%20current%20and%20private_status%20eq%206&fmt=xlsx">XLSX</a>
+                Survival Guide Mail List: <a href="../api/v1/requests?'.$sgFilterStr.'&fmt=csv">CSV</a> | <a href="../api/v1/requests?'.$sgFilterStr.'&fmt=xls">XLS</a> | <a href="../api/v1/requests?'.$sgFilterStr.'&fmt=xlsx">XLSX</a>
               </li>
               <li>
                   Minor Mailouts List: <a href="../api/v1/requests_w_tickets/minorMails?$format=csv">CSV</a> | <a href="../api/v1/requests_w_tickets/minorMails?$format=xls">XLS</a> | <a href="../api/v1/requests_w_tickets/minorMails?$format=xlsx">XLSX</a>

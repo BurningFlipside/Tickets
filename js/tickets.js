@@ -6,8 +6,8 @@ function getSessionCachedVar(varName) {
   if(typeof(Storage) !== 'undefined') {
     return JSON.parse(sessionStorage.getItem(varName));
   }
-  if(cache[varName] !== undefined) {
-    return cache[varName];
+  if(cache[`${varName}`] !== undefined) {
+    return cache[`${varName}`];
   }
   return null;
 }
@@ -16,7 +16,7 @@ function setSessionCachedVar(varName, value) {
   if(typeof(Storage) !== 'undefined') {
     sessionStorage.setItem(varName, JSON.stringify(value));
   } else {
-    cache[varName] = value;
+    cache[`${varName}`] = value;
   }
 }
 

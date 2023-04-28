@@ -177,7 +177,7 @@ if($page->user !== false && $page->user !== null && ($page->user->isInGroupNamed
                         </div>
                         <div class="clearfix visible-sm visible-md visible-lg"></div>
                     </div>
-                    <div class="modal-footer"><button type="button" class="btn btn-default" onclick="save_ticket()">Save</button><button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button></div>
+                    <div class="modal-footer"><button type="button" class="btn btn-default" onclick="saveTicket()">Save</button><button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button></div>
                 </div>
             </div>
         </div>

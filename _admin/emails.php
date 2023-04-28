@@ -10,9 +10,10 @@ $page->addJS('//cdn.ckeditor.com/4.7.0/full/adapters/jquery.js', false);
     $page->body .= '
 <div class="row">
     <div class="col-lg-12">
-        <select id="ticket_text_name" name="ticket_text_name" class="form-control" onchange="ticket_text_changed()">
+        <select id="ticket_text_name" name="ticket_text_name" class="form-control" onchange="ticketTextChanged()">
             <option value="ticket_email_source" selected>Ticket Email</option>
             <option value="ticket_transfer_email_source">Transfer Email</option>
+            <option value="square_purchase_email_source">Square Purchase Email</option>
         </select>
     </div>
 </div>

@@ -33,6 +33,15 @@ array_push($page->content['panels'], array('title'=>'Tickets Sold Bar Chart', 'b
 array_push($page->content['panels'], array('title'=>'Ticket Types', 'body'=>'
   <canvas id="ticket_type_chart" height="150" width="300" style="width: 300px; height: 150px;"></canvas>
 '));
+array_push($page->content['panels'], array('title'=>'Tickets Sold By Year', 'body'=>'
+  <table id="ticketsSoldByYear" class="table">
+    <thead>
+      <tr></tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+'));
 
 $page->printPage();
 // vim: set tabstop=4 shiftwidth=4 expandtab:
