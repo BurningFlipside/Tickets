@@ -41,13 +41,6 @@ class TicketPage extends SecureLoginRequiredPage
         }
         $this->addJS($this->ticket_root.'/js/tickets.js', false);
         $this->addJS($this->ticket_root.'/js/TicketSystem.js', false);
-
-        $browser = get_browser();
-        if(strpos($browser->parent, 'IE') !== false)
-        {
-            header('Location: /badBrowser.php');
-            exit;
-        }
     }
 
     function add_links()

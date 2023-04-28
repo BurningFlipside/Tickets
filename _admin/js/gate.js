@@ -56,6 +56,7 @@ function submitClick(pdfInstance) {
       console.log(buffer);
       $('#waiverModal').modal('hide');
     });
+  });
 }
 
 function displayPDF(location, pdfSrc) {
@@ -671,13 +672,13 @@ function initGatePage() {
   });
   $('#search_ticket_table').on('click', 'tr', ticketClicked);
   $('#history_ticket_table').on('click', 'tr', historyClicked);
-  if(navigator.getUserMedia !== undefined) {
-    Instascan.Camera.getCameras().then(gotCameras).catch(enumError);
-    scanner = new Instascan.Scanner({video: document.getElementById('v'), mirror: false});
-    scanner.addListener('scan', codeScanned);
-  } else {
+  //if(navigator.getUserMedia !== undefined) {
+    //Instascan.Camera.getCameras().then(gotCameras).catch(enumError);
+    //scanner = new Instascan.Scanner({video: document.getElementById('v'), mirror: false});
+    //scanner.addListener('scan', codeScanned);
+  //} else {
     enumError(null);
-  }
+  //}
   $('#firstName').change(nameChanged)
   $('#lastName').change(nameChanged);
   window.addEventListener('message', handleMessage, false);
