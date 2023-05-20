@@ -213,22 +213,32 @@ class TicketAPI extends Flipside\Http\Rest\RestAPI
             throw new Exception('Must be member of AAR group', \Flipside\Http\Rest\ACCESS_DENIED);
         }
         $ticket_data_table = \Tickets\DB\TicketsDataTable::getInstance();
+        $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+        $year = $settings['year'];
         $obj = $request->getParsedBody();
         if(!isset($obj['ticketGroups']))
         {
             throw new Exception('Missing required parameter "ticketGroups"', \Flipside\Http\Rest\INVALID_PARAM);
         }
-        $settings = \Tickets\DB\TicketSystemSettings::getInstance();
-        $year = $settings['year'];
         $array = $obj['ticketGroups'];
         $count = count($array);
         $res = true;
         $messages = '';
         for($i = 0; $i < $count; $i++)
         {
-            $group = \Flipside\AuthProvider::getInstance()->getGroupByName($array[$i]['Group']);
+            $members = array();
+            if(isset($array[$i]['Group']))
+            {
+                $group = \Flipside\AuthProvider::getInstance()->getGroupByName($array[$i]['Group']);
+                $members = $group->members(true, false, false);
+            }
+            else
+            {
+                $myUser = new stdClass();
+                $myUser->uid = $myUser->mail = $array[$i]['User'];
+                $members = array($myUser);
+            }
             $ticketCount = $array[$i]['Count'];
-            $members = $group->members(true, false, false);
             $count1 = count($members);
             for($j = 0; $j < $count1; $j++)
             {
@@ -246,10 +256,7 @@ class TicketAPI extends Flipside\Http\Rest\RestAPI
         {
             return $response->withJson($res);
         }
-        else
-        {
-            return $response->withJson(array('res'=>$res, 'messages'=>$messages));
-        }
+        return $response->withJson(array('res'=>$res, 'messages'=>$messages));
     }
 
     public function listTicketTypes($request, $response, $app)
@@ -414,6 +421,33 @@ class TicketAPI extends Flipside\Http\Rest\RestAPI
         if($obj === null || $obj === false)
         {
             throw new \Exception('Unable to parse payload!');
+        }
+        if(isset($obj['posType']) && $obj['posType'] === 'square')
+        {
+            $firstName = null;
+            if(isset($obj['firstName']))
+            {
+                $firstName = $obj['firstName'];
+            }
+            $lastName = null;
+            if(isset($obj['lastName']))
+            {
+                $lastName = $obj['lastName'];
+            }
+            $pool = false;
+            if(isset($obj['pool']))
+            {
+                $pool = $obj['pool'];
+            }
+            $message = '';
+            if(isset($obj['message']))
+            {
+                $message = $obj['message'];
+            }
+            $square = new \Tickets\SquarePurchase($this->user, $obj['email'], $firstName, $lastName, $pool, $message);
+            $square->addSpecificTicket($ticket);
+            $uri = $square->createLink();
+            return $response->withJson(array('uri'=>$uri));
         }
         $ticket->sold = 1;
         $ticket->email = $obj['email'];
@@ -687,8 +721,30 @@ class TicketAPI extends Flipside\Http\Rest\RestAPI
 
     public function submitWaiver($request, $response, $args)
     {
-        file_put_contents('/tmp/waiver.fdf', $request->getBody()->getContents());
-        return $response->withStatus(200);
+        $files = $request->getUploadedFiles();
+        $uploadedFile = $files['pdf'];
+        if ($uploadedFile->getError() === UPLOAD_ERR_OK) {
+            $extension = pathinfo($uploadedFile->getClientFilename(), PATHINFO_EXTENSION);
+            if($extension !== 'pdf')
+            {
+                return $response->withJson(array('message'=>'Must be a PDF!'), 401);
+            }
+            $myStoreDir = __DIR__.'/../../pdfs'; //Store in ticket_dir/pdfs
+            $myStoreDir = realpath($myStoreDir);
+            $fullFileName = $myStoreDir.'/'.$uploadedFile->getClientFilename();
+            $fullDirName = realpath(dirname($fullFileName));
+            if(str_starts_with($fullDirName, $myStoreDir) === false)
+            {
+                return $response->withJson(array('message'=>'File system injection attempt...!'), 401);
+            }
+            if(file_exists($fullFileName))
+            {
+                $fullFileName = $myStoreDir.'/'.bin2hex(random_bytes(8)).'-'.$uploadedFile->getClientFilename();
+            }
+            $uploadedFile->moveTo($fullFileName);
+            return $response->withStatus(200);    
+        }
+        return $response->withStatus(401);
     }
 
     public function doEarlyEntry($request, $response)
