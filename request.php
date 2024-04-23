@@ -44,7 +44,7 @@ if($page->user)
             <div class="form-group">
                 <label for="mail" class="col-sm-2 control-label">Email:</label>
                 <div class="col-sm-10">
-                    <input class="form-control" type="text" name="mail" id="mail" readonly data-toggle="tooltip" data-placement="top" title="This is the email address used for futher communications. This email address has been set and confirmed by your profile. If you need to use a different email address please edit your profile." value="'.$email.'"/>
+                    <input class="form-control" type="text" name="mail" id="mail" readonly data-toggle="tooltip" data-placement="top" title="This is the email address used for further communications. This email address has been set and confirmed by your profile. If you need to use a different email address please edit your profile." value="'.$email.'"/>
                 </div>
             </div>
             <div class="form-group">
@@ -120,7 +120,7 @@ if($page->user)
             <legend>Survival Guide</legend>
             <input id="survivalGuide" name="survivalGuide" type="checkbox"/>&nbsp;
             <label for="survivalGuide">
-                For $2 please mail me a physical copy of the survival guide. The survival guide is available to everyone electronically. 
+                For $6 please mail me a physical copy of the survival guide. The survival guide is available to everyone electronically. 
             </label>
         </fieldset>
         <fieldset>
