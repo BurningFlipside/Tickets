@@ -97,6 +97,34 @@ class SquarePurchase
         }
     }
 
+    public function addSpecificTicket(\Tickets\Ticket $ticket)
+    {
+        $dataTable2 = DataSetFactory::getDataTableByNames('tickets', 'PendingPurchases');
+        $year = TicketSystemSettings::getYear();
+        $type = TicketType::getTicketType($ticket->type);
+        $desc = $type['description'];
+        $item = new OrderLineItem(1);
+        $item->setName("Burning Flipside $desc Ticket - $year");
+        $money = new Money();
+        $money->setAmount($type['squareCost']*100); //This is in pennies...
+        $money->setCurrency('USD');
+        $item->setBasePriceMoney($money);
+        $ticket->transferInProgress = 1;
+        $res = $ticket->replace_in_db(); //Don't spin the hash...
+        if($res === false)
+        {
+            throw new Exception('Unable to update one or more tickets!');
+        }
+        $this->items = array($item);
+        $ticketIds = json_encode(array($ticket->hash));
+        $this->purchaseId = hash('haval128,5', $ticketIds);
+        $res = $dataTable2->create(array('purchaseId'=>$this->purchaseId, 'type'=>'square', 'ticketIds'=>$ticketIds, 'purchaserEmail'=>$this->buyerEmail, 'firstName'=>$this->buyerFirst, 'lastName'=>$this->buyerLast));
+        if($res === false)
+        {
+            throw new Exception('Unable to create pending purchase!');
+        }
+    }
+
     public function createLink()
     {
         $url = 'https://secure.burningflipside.com/tickets/squareFinish.php?purchaseId='.$this->purchaseId;
