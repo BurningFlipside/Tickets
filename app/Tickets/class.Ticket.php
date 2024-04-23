@@ -506,6 +506,10 @@ class Ticket extends \Flipside\SerializableObject
                $filter = new \Flipside\Data\Filter("sold eq 0 and type eq '$type' and pool_id eq $pool and transferInProgress eq 0 and year=".$settings['year']);
                $tickets = self::get_tickets($filter, false, $qty);
             }
+            if($tickets === false)
+            {
+                return false;
+            }
             $sold = 0;
             $count = count($tickets);
             for($i = 0; $sold < $qty; $i++)
