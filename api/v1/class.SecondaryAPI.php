@@ -12,6 +12,7 @@ class SecondaryAPI extends Flipside\Http\Rest\RestAPI
         $app->patch('/requests/{request_id}/{year}',  array($this, 'updateSecondaryRequest'));
         $app->post('/requests/{request_id}/{year}/Actions/Ticket',  array($this, 'ticketSecondaryRequest'));
         $app->get('/{request_id}/{year}/pdf',  array($this, 'getSecondaryPdf'));
+        $app->post('/createRequestId', array($this, 'createRequestId'));
     }
 
     protected function addAnswerSpace($body, $format, $id)
@@ -31,12 +32,12 @@ class SecondaryAPI extends Flipside\Http\Rest\RestAPI
         $this->validateLoggedIn($request);
         $questionDataTable = \Flipside\DataSetFactory::getDataTableByNames('tickets', 'Questions');
         $count = $questionDataTable->count(false);
-        if($count < $expectedAnswerCount)
+        if($count < $this->expectedAnswerCount)
         {
             $expectedAnswerCount = $count;
         }
         $ids = array();
-        for($i = 0; $i < $expectedAnswerCount; $i++)
+        for($i = 0; $i < $this->expectedAnswerCount; $i++)
         {
             $value = rand(0, $count-1);
             if(in_array($value, $ids))
@@ -166,6 +167,14 @@ class SecondaryAPI extends Flipside\Http\Rest\RestAPI
         return $response->withJson(array('success'=>true, 'access_key'=>$key));
     }
 
+    public function createRequestId($request, $response, $args)
+    {
+        $this->validateLoggedIn($request);
+        $key = bin2hex(openssl_random_pseudo_bytes(32));
+        \Flipside\FlipSession::setVar('secondaryRequestID', $key);
+        return $response->withJson(array('access_key'=>$key));
+    }
+
     protected function verifyBoolAnswer($correctAnswer, $answer)
     {
         $boolAnswer = ($answer === 'true');
@@ -236,18 +245,18 @@ class SecondaryAPI extends Flipside\Http\Rest\RestAPI
         $key = \Flipside\FlipSession::getVar('secondaryRequestID', false);
         if($key === false)
         {
-            return $response->withJson(array('err'=>'You skipped the question section!'));
+            return $response->withJson(array('err'=>'You skipped the first section!'));
         }
         $settings = \Tickets\DB\TicketSystemSettings::getInstance();
         $ticketDataTable = \Tickets\DB\TicketsDataTable::getInstance();
-        $ticketTypeDataTable = \DataSetFactory::getDataTableByNames('tickets', 'TicketTypes');
+        $ticketTypeDataTable = \Flipside\DataSetFactory::getDataTableByNames('tickets', 'TicketTypes');
         $secondaryTable = \Flipside\DataSetFactory::getDataTableByNames('tickets', 'SecondaryRequests');
         $maxTotalTickets = $settings['max_tickets_per_request'];
-        $currentTickets = $ticketDataTable->read(new \Tickets\DB\TicketDefaultFilter($app->user->mail));
-        $numberOfCurrentTickets = count($currentTickets);
-        if($currentTickets === false)
+        $currentTickets = $ticketDataTable->read(new \Tickets\DB\TicketDefaultFilter($this->user->mail));
+        $numberOfCurrentTickets = 0;
+        if($currentTickets !== false)
         {
-            $numberOfCurrentTickets = 0;
+            $numberOfCurrentTickets = count($currentTickets);
         }
         if($numberOfCurrentTickets >= $maxTotalTickets)
         {
@@ -284,7 +293,7 @@ class SecondaryAPI extends Flipside\Http\Rest\RestAPI
                 }
             }
         }
-        $requests = $secondaryTable->read(new \Flipside\Data\Filter('mail eq "'.$app->user->mail.'"'));
+        $requests = $secondaryTable->read(new \Flipside\Data\Filter('mail eq "'.$this->user->mail.'" and year eq '.$settings['year']));
         if(!empty($requests))
         {
             return $response->withJson(array('err'=>'You already have a secondary request!'));
@@ -297,7 +306,7 @@ class SecondaryAPI extends Flipside\Http\Rest\RestAPI
             {
                 $parts = explode('_', $prop);
                 $type = $ticketTypes[$parts[2]];
-                $data['total_due'] += $type['cost'];
+                $data['total_due'] += $type['secondaryCost'];
                 array_push($data['valid_tickets'], $parts[2].'_'.$parts[3]);
             }
         }
@@ -316,7 +325,7 @@ class SecondaryAPI extends Flipside\Http\Rest\RestAPI
         $request_id = $args['request_id'];
         $year = $args['year'];
         $settings = \Tickets\DB\TicketSystemSettings::getInstance();
-        $secondaryTable = \DataSetFactory::getDataTableByNames('tickets', 'SecondaryRequests');
+        $secondaryTable = \Flipside\DataSetFactory::getDataTableByNames('tickets', 'SecondaryRequests');
         if($year === 'current')
         {
             $year = $settings['year'];
@@ -324,14 +333,14 @@ class SecondaryAPI extends Flipside\Http\Rest\RestAPI
         $filter = new \Flipside\Data\Filter('request_id eq "'.$request_id.'" and year eq '.$year);
         if($request_id === 'me')
         {
-            $filter = new \Flipside\Data\Filter('mail eq "'.$app->user->mail.'" and year eq '.$year);
+            $filter = new \Flipside\Data\Filter('mail eq "'.$this->user->mail.'" and year eq '.$year);
         }
-        $request = $secondaryTable->read($filter);
+        $ticketRequest = $secondaryTable->read($filter);
         if(empty($request))
         {
             return $response->withStatus(404);
         }
-        $request = $request[0];
+        $ticketRequest = $ticketRequest[0];
         $obj = $request->getParsedBody();
         $ret = $secondaryTable->update($filter, $obj);
         return $response->withJson($ret);
@@ -347,7 +356,7 @@ class SecondaryAPI extends Flipside\Http\Rest\RestAPI
             return $response->withStatus(401);
         }
         $settings = \Tickets\DB\TicketSystemSettings::getInstance();
-        $secondaryTable = \DataSetFactory::getDataTableByNames('tickets', 'SecondaryRequests');
+        $secondaryTable = \Flipside\DataSetFactory::getDataTableByNames('tickets', 'SecondaryRequests');
         if($year === 'current')
         {
             $year = $settings['year'];
@@ -355,7 +364,7 @@ class SecondaryAPI extends Flipside\Http\Rest\RestAPI
         $filter = new \Flipside\Data\Filter('request_id eq "'.$request_id.'" and year eq '.$year);
         if($request_id === 'me')
         {
-            $filter = new \Flipside\Data\Filter('mail eq "'.$app->user->mail.'" and year eq '.$year);
+            $filter = new \Flipside\Data\Filter('mail eq "'.$this->user->mail.'" and year eq '.$year);
         }
         $request = $secondaryTable->read($filter);
         if(empty($request))
@@ -372,7 +381,7 @@ class SecondaryAPI extends Flipside\Http\Rest\RestAPI
             $first = $request['ticket_first_'.$valid_tickets[$i]];
             $last = $request['ticket_last_'.$valid_tickets[$i]];
             $type = $valid_tickets[$i][0];
-            $res = \Tickets\Ticket::do_sale($app->user, $email, array($type=>1), false, $first, $last, 1);
+            $res = \Tickets\Ticket::do_sale($this->user, $email, array($type=>1), false, $first, $last, 1);
             if($res === false)
             {
                 array_push($fails, array('first'=>$first, 'last'=>$last, 'type'=>$type, 'email'=>$email));
@@ -401,7 +410,7 @@ class SecondaryAPI extends Flipside\Http\Rest\RestAPI
         $filter = new \Flipside\Data\Filter('request_id eq "'.$request_id.'" and year eq '.$year);
         if($request_id === 'me')
         {
-            $filter = new \Flipside\Data\Filter('mail eq "'.$app->user->mail.'" and year eq '.$year);
+            $filter = new \Flipside\Data\Filter('mail eq "'.$this->user->mail.'" and year eq '.$year);
         }
         $request = $secondaryTable->read($filter);
         if(empty($request))
@@ -457,7 +466,7 @@ padding: 0 1em 0 0;
             </td>
             <td>
             <ol>
-            <li><strong>Purchase</strong>&nbsp;a money order,&nbsp;cashier&#39;s check or teller&#39;s check for $'.$request['total_due'].' made out to Austin Artistic Reconstruction.
+            <li><strong>Purchase</strong>&nbsp;a money order,&nbsp;cashier&#39;s check or teller&#39;s check for $'.$request['total_due'].' made out to Burning Flipside.
             <ul type="a">
             <li><strong>Keep&nbsp;</strong>your payment receipt, you will need it for lost mail or returns.</li>
             <li><strong>Sign</strong>&nbsp;your money order if a signature is required</li>
@@ -470,7 +479,7 @@ padding: 0 1em 0 0;
             <tbody>
             <tr>
             <td class="contactlabel">&nbsp;</td>
-            <td>Austin Artistic Reconstruction, Ticket Request<br />
+            <td>Burning Flipside, Ticket Request<br />
             P.O. Box 9987<br />
             Austin, TX 78766</td>
             </tr>
