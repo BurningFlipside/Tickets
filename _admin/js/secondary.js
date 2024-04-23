@@ -1,9 +1,19 @@
-/*global $*/
+/*global $, add_notification*/
 /*exported getCSV, getPDF, saveRequest*/
 function changeYear(control) {
   var data = 'filter=year eq '+$(control).val()+'&fmt=data-table';
   var table = $('#requests').DataTable();
-  table.ajax.url('../api/v1/secondary/requests?'+data).load();
+  table.ajax.url('../api/v1/secondary/requests?'+data).load(gotAllRequests);
+}
+
+function gotAllRequests(data) {
+  let requests = data.data;
+  let totalTickets = 0;
+  for(let request of requests) {
+    let tickets = JSON.parse(request.valid_tickets);
+    totalTickets += tickets.length;
+  }
+  add_notification($('#requests_wrapper'), 'There are currently requests for '+totalTickets+' tickets.');
 }
 
 function ticketRequestDone(data) {
@@ -77,6 +87,7 @@ function rowClicked() {
     $('<td/>').html(type).appendTo(newRow);
     newRow.appendTo($('#ticket_table tbody'));
   }
+  /*
   let i = 0;
   for(let ticket of data.tickets) {
     let newRow = $('<tr/>');
@@ -85,9 +96,12 @@ function rowClicked() {
     $('<td/>').html('<input type="text" id="ticket_type_'+i+'" name="ticket_type_'+i+'" class="form-control" value="'+ticket.type+'"/>').appendTo(newRow);
     newRow.appendTo($('#ticket_table tbody'));
     i++;
-  }
+  }*/
   $('#total_due').val('$'+data.total_due);
   $('#total_received').val(data.total_received);
+  if(data.total_due === data.total_received) {
+    $('#ticketButton').prop('disabled', false);
+  }
 }
 
 function totalChanged() {
@@ -120,6 +134,7 @@ function initPage() {
   $('#requests').dataTable({
     'columns': [ 
       {'data': 'request_id'},
+      {'data': 'mail'},
       {'data': 'givenName'},
       {'data': 'sn'},
       {'data': 'total_due'}
