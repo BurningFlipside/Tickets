@@ -73,6 +73,7 @@ function gotRequests(requests) {
   var notReceived = 0;
   var problem = 0;
   var reject = 0;
+  let requestedTickets = 0;
   for(let request of requests) {
     switch(request.private_status) {
       case 0:
@@ -89,6 +90,9 @@ function gotRequests(requests) {
       case 4:
         reject++;
     }
+    if(request.tickets !== null) {
+      requestedTickets += request.tickets.length;
+    }
   }
   var cell = $('#requestOverTimeTable tbody tr:nth-child(2) td:nth-child('+this.col+')');
   cell.append(received);
@@ -98,6 +102,14 @@ function gotRequests(requests) {
   cell.append(problem);
   cell = $('#requestOverTimeTable tbody tr:nth-child(5) td:nth-child('+this.col+')');
   cell.append(reject);
+  cell = $('#requestOverTimeTable tbody tr:nth-child(6) td:nth-child('+this.col+')');
+  if(requestedTickets === 0) {
+    cell.append('N/A');
+  } else {
+    cell.append(requestedTickets);
+  }
+  cell = $('#requestOverTimeTable tbody tr:nth-child(7) td:nth-child('+this.col+')');
+  cell.append((requestedTickets/requests.length).toFixed(2));
 }
 
 function gotAllYears(years, err) {

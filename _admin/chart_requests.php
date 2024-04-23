@@ -41,6 +41,8 @@ array_push($page->content['panels'], array('title'=>'Requests over Time', 'body'
       <tr><th>Not Received</th></tr>
       <tr><th>Problem Requests</th></tr>
       <tr><th>Rejected Requests</th></tr>
+      <tr><th>Requested Tickets</th></tr>
+      <tr><th>Tickets per Request</th></tr>
     </tbody>
   </table>
 '));
