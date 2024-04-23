@@ -11,10 +11,10 @@ $page->addWellKnownCSS(CSS_BOOTSTRAP_FH);
 
 $page->content['pageHeader'] = 'Secondary Ticket Requests';
 $page->content['selectors'] = '
-  Request Year: <select id="year" onchange="change_year(this)"></select>
+  Request Year: <select id="year" onchange="changeYear(this)"></select>
   <a onclick="getCSV();" title="Export CSV"><i class="fa fa-file-excel-o"></i></a>
 ';
-$page->content['table'] = array('id' => 'requests', 'headers'=>array('Request ID', 'First Name', 'Last Name', 'Total Due'));
+$page->content['table'] = array('id' => 'requests', 'headers'=>array('Request ID', 'Email', 'First Name', 'Last Name', 'Total Due'));
 
 
 $page->body .= '
