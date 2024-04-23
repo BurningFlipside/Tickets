@@ -1,16 +1,8 @@
 /* global $ */
 /* exported getPDF */
-function postAnswersDone(jqXHR) {
-  if(jqXHR.status !== 200) {
+function postAnswersDone(response) {
+  if(response.status !== 200) {
     alert('Failed verifying answers. Try again later.');
-    return;
-  }
-  $('[id*="answer"]').parent().removeClass('has-error');
-  if(jqXHR.responseJSON.wrong !== undefined) {
-    $('#answer\\['+jqXHR.responseJSON.wrong+'\\]').parent().addClass('has-error');
-  }
-  if(jqXHR.responseJSON.err !== undefined) {
-    alert(jqXHR.responseJSON.err);
     return;
   }
   $('#questions').hide();
@@ -32,36 +24,9 @@ function postRequestDone(jqXHR) {
 }
 
 function postAnswers() {
-  var array = $('#questions').serializeArray();
-  var obj = {};
-  $.each(array, function() {
-    var parts = this.name.split('[');
-    if(obj[parts[0]] === undefined && parts.length === 1) {
-      obj[parts[0]] = this.value;
-    } else {
-      if(obj[parts[0]] === undefined) {
-        obj[parts[0]] = [];
-      }
-      var part2 = (parts[1].substring(0, parts[1].indexOf(']')))*1;
-      if(obj[parts[0]][`${part2}`] === undefined && parts.length === 3) {
-        obj[parts[0]][`${part2}`] = [];
-      }
-      if(parts.length === 3) {
-        var part3 = (parts[2].substring(0, parts[2].indexOf(']')))*1;
-        obj[parts[0]][`${part2}`][`${part3}`] = this.value;
-      } else {
-        obj[parts[0]][`${part2}`] = this.value;
-      }
-    }
-  });
-  $.ajax({
-    url: 'api/v1/secondary/questions/answers',
-    data: JSON.stringify(obj),
-    type: 'POST',
-    dataType: 'json',
-    processData: false,
-    complete: postAnswersDone});
-  return false;
+  fetch('api/v1/secondary/createRequestId', {
+    method: 'POST'})
+    .then(response => postAnswersDone(response));
 }
 
 function postRequest() {
@@ -98,13 +63,10 @@ function postRequest() {
     data: JSON.stringify(obj),
     type: 'POST',
     dataType: 'json',
+    contentType: 'application/json',
     processData: false,
     complete: postRequestDone});
   return false;
-}
-
-function questionsDone(jqXHR) {
-  $('#questionContent').prepend(jqXHR.responseText);
 }
 
 function getIDFromTarget(target) {
@@ -161,22 +123,24 @@ function getPDF() {
   location = 'api/v1/secondary/me/current/pdf';
 }
 
+function changeToPersonalChecks() {
+  var checked = $('#noPersonalChecks').prop('checked');
+  if(checked === true) {
+    $('#submitAnswer').removeAttr('disabled');
+  } else {
+    $('#submitAnswer').attr('disabled', true);
+  }
+}
+
 function initPage() {
   $('#submitAnswer').click(postAnswers);
   $('#submitRequest').click(postRequest);
-  $.ajax({
-    url: 'api/v1/secondary/questions?fmt=html',
-    type: 'get',
-    complete: questionsDone});
-  var country = $('#c').data('country');
-  var state = $('#st').data('state');
-  $('#c').bfhcountries({'country': country});
-  $('#st').bfhstates({'country': 'c', 'state': state});
+  $('#noPersonalChecks').change(changeToPersonalChecks);
 
-  var ticketNameFields = $('[name*="ticket_"]');
+  let ticketNameFields = $('[name*="ticket_"]');
   ticketNameFields.change(ticketFieldChanged);
 
-  var ticketEnables = $('[id*="enable_"]');
+  let ticketEnables = $('[id*="enable_"]');
   ticketEnables.change(enablesChanged);
 }
 

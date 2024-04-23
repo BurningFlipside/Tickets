@@ -6,12 +6,8 @@ $page = new TicketPage('Burning Flipside - Tickets');
 
 $page->addWellKnownJS(JS_BOOTSTRAP_FH);
 $page->addWellKnownCSS(CSS_BOOTSTRAP_FH);
-$page->addJS('js/secondary.js');
-$page->addJS('https://www.google.com/recaptcha/api.js');
 
-$page->body = 'There are no secondary ticket sales this year.';
-$page->printPage();
-die();
+return;
 
 $minor = '<div id="minor_dialog" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true" aria-labelledby="minor-title">
     <div class="modal-dialog">
@@ -32,7 +28,7 @@ $minor = '<div id="minor_dialog" class="modal fade" tabindex="-1" role="dialog" 
                         stored along with the signed event waiver.</li>
                     <li>A special affidavit process is also available. See below:</li>
                 </ul>
-                <p>If you do not with to bring irreplaceable documents to Burning Flipside you may bring a notorized affidavit. NOTE: Many
+                <p>If you do not with to bring irreplaceable documents to Burning Flipside you may bring a notarized affidavit. NOTE: Many
                 parents consider this process much easier and quicker at Gate.</p>
                 <ol>
                     <li>Download a copy of the affidavit below</li>
@@ -66,10 +62,10 @@ $maxTotalTickets = $page->ticketSettings['max_tickets_per_request'];
 
 $ticketDataTable = \Tickets\DB\TicketsDataTable::getInstance();
 $currentTickets = $ticketDataTable->read(new \Tickets\DB\TicketDefaultFilter($page->user->mail));
-$numberOfCurrentTickets = count($currentTickets);
-if($currentTickets === false)
+$numberOfCurrentTickets = 0;
+if($currentTickets !== false)
 {
-    $numberOfCurrentTickets = 0;
+    $numberOfCurrentTickets = count($currentTickets);
 }
 
 if($numberOfCurrentTickets >= $maxTotalTickets)
@@ -79,7 +75,7 @@ if($numberOfCurrentTickets >= $maxTotalTickets)
     die();
 }
 
-$ticketTypeDataTable = \DataSetFactory::getDataTableByNames('tickets', 'TicketTypes');
+$ticketTypeDataTable = \Flipside\DataSetFactory::getDataTableByNames('tickets', 'TicketTypes');
 $ticketTypes = $ticketTypeDataTable->read();
 $ticketTypeCount = count($ticketTypes);
 for($i = 0; $i < $ticketTypeCount; $i++)
@@ -103,8 +99,8 @@ if($numberOfCurrentTickets != 0)
     }
 }
 
-$secondaryTable = \DataSetFactory::getDataTableByNames('tickets', 'SecondaryRequests');
-$requests = $secondaryTable->read(new \Data\Filter('mail eq "'.$page->user->mail.'"'));
+$secondaryTable = \Flipside\DataSetFactory::getDataTableByNames('tickets', 'SecondaryRequests');
+$requests = $secondaryTable->read(new \Flipside\Data\Filter('mail eq "'.$page->user->mail.'" and year eq '.$page->ticketSettings['year']));
 if(!empty($requests))
 {
     $page->body .= '<div id="content">You have registered the maximum number of requests. You can reprint your request form <a href="#" onclick="getPDF();">here</a>.</div>';
@@ -113,8 +109,12 @@ if(!empty($requests))
 }
 
 $secondaryTotalCount = 0;
-$validTicketArray = $secondaryTable->read(false, array('valid_tickets'));
-$validTicketArrayCount = count($validTicketArray);
+$validTicketArray = $secondaryTable->read(new \Flipside\Data\Filter('year eq '.$page->ticketSettings['year']), array('valid_tickets'));
+$validTicketArrayCount = 0;
+if($validTicketArray !== false)
+{
+    $validTicketArrayCount = count($validTicketArray);
+}
 for($i = 0; $i < $validTicketArrayCount; $i++)
 {
     $tmp = json_decode($validTicketArray[$i]['valid_tickets']);
@@ -129,12 +129,35 @@ if($secondaryTotalCount > $page->ticketSettings['secondaryTicketCount'])
 
 $page->body .= '<div id="content">
     <form id="questions">
-        First you must answer a series of questions to prove you have read the Burning Flipside '.$page->ticketSettings['year'].' survival guide. You can locate the guide <a href="'.$page->wwwUrl.'/sg" target="_blank">here</a>.
-        <div id="questionContent"></div>
+        Hi! Welcome to the Burning Flipside '.$page->ticketSettings['year'].' Secondary Sale. This is the place to request tickets if you missed the main sale.<br/>
+        <br/>
+        There are a few differences from the main ticket sale:
+        <ul>
+            <li>We have to charge sales tax now that you are purchasing outside of Catalyst Collective\'s sales tax holiday. The sales tax rate is 8.25% and is included in the ticket price you will see.</li>
+            <li>You can only create the request a single time. You cannot edit it if you want to order more tickets later. (You can fix the names once the tickets are issued).</li>
+            <li>The requests will be processed on a first come, first served basis based on when we receive the requests in the mail. There are a limited number of tickets available and any requests after that amount will be returned.</li>
+        </ul>
+        <br/>
+        Follow these steps to get your tickets:
+        <ol>
+            <li>Check the box to acknowledge that you understand the process</li>
+            <li>Click "I Agree" to the terms and conditions of the sale.</li>
+            <li>Complete the ticket request form.</li>
+            <li>Click "Submit Request".</li>
+            <li>Print out the request form and mail it to the address on the form, along with a <b>money order</b> for the total amount due.</li>
+            <li>Wait for your tickets to be approved.</li>
+            <li>Get an email with your will call receipt and bring it to the event.</li>
+        </ol>
         <div class="clearfix visible-sm visible-md visible-lg"></div>
+        <fieldset>
+            <input id="noPersonalChecks" name="noPersonalC
+            hecks" type="checkbox"/>&nbsp;
+            <label for="noPersonalChecks">
+            I have read these steps and I will follow them, including not sending personal checks.
+            </label>
+        </fieldset>
         <br/><br/>
-        <div class="g-recaptcha" data-sitekey="6LeCQhgUAAAAAAi1_JQ9143G8IiyWjEu9azpRGj-"></div>
-        <button type="button" id="submitAnswer" class="btn btn-primary">Submit Answers</button>
+        <button type="button" id="submitAnswer" class="btn btn-primary" disabled>I Agree</button>
     </form>    
 <form id="request" tabindex="-1" aria-hidden="true" style="display:none;" data-ticketcount="'.$numberOfCurrentTickets.'">
     <div class="form-group">
@@ -224,7 +247,7 @@ foreach($ticketTypes as $type)
                         <input type="text" id="ticket_last_'.$ticketId.'" name="ticket_last_'.$ticketId.'" class="form-control"/>
                     </div>
                 </td>
-                <td id="cost_'.$ticketId.'">$'.$type['cost'].'</td>
+                <td id="cost_'.$ticketId.'">$'.$type['secondaryCost'].'</td>
             </tr>';
     if($type['count'] == 0)
     {
@@ -235,7 +258,7 @@ foreach($ticketTypes as $type)
                 <td>'.$type['description'].'</td>
                 <td><input type="text" id="ticket_first_'.$ticketId.'" name="ticket_first_'.$ticketId.'" class="form-control"/></td>
                 <td><input type="text" id="ticket_last_'.$ticketId.'" name="ticket_last_'.$ticketId.'" class="form-control"/></td>
-                <td id="cost_'.$ticketId.'">$'.$type['cost'].'</td>
+                <td id="cost_'.$ticketId.'">$'.$type['secondaryCost'].'</td>
             </tr>';
     }
 }
@@ -251,6 +274,8 @@ $page->body.='
     </table>
     <button type="submit" name="submit" class="btn btn-primary" id="submitRequest">Submit Request</button>
 </form></div>'.$minor;
+
+$page->printPage();
 
 // vim: set tabstop=4 shiftwidth=4 expandtab:
 
