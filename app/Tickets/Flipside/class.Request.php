@@ -204,9 +204,13 @@ class Request extends \Flipside\SerializableObject
         $this->ticketAmount = $this->calculateTicketTotal();
         $this->donationAmount = $this->calculateDonationTotal();
         $this->total_due = $this->ticketAmount + $this->donationAmount;
-        if(property_exists($this, 'survivalGuide') && $this->survivalGuide)
+        if(property_exists($this, 'survivalGuide') && ($this->survivalGuide || $this->survivalGuide === 1 || $this->survivalGuide === '1'))
         {
-            $this->total_due += 2;
+            $this->total_due += 6;
+        }
+        if(property_exists($this, 'total_received') && ($this->total_received - 6 == $this->total_due))
+        {
+            $this->total_due = $this->total_received;
         }
         $ret = (array)$this;
         if(isset($ret['tickets']))
