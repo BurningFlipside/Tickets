@@ -152,18 +152,36 @@ function gotPoolTickets(jqXHR) {
   var msg = '';
   var soldCount = 0;
   var unsoldCount = 0;
+  let unsoldType = {};
+  let soldType = {};
   var data = jqXHR.responseJSON;
   for(let ticket of data) {
     if(ticket.sold === 1) {
       soldCount++;
+      if(soldType[ticket.type] === undefined) {
+        soldType[ticket.type] = 1;
+      } else {
+        soldType[ticket.type]++;
+      }
     } else {
       unsoldCount++;
+      if(unsoldType[ticket.type] === undefined) {
+        unsoldType[ticket.type] = 1;
+      } else {
+        unsoldType[ticket.type]++;
+      }
     }
   }
   msg+= 'Pool Name: '+pools[this].pool_name+'<br/>';
   msg+= 'Pool Owning Group: '+pools[this].group_name+'<br/>';
-  msg+= 'Sold Count: '+soldCount+'<br/>';
-  msg+= 'Unsold Count: '+unsoldCount+'<br/>';
+  msg+= 'Total Sold Count: '+soldCount+'<br/>';
+  for(const type in soldType) {
+    msg+= '&nbsp;&nbsp;&nbsp;&nbsp;Sold '+type+': '+soldType[type]+'<br/>';
+  }
+  msg+= 'Total Unsold Count: '+unsoldCount+'<br/>';
+  for(const type in unsoldType) {
+    msg+= '&nbsp;&nbsp;&nbsp;&nbsp;Unsold '+type+': '+unsoldType[type]+'<br/>';
+  }
 
   bootbox.dialog({
     title: 'Pool Statistics for Pool #'+this,
