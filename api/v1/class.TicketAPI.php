@@ -556,7 +556,9 @@ class TicketAPI extends Flipside\Http\Rest\RestAPI
         }
         $count++;
         \Flipside\FlipSession::setVar('TicketVerifyCount', $count);
-        $filter = new \Flipside\Data\Filter('contains(hash,'.$code.') and void eq 0');
+        $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+        $year = $settings['year'];
+        $filter = new \Flipside\Data\Filter('contains(hash,'.$code.') and void eq 0 and year eq '.$year);
         $ticket_data_table = \Tickets\DB\TicketsDataTable::getInstance();
         $res = $ticket_data_table->read($filter);
         return $response->withJson($res);
@@ -585,7 +587,7 @@ class TicketAPI extends Flipside\Http\Rest\RestAPI
         {
             for($i = 0; $i < $count; $i++)
             {
-                $ticket = new \Tickets\Ticket();
+                $ticket = new \Tickets\Ticket(null);
                 $ticket->year = $year;
                 $ticket->type = $type;
                 if($ticket->insert_to_db($ticketDataTable))
@@ -782,6 +784,11 @@ class TicketAPI extends Flipside\Http\Rest\RestAPI
             for($i = 0; $i < $count; $i++)
             {
                 $code = $obj['codeList'][$i];
+                if(strlen($code) !== 8)
+                {
+                    $ret[$code] = 'Invalid Code!';
+                    continue;
+                }
                 $ticket = $ticketDataTable->read(new \Flipside\Data\Filter("year eq $year and hash contains '$code'"));
                 if($ticket === false) 
                 {
