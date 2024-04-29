@@ -190,6 +190,8 @@ function getTicketTypesDone(jqXHR) {
       complete: getTicketsDone
     });
   } else {
+    add_notification($('#poswizard'), 
+        'You have used a link which will see a single specific discretionary ticket. If you did not mean to do this click <a href="pos.php" class="alert-link">here</a>.');
     $.ajax({
       url: '/tickets/api/v1/ticket/'+id,
       type: 'GET',
@@ -302,6 +304,10 @@ function getTicketTypes() {
 }
 
 function getPoolsDone(jqXHR) {
+  if(jqXHR.status === 401) {
+    //Don't need extra popups when they aren't logged in
+    return;
+  }
   if(jqXHR.status !== 200 || jqXHR.responseJSON === undefined) {
     alert('Unable to get ticket pools!');
     return;
