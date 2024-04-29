@@ -13,6 +13,7 @@ class GlobalAPI extends \Flipside\Http\Rest\RestAPI
         $app->get('/years', array($this, 'getYears'));
         $app->get('/posTypes', array($this, 'getPosTypes'));
         $app->post('/Actions/generatePreview/{class:.*}', array($this, 'previewPDF'));
+        $app->post('/Actions/validateBoardPassphrase', array($this, 'validateBoardPassphrase'));
     }
 
     public function getConstraints($request, $response, $args)
@@ -215,6 +216,22 @@ class GlobalAPI extends \Flipside\Http\Rest\RestAPI
             return $response->withJson(array('cash'=>'Cash or Cash Equivalent', 'square'=>'Square Payment Link'));    
         }
         return $response->withJson(array('square'=>'Square Payment Link'));
+    }
+
+    public function validateBoardPassphrase($request, $response)
+    {
+        $this->validateLoggedIn($request);
+        if($this->user->isInGroupNamed('TicketAdmins') === false)
+        {
+            return $response->withStatus(401);
+        }
+        $obj = $request->getParsedBody();
+        $fileContent = file_get_contents('_boardPass.txt');
+        if(strcasecmp($obj['passphrase'], $fileContent) === 0)
+        {
+            return $response->withStatus(200);
+        }
+        return $response->withStatus(400);
     }
 }
 /* vim: set tabstop=4 shiftwidth=4 expandtab: */
