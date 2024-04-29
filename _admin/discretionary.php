@@ -8,6 +8,7 @@ $page->addWellKnownJS(JS_DATATABLE, false);
 $page->addWellKnownJS(JS_BOOTSTRAP_FH);
 $page->addWellKnownCSS(CSS_DATATABLE);
 $page->addWellKnownCSS(CSS_BOOTSTRAP_FH);
+$page->addWellKnownJS(JS_BOOTBOX);
 
 $page->body .= '
         <div class="row">
@@ -18,9 +19,11 @@ $page->body .= '
         <div class="row">
             <table class="table" id="discretionary">
                 <thead>
+                    <th></th>
                     <th>Holder</th>
                     <th>Ticket Type</th>
                     <th>Unsold</th>
+                    <th>Pending Sale</th>
                     <th>Sold</th>
                 </thead>
                 <tbody>
