@@ -32,7 +32,7 @@ class AdminTicketDataTableAPI extends \Flipside\Http\Rest\DataTableAPI
     protected function processEntry($obj, $request)
     {
         $args = $request->getAttribute('route')->getArguments();
-        if(empty($args))
+        if(empty($args) || !isset($args['value']))
         {
             return $obj;
         }
@@ -72,7 +72,13 @@ class AdminTicketDataTableAPI extends \Flipside\Http\Rest\DataTableAPI
         {
             return $response->withStatus(400);
         }
-        $ret = $dataTable->update($filter, $obj, true);
+        try {
+            $ret = $dataTable->update($filter, $obj, true);
+        } catch(\Exception $e) {
+            var_dump($filter->to_sql_string());
+            var_dump($obj);
+            return $response->withStatus(500);
+        }
         return $response->withJson($ret);
     }
 
