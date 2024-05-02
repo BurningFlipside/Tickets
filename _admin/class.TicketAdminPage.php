@@ -20,7 +20,7 @@ class TicketAdminPage extends \Flipside\Http\FlipAdminPage
         $this->addTemplateDir('../templates', 'Tickets');
         $this->secure_root = $this->getSecureRoot();
         $this->content['loginUrl'] = $this->secure_root.'api/v1/login';
-	$this->addCSS('../css/tickets.css');
+        $this->addCSS('../css/tickets.css');
         $this->ticketSettings = \Tickets\DB\TicketSystemSettings::getInstance();
         $this->add_links();
         if($this->ticketSettings->isTestMode())
@@ -65,7 +65,8 @@ class TicketAdminPage extends \Flipside\Http\FlipAdminPage
             'Request Statistics' => 'chart_requests.php',
             'Tickets Graphs' => 'chart_tickets.php',
             'Gate Graphs'    => 'chart_used.php',
-            'Common Reports' => 'reports_common.php'
+            'Common Reports' => 'reports_common.php',
+            'Sales Reports'  => 'reports_sales.php'
         );
         $request_menu = array(
             'All Requests'      => 'requests.php',
@@ -87,7 +88,8 @@ class TicketAdminPage extends \Flipside\Http\FlipAdminPage
             'Edit Variables'     => 'vars.php',
             'Edit Request PDF'   => 'pdf.php',
             'Edit Ticket Emails' => 'emails.php',
-            'Edit Ticket PDF'    => 'ticket_pdf.php'
+            'Edit Ticket PDF'    => 'ticket_pdf.php',
+            'Edit Early Entry PDF' => 'eePass_pdf.php'
         );
         if($this->user->isInGroupNamed('AAR') || $this->user->isInGroupNamed('AFs'))
         {
@@ -99,6 +101,8 @@ class TicketAdminPage extends \Flipside\Http\FlipAdminPage
         $this->content['header']['sidebar']['Tickets'] = array('icon' => 'fa-ticket-alt', 'menu' => $ticket_menu);
         $this->content['header']['sidebar']['Data Entry'] = array('icon' => 'fa-pencil-alt', 'url' => 'data.php');
         $this->content['header']['sidebar']['Sales'] = array('icon' => 'fa-dollar-sign', 'url' => 'pos.php');
+        $this->content['header']['sidebar']['Pending Sales'] = array('icon' => 'fa-credit-card', 'url' => 'pendingSales.php');
+        $this->content['header']['sidebar']['EarlyEntry'] = array('icon' => 'fa-calendar-day', 'url' => 'earlyEntry.php');
         $this->content['header']['sidebar']['Gate'] = array('icon' => 'fa-sign-in-alt', 'url' => 'gate.php');
         if($this->user->isInGroupNamed('AAR'))
         {
@@ -119,4 +123,5 @@ class TicketAdminPage extends \Flipside\Http\FlipAdminPage
         return ($this->is_admin === true || $this->is_data === true);
     }
 }
+/* vim: set tabstop=4 shiftwidth=4 expandtab: */
 ?>

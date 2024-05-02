@@ -112,6 +112,7 @@ $page->body .= '
                         </div>
                     </div>
                   </div>
+                  <input type="hidden" name="eeWindow" id="eeWindow" readonly="">
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-primary" onclick="processTicket()">Process</button>

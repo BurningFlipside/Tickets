@@ -455,6 +455,70 @@ function initIndex() {
     var body = $('#content');
     add_notification(body, 'You have successfully sent an email with the ticket information. The ticket will be fully transfered when the receipient logs in and claims the ticket', NOTIFICATION_SUCCESS);
   }
+  fetch('/tickets/api/v1/earlyEntry/passes').then(function(response) {
+    response.json().then(function(data) {
+      if(data === false || data.length === 0) {
+        return;
+      }
+      let myBody = $('#content');
+      let message = 'You have been granted early entry to the event. Please print out the following pass and bring it with you to the event. Or reassign it to a camp mate (they need to be on the early entry list!)';
+      let div = $('<div class="row">');
+      div.append('<div class="col-sm-1"></div>');
+      div.append('<div class="col-sm-10"><div class="alert alert-warning">'+message+'</div></div>');
+      let table = $('<table class="table">');
+      table.append('<thead><tr><th>Pass Code</th><th>Actions</th></tr></thead>');
+      let tbody = $('<tbody>');
+      for(let pass of data) {
+        let row = $('<tr>');
+        row.append('<td>'+pass.id+'</td>');
+        let cell = $('<td>');
+        let button = $('<button>').addClass('btn btn-link').attr('title', 'Assign Pass').html('<i class="fa fa-envelope"></i>');
+        button.click(function() {
+          bootbox.prompt({
+            title: 'Assign Pass',
+            message: 'Please enter the email address of the person you want to assign the pass to',
+            buttons: {
+              cancel: {
+                label: 'Cancel',
+                className: 'btn btn-secondary'
+              },
+              confirm: {
+                label: 'Assign',
+                className: 'btn btn-primary',
+              }
+            },
+            callback: function(email) {
+              if(email === null) {
+                return;
+              }
+              let obj = {'assignedTo': email};
+              obj.ticketGroups = [{'Count': 1, 'Type': 'early_entry'}];
+              $.ajax({
+                url: '/tickets/api/v1/earlyEntry/passes/'+pass.id+'/Actions/Reassign',
+                method: 'POST',
+                data: JSON.stringify(obj),
+                contentType: 'application/json',
+                complete: function() {
+                  location.reload();
+                }
+              });
+            }
+          });
+        });
+        cell.append(button);
+        button = $('<button>').addClass('btn btn-link').attr('title', 'Download Pass').html('<i class="fa fa-file-pdf"></i>');
+        button.click(function() {
+          window.open('/tickets/api/v1/earlyEntry/passes/'+pass.id+'/pdf', '_blank');
+        });
+        cell.append(button);
+        row.append(cell);
+        tbody.append(row);
+      }
+      table.append(tbody);
+      div.append(table);
+      myBody.append(div);
+    });
+  });
 }
 
 $(initIndex);

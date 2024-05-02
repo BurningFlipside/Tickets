@@ -6,7 +6,7 @@ $page = new TicketPage('Burning Flipside - Tickets');
 
 $page->addWellKnownJS(JS_DATATABLE, false);
 $page->addWellKnownCSS(CSS_DATATABLE);
-$page->addJS('js/index.js', false);
+$page->addWellKnownJS(JS_BOOTBOX);
 
 $discretionary = '';
 if($page->user !== false && $page->user !== null && ($page->user->isInGroupNamed('AAR') || $page->user->isInGroupNamed('AFs')))

@@ -1,9 +1,7 @@
-/*global $, add_notification, getParameterByName, NOTIFICATION_FAILED, PDFLib*/
+/*global $, add_notification, getParameterByName, NOTIFICATION_FAILED, PDFLib, bootbox*/
 /*exported nextTicket, prevTicket, processHistoryTicket, processTicket, submitClick*/
 var historyData = null;
 var earlyEntry;
-var scanner;
-var myCameras;
 var waiverMode = null;
 
 function processedNameChange(jqXHR) {
@@ -166,7 +164,77 @@ function errorProcessingTicket(jqXHR) {
   console.log(jqXHR);
 }
 
-function processTicket() {
+function markEarlyArrivalPassUsed(passID) {
+  let obj = {
+    'used': 1,
+    'usedBy': $('#hash').val(),
+  };
+  fetch('/tickets/api/v1/earlyEntry/passes/'+passID, {method: 'PATCH', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(obj)}).then(function(patchResponse) {
+    if(patchResponse.status !== 200) {
+      bootbox.alert('Unable to mark pass as used!');
+      return;
+    }
+    processTicket(true);
+  });
+
+}
+
+function processTicket(skipEeCheck) {
+  console.log(arguments);
+  let eeWindow = $('#eeWindow').val();
+  if(skipEeCheck !== true && eeWindow > -1) {
+    // Check if the ee window needs a pass
+    fetch('/tickets/api/v1/earlyEntry/'+eeWindow).then(function(response) {
+      response.json().then(function(data) {
+        if(data.needPass === 1 || data.needPass === true) {
+          bootbox.prompt('Early Entry Pass Required! Enter the pass ID', function(result) {
+            if(result === null) {
+              return;
+            }
+            let passID = result;
+            fetch('/tickets/api/v1/earlyEntry/passes/'+passID).then(function(passResponse) {
+              if(passResponse.status === 404) {
+                // Search for the pass since this may be a barcode or partial QR code scan...
+                fetch('/tickets/api/v1/earlyEntry/passes?filter=substringof(passID,\''+passID+'\')').then(function(searchResponse) {
+                  searchResponse.json().then(function(searchData) {
+                    if(searchData.length === 1) {
+                      passID = searchData[0].id;
+                      markEarlyArrivalPassUsed(passID);
+                    } else {
+                      bootbox.alert('Invalid Pass ID!');
+                    }
+                  });
+                });
+              }
+              if(passResponse.status !== 200) {
+                bootbox.alert('Invalid Pass ID!');
+                return;
+              }
+              passResponse.json().then(function(passData) {
+                if(passData.used === 1 || passData.used === true) {
+                  if(passData.usedBy !== null && passData.usedBy.length > 0) {
+                    fetch('/tickets/api/v1/tickets/'+passData.usedBy).then(function(ticketResponse) {
+                      ticketResponse.json().then(function(ticketData) {
+                        bootbox.alert('Pass already used by '+ticketData.firstName+' '+ticketData.lastName+'!');
+                      });
+                    });
+                  } else {
+                    bootbox.alert('Pass already used!');
+                  }
+                  return;
+                }
+                markEarlyArrivalPassUsed(passID);
+              });
+            });
+          });
+          return;
+        }
+        // We don't need an EE pass, just process the ticket as normal
+        processTicket(true);
+      });
+    });
+    return;
+  }
   var hash = $('#hash').val();
   var data = {};
   data.firstName = $('#firstName').val();
@@ -213,20 +281,51 @@ function foundTicket(data) {
   console.log(data);
   $('#process_ticket_modal .modal-body .alert').remove();
   if(data.contactActual === true) {
-    add_notification($('#process_ticket_modal .modal-body'), 'Name corresponds to Denial of Entry list. Please contact Actual.', NOTIFICATION_FAILED, false);
+    bootbox.prompt('Name corresponds to Denial of Entry list. Please contact Actual.', function(result) {
+      if(result === null) {
+        return;
+      }
+      fetch('/tickets/api/v1/global/Actions/validateBoardPassphrase', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({'passphrase': result})}).then(function(postResponse) {
+        if(postResponse.status !== 200) {
+          bootbox.alert('Invalid Passphrase!');
+          return;
+        }
+        displayTicketForProcessing(data);
+      });
+    });
+    return;
   }
   if(data.used !== 0) {
-    add_notification($('#process_ticket_modal .modal-body'), 'Ticket is already used!', NOTIFICATION_FAILED, false);
+    bootbox.prompt('Ticket is already used! To allow entry enter "ALLOW".', function(result) {
+      if('ALLOW'.localeCompare(result) === 0) {
+        displayTicketForProcessing(data);
+      }
+    });
+    return;
   }
   if(data['void'] !== 0) {
-    add_notification($('#process_ticket_modal .modal-body'), 'Ticket is void!', NOTIFICATION_FAILED, false);
+    bootbox.prompt('Ticket is void! To allow entry enter "ALLOW".', function(result) {
+      if('ALLOW'.localeCompare(result) === 0) {
+        displayTicketForProcessing(data);
+      }
+    });
     $('#void').attr('checked', true);
-  } else {
-    $('#void').removeAttr('checked');
-  }
+    return;
+  } 
+  $('#void').removeAttr('checked');
   if(data['earlyEntryWindow']*1 < earlyEntry) {
-    add_notification($('#process_ticket_modal .modal-body'), 'Ticket is not valid for current early entry status!', NOTIFICATION_FAILED, false);
+    bootbox.prompt('Ticket is not valid for current early entry status! Please contact their lead to ensure they should be here now. To allow entry enter "ALLOW".', function(result) {
+      if('ALLOW'.localeCompare(result) === 0) {
+        displayTicketForProcessing(data);
+      }
+    });
+    return;
   }
+  displayTicketForProcessing(data);
+}
+
+function displayTicketForProcessing(data) {
+  $('#eeWindow').val(data['earlyEntryWindow']*1);
   $('#used').attr('checked', true);
   $('#hash').val(data.hash);
   $('#type').val(data.type);

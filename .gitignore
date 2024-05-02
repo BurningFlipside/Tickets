@@ -1,2 +1,5 @@
 vendor
+node_modules
+pdfs
 dne.csv
+api/v1/_boardPass.txt
