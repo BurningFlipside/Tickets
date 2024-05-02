@@ -413,6 +413,11 @@ function initPage() {
   $('#ticketVoid').on('change', usedChanged);
   $('#earlyEntry').on('change', usedChanged);
   $('#ticketPool').on('change', usedChanged);
+
+  let hash = getParameterByName('hash');
+  if(hash !== null) {
+    viewTicket(hash);
+  }
 }
 
 $(initPage);
