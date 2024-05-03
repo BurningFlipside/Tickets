@@ -109,6 +109,10 @@ function initPage() {
               name += '.pdf';
               link.setAttribute('download', name);
               link.style.visibility = 'hidden';
+              let formData = new FormData();
+	      let formFile = new File([blob], name, {type: 'application/pdf' });
+	      formData.append('pdf', formFile);
+	      fetch('../api/v1/tickets/Actions/submitWaiver', {method: 'POST', body: formData});
               document.body.appendChild(link);
               link.click();
               document.body.removeChild(link);

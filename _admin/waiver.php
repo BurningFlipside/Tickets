@@ -6,7 +6,14 @@ $page = new TicketAdminPage('Burning Flipside - Tickets');
 
 $page->addJS('js/extern/pdf.js');
 $page->addJS('js/extern/web/pdf_viewer.js');
-$page->addJS('https://unpkg.com/pdf-lib');
+if($page->cdn === 'cdn')
+{
+	$page->addJS('https://unpkg.com/pdf-lib');
+}
+else
+{
+	$page->addJS('js/extern/pdf-lib.js');
+}
 $page->addWellKnownJS(JS_BOOTBOX);
 
 $page->addCSS('css/pdf.css');
