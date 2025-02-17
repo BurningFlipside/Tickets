@@ -56,6 +56,10 @@ class PendingPurchaseAPI extends AdminTicketDataTableAPI
         if($entry['type'] === 'square')
         {
             $purchaseId = $entry['purchaseId'];
+            if($entry['squareID'] !== null && $entry['squareLink'] != null) {
+                // Skip calling into square for this entry
+                return $entry;
+            }
             if(!isset($this->squareData[$purchaseId]))
             {
                 $squareResponse = $this->squareClient->getCheckoutApi()->listPaymentLinks();

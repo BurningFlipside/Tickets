@@ -1,57 +1,65 @@
-/*global $, TicketSystem*/
+/*global Tabulator*/
 /*exported exportCSV*/
-var ticketSystem = new TicketSystem('../api/v1');
 
-function initTable() {
-  $(this).dataTable({
-    'ajax': ticketSystem.getRequestDataTableUri('year eq current and private_status eq 3'),
-    'columns': [
-      {'data': 'request_id'},
-      {'data': 'private_status'},
-      {'data': 'total_due'},
-      {'data': 'total_received'},
-      {'data': 'comments'},
-      {'data': 'crit_vol'}
-    ]
+function initTable(table) {
+  let tabulator = new Tabulator(table, {
+    ajaxURL: '../api/v1/requests?$filter=year%20eq%20current%20and%20private_status%20eq%203',
+    columns: [
+      {title: 'Request ID', field: 'request_id'},
+      {title: 'Private Status', field: 'private_status'},
+      {title: 'Total Due', field: 'total_due', sorter: 'number'},
+      {title: 'Total Received', field: 'total_received', sorter: 'number'},
+      {title: 'Comments', field: 'comments'},
+      {title: 'Bucket', field: 'bucket'},
+      {title: 'Critical', field: 'crit_vol', formatter: 'tickCross'},
+    ],
+    printAsHtml: true,
+    pagination: 'local',
+    paginationSize: 10,
+    paginationSizeSelector: [10, 25, 50, 100]
+  });
+  tabulator.on('tableBuilt', () => {
+    tabulator.setData();
   });
 }
 
-function expandTable() {
-  $(this).DataTable().page.len(-1);
-  $(this).DataTable().draw();
+function expandTable(table) {
+  let tabulator = Tabulator.findTable('#'+table.id)[0];
+  let footers = document.querySelectorAll('.tabulator-paginator');
+  footers.forEach(footer => footer.style.display = 'none');
+  tabulator.setPageSize(1000);
 }
 
-function beforePrint() {
-  $('table').each(expandTable);
+function beforePrint(tables) {
+  tables.forEach(expandTable);
+  let navs = document.getElementsByClassName('navbar-sidenav');
+  for (let nav of navs) {
+    nav.style.display = 'none';
+  }
+  let buttons = document.getElementsByClassName('fa');
+  for (let button of buttons) {
+    button.style.display = 'none';
+  }
 }
 
 function afterPrint() {
-}
-
-function onPrintChange(mql) {
-  if(mql.matches) {
-    beforePrint();
-  } else {
-    afterPrint();
-  }
+  location.reload();
 }
 
 function exportCSV() {
-  var uri = $('#requests').DataTable().ajax.url();
-  uri = uri.replace('fmt=data-table', '$format=csv2');
-  window.location = uri;
+  let tabulator = Tabulator.findTable('#invalid')[0];
+  tabulator.download('csv', 'invalid.csv');
 }
 
 function initPage() {
-  $('table').each(initTable);
-  if(window.matchMedia !== undefined) {
-    //WebKit implementation
-    var mediaQueryList = window.matchMedia('print');
-    mediaQueryList.addListener(onPrintChange);
-  }
-  //IE & Firefox implementation
-  window.onbeforeprint = beforePrint;
-  window.onafterprint = afterPrint;
+  let tables = document.querySelectorAll('table');
+  tables.forEach(initTable);
+  window.addEventListener('beforeprint', () => {
+    beforePrint(tables);
+  });
+  window.addEventListener('afterprint', () => {
+    afterPrint(tables);
+  });
 }
 
-$(initPage);
+window.onload = initPage;

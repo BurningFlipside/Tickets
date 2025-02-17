@@ -27,8 +27,10 @@ class SquarePurchase
     protected array $items;
     protected string $purchaseId;
     protected ?string $personalMessage;
+    protected string $saleType;
+    protected ?string $requestID;
 
-    public function __construct(\Flipside\Auth\User $user, string $email, ?string $first, ?string $last, ?int $pool, ?string $personalMessage)
+    public function __construct(\Flipside\Auth\User $user, string $email, ?string $first, ?string $last, ?int $pool, ?string $personalMessage, string $saleType)
     {
         $accessToken = \Flipside\Settings::getInstance()->getGlobalSetting('square')['accessToken'];
         $this->squareClient = new SquareClient(array(
@@ -39,6 +41,13 @@ class SquarePurchase
         $this->pool = $pool;
         $this->user = $user;
         $this->personalMessage = $personalMessage;
+        $this->saleType = $saleType;
+        $this->requestID = null;
+    }
+
+    public function setRequestID($requestID)
+    {
+        $this->requestID = $requestID;
     }
 
     /**
@@ -90,10 +99,77 @@ class SquarePurchase
         }
         $ticketIds = json_encode($ticketCodes);
         $this->purchaseId = hash('haval128,5', $ticketIds);
-        $res = $dataTable2->create(array('purchaseId'=>$this->purchaseId, 'type'=>'square', 'ticketIds'=>$ticketIds, 'purchaserEmail'=>$this->buyerEmail, 'firstName'=>$this->buyerFirst, 'lastName'=>$this->buyerLast));
+        $dbData = array('purchaseId'=>$this->purchaseId, 'type'=>'square', 'ticketIds'=>$ticketIds, 'purchaserEmail'=>$this->buyerEmail, 'firstName'=>$this->buyerFirst, 'lastName'=>$this->buyerLast, 'seller'=>$this->user->mail, 'saleType'=>$this->saleType);
+        if($this->requestID !== null)
+        {
+            $dbData['requestID'] = $this->requestID;
+        }
+        $res = $dataTable2->create($dbData);
         if($res === false)
         {
             throw new Exception('Unable to create pending purchase!');
+        }
+    }
+
+    public function addTicketsFromRequest(array $requestTickets) {
+        $year = TicketSystemSettings::getYear();
+        $ticketDataTable = \Tickets\DB\TicketsDataTable::getInstance();
+        $dataTable2 = DataSetFactory::getDataTableByNames('tickets', 'PendingPurchases');
+        $ticketTypes = TicketType::getAllTicketTypes();
+        if($ticketTypes === false)
+        {
+            throw new Exception('Unable to get ticket types!');
+        }
+        try {
+            $ticketDataTable->beginTransaction();
+            $this->items = array();
+            $ticketCount = count($requestTickets);
+            $ticketCodes = array();
+            for($i = 0; $i < $ticketCount; $i++) {
+                $typeCode = $requestTickets[$i]->type;
+                $type = $ticketTypes[$typeCode];
+                $desc = $type['description'];
+                $item = new OrderLineItem(1);
+                $item->setName("Burning Flipside $desc Ticket - $year");
+                $money = new Money();
+                $money->setAmount($type['squareCost']*100); //This is in pennies...
+                $money->setCurrency('USD');
+                $item->setBasePriceMoney($money);
+                array_push($this->items, $item);
+                $filter = new \Flipside\Data\Filter("year eq $year and type eq '$typeCode' and sold eq 0 and transferInProgress eq 0 and pool_id eq -1 and discretionary eq 0 and assigned eq 0");
+                $realTicket = $ticketDataTable->read($filter, false, 1);
+                if($realTicket === false)
+                {
+                    throw new Exception('Unable to locate enough tickets for type '.$typeCode);
+                }
+                $realTicket = new \Tickets\Ticket($realTicket[0]);
+                $realTicket->transferInProgress = 1;
+                $realTicket->firstName = $requestTickets[$i]->first;
+                $realTicket->lastName = $requestTickets[$i]->last;
+                $res = $realTicket->replace_in_db();
+                if($res === false)
+                {
+                    throw new Exception('Unable to update one or more tickets!');
+                }
+                array_push($ticketCodes, $realTicket->hash);
+            }
+            $ticketIds = json_encode($ticketCodes);
+            $this->purchaseId = hash('haval128,5', $ticketIds);
+            $dbData = array('purchaseId'=>$this->purchaseId, 'type'=>'square', 'ticketIds'=>$ticketIds, 'purchaserEmail'=>$this->buyerEmail, 'firstName'=>$this->buyerFirst, 'lastName'=>$this->buyerLast, 'seller'=>$this->user->mail, 'saleType'=>$this->saleType);
+            if($this->requestID !== null)
+            {
+                $dbData['requestID'] = $this->requestID;
+            }
+            $res = $dataTable2->create($dbData);
+            if($res === false)
+            {
+                throw new Exception('Unable to create pending purchase!');
+            }
+            $ticketDataTable->commit();
+        }
+        catch(\Exception $e) {
+            $ticketDataTable->rollback();
+            throw $e;
         }
     }
 
@@ -118,7 +194,12 @@ class SquarePurchase
         $this->items = array($item);
         $ticketIds = json_encode(array($ticket->hash));
         $this->purchaseId = hash('haval128,5', $ticketIds);
-        $res = $dataTable2->create(array('purchaseId'=>$this->purchaseId, 'type'=>'square', 'ticketIds'=>$ticketIds, 'purchaserEmail'=>$this->buyerEmail, 'firstName'=>$this->buyerFirst, 'lastName'=>$this->buyerLast));
+        $dbData = array('purchaseId'=>$this->purchaseId, 'type'=>'square', 'ticketIds'=>$ticketIds, 'purchaserEmail'=>$this->buyerEmail, 'firstName'=>$this->buyerFirst, 'lastName'=>$this->buyerLast, 'seller'=>$this->user->mail, 'saleType'=>$this->saleType);
+        if($this->requestID !== null)
+        {
+            $dbData['requestID'] = $this->requestID;
+        }
+        $res = $dataTable2->create($dbData);
         if($res === false)
         {
             throw new Exception('Unable to create pending purchase!');
@@ -140,7 +221,7 @@ class SquarePurchase
         }
         $squareRequest->setPrePopulatedData($paymentData);
         $order = new Order($this->getLocationID());
-        $order->setCustomerId(str_replace(array('@','.'), '_', $this->buyerEmail));
+        $order->setCustomerId(str_replace(array('@','.','+'), '_', $this->buyerEmail));
         $order->setLineItems($this->items);
         $squareRequest->setOrder($order);
         $options = new CheckoutOptions();
@@ -150,11 +231,20 @@ class SquarePurchase
         $squareResponse = $this->squareClient->getCheckoutApi()->createPaymentLink($squareRequest);
         if(!$squareResponse->isSuccess())
         {
+            var_dump($squareResponse);
             throw new Exception('Unable to sell ticket(s)!');
         }
         $createLinkResponse = $squareResponse->getResult();
         $purchaseUrl = $createLinkResponse->getPaymentLink()->getUrl();
+        $squareID = $createLinkResponse->getPaymentLink()->getId();
+        $orderID = $createLinkResponse->getPaymentLink()->getOrderId();
+        $dataTable2 = DataSetFactory::getDataTableByNames('tickets', 'PendingPurchases');
+        $res = $dataTable2->update(new \Flipside\Data\Filter('purchaseId eq \''.$this->purchaseId.'\''), array('squareLink'=>$purchaseUrl, 'squareID'=>$squareID, 'orderIds'=>json_encode(array($orderID))));
         $email = new SquarePurchaseEmail($purchaseUrl, $this->buyerEmail, $this->buyerFirst, $this->buyerLast, $this->personalMessage);
+        if($this->requestID !== null)
+        {
+            $email->setRequestID($this->requestID);
+        }
         $emailProvider = \Flipside\EmailProvider::getInstance();
         $res = $emailProvider->sendEmail($email);
         if($res === false) 

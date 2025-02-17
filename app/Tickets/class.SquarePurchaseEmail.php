@@ -10,6 +10,7 @@ class SquarePurchaseEmail extends \Flipside\Email\Email
     protected string $first;
     protected string $last;
     protected ?string $personalMessage;
+    protected ?string $requestID;
 
     public function __construct(string $purchaseLink, string $email, string $first, string $last, ?string $personalMessage = '')
     {
@@ -29,6 +30,11 @@ class SquarePurchaseEmail extends \Flipside\Email\Email
         return 'Burning Flipside '.$year.' Ticket Purchase';
     }
 
+    public function setRequestID($requestID)
+    {
+        $this->requestID = $requestID;
+    }
+
     private function getBodyFromDB($html=true)
     {
         $settings = \Tickets\DB\TicketSystemSettings::getInstance();
@@ -39,6 +45,13 @@ class SquarePurchaseEmail extends \Flipside\Email\Email
         );
         $long_text = \Tickets\DB\LongTextStringsDataTable::getInstance();
         $raw_text = $long_text['square_purchase_email_source'];
+        if($this->requestID != null) {
+            $vars['{$requestID}'] = $this->requestID;
+            $now = new \DateTime();
+            $interval = $settings['requestCCLinkExpireTime'];
+            $vars['{$purchaseDeadline}'] = $now->add(new \DateInterval($interval))->format(\DateTimeInterface::RFC850);
+            $raw_text = $long_text['square_request_purchase_email_source'];
+        }
         if($html === true)
         {
             return strtr($raw_text, $vars);

@@ -14,6 +14,7 @@ class EarlyEntryAPI extends \Flipside\Http\Rest\DataTableAPI
         $app->patch('/passes/{id}', array($this, 'updatePass'));
         $app->get('/passes/{id}/pdf[/]', array($this, 'getPassPdf'));
         $app->get('/passes/{id}/Actions/Reassign', array($this, 'reassignPass'));
+        $app->post('/passes/{id}/Actions/Reassign', array($this, 'reassignPass'));
         $app->post('/passes/Actions/BulkAssign', array($this, 'bulkAssign'));
         $app->post('/Actions/CheckEESpreadSheet', array($this, 'checkEESpreadSheet'));
         parent::setup($app);
@@ -179,7 +180,7 @@ class EarlyEntryAPI extends \Flipside\Http\Rest\DataTableAPI
             return $response->withStatus(404);
         }
         $pass = $pass[0];
-        if($pass['assignedTo'] === $this->user->mail && !$this->user->isInGroupNamed('TicketAdmins') === false)
+        if($pass['assignedTo'] === $this->user->mail && !$this->user->isInGroupNamed('TicketAdmins'))
         {
             return $response->withStatus(401);
         }
@@ -213,7 +214,7 @@ class EarlyEntryAPI extends \Flipside\Http\Rest\DataTableAPI
         {
             $filter = new \Flipside\Data\Filter('title eq "CPAF"');
         }
-        else if($obj['type'] == 'Art')
+        else if($obj['type'] == 'Art Project')
         {
             $filter = new \Flipside\Data\Filter('title eq "ArtAF"');
         }
@@ -337,6 +338,11 @@ class EarlyEntryAPI extends \Flipside\Http\Rest\DataTableAPI
                 {
                     continue;
                 }
+                if(isset($row['In Gate DB']) && strncasecmp($row['In Gate DB'], 'Yes', 3) === 0)
+                {
+                    // Skip the ones already in the DB to reduce the number of writes...
+                    continue;
+                }
                 // Check for short code first...
                 $ticket = false;
                 if(isset($row['Ticket Short Code']))
@@ -344,10 +350,14 @@ class EarlyEntryAPI extends \Flipside\Http\Rest\DataTableAPI
                     if(strlen($row['Ticket Short Code']) !== 0)
                     {
                         $ticket = $ticketDataTable->raw_query("SELECT * from tblTickets WHERE hash like '".$row['Ticket Short Code']."%' and year =".$year);
-                        if($ticket !== false)
+                        if($ticket !== false && count($ticket) >= 1)
                         {
                             $ticket = $ticket[0];
-                        }   
+                        }
+                        else
+                        {
+                            $ticket = false;
+                        }
                     }
                 }
                 if($ticket === false)
@@ -383,6 +393,12 @@ class EarlyEntryAPI extends \Flipside\Http\Rest\DataTableAPI
                     // Add to an error response object and flag on spreadsheet
                     $errCount++;
                     writeCellToSpreadsheet($service, $spreadsheet->getSpreadsheetId(), $sheetName, $j + $start + 1, $gateDBCol, 'Could not locate in DB!');
+                    continue;
+                }
+                if($ticket['earlyEntryWindow'] > $eeType)
+                {
+                    // Just skip it if it is already set to an earlier window
+                    writeCellToSpreadsheet($service, $spreadsheet->getSpreadsheetId(), $sheetName, $j + $start + 1, $gateDBCol, 'Yes - Already on earlier window!');
                     continue;
                 }
                 $ticket['earlyEntryWindow'] = $eeType;

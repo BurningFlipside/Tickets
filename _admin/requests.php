@@ -4,20 +4,29 @@ error_reporting(E_ALL);
 require_once('class.TicketAdminPage.php');
 $page = new TicketAdminPage('Burning Flipside - Tickets');
 $page->setTemplateName('admin-table.html');
-$page->addWellKnownJS(JS_DATATABLE, false);
 $page->addWellKnownJS(JS_BOOTSTRAP_FH);
-$page->addWellKnownCSS(CSS_DATATABLE);
 $page->addWellKnownCSS(CSS_BOOTSTRAP_FH);
+$page->addWellKnownJS(JS_TABULATOR, false);
+$page->addWellKnownCSS(CSS_TABULATOR);
+$page->addAsyncJS('//oss.sheetjs.com/sheetjs/xlsx.full.min.js', 'excelLoaded()');
 
 $page->content['pageHeader'] = 'Ticket Requests';
 $page->content['selectors'] = '
-  Request Year: <select id="year" onchange="changeYear(this)">
-    <option value="*">All</option>
-  </select>
-  Request Status: <select id="statusFilter" onchange="changeStatusFilter(this)">
-    <option value="*">All</option>
-  </select>
-  <a onclick="getCSV();" title="Export CSV"><i class="fa fa-file-excel-o"></i></a>
+  <label for="year" class="col-sm-2 control-label">Request Year:</label>
+  <div class="col-sm-4">
+    <select id="year" class="form-control" onchange="changeYear(this)">
+      <option value="*">All</option>
+    </select>
+  </div>
+  <label for="statusFilter" class="col-sm-2 control-label">Request Status:</label>
+  <div class="col-sm-4">
+    <select id="statusFilter" class="form-control" onchange="changeStatusFilter(this)">
+        <option value="*">All</option>
+    </select>
+  </div>
+  <div class="d-grid gap-2 d-md-block">
+    <button id="csv" class="btn btn-link btn-sm" onclick="getCSV();" title="Export CSV"><i class="fa fa-file-csv"></i></button>
+  </div>
 ';
 $page->content['table'] = array('id' => 'requests', 'headers'=>array('Request ID', 'First Name', 'Last Name', 'Email', 'Total Due'));
 
@@ -27,7 +36,7 @@ $page->body .= '
                 <div class="modal-content">
                     <div class="modal-header">
                       <h4 class="modal-title" id="modal_title"></h4>
-                      <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <form id="request_edit_form">
@@ -80,6 +89,11 @@ $page->body .= '
                               <label for="st" class="col-sm-2 control-label">State:</label>
                               <div class="col-sm-10">
                                   <select class="form-control bfh-states" data-country="c" id="st" name="st" type="text"></select>
+                              </div>
+                              <div class="w-100"></div>
+                              <label for="paymentMethod" class="col-sm-2 control-label">Payment Method:</label>
+                              <div class="col-sm-10">
+                                  <input class="form-control" id="paymentMethod" name="paymentMethod" type="text" readonly></select>
                               </div>
                             </div>
                             <table id="ticket_table" class="table">
@@ -146,7 +160,7 @@ $page->body .= '
                       <button type="button" class="btn btn-primary" onclick="saveRequest(this)">Ok</button>
                       <button type="button" class="btn btn-outline-primary" onclick="editRequest(this)">Edit Tickets/Donations</button>
                       <button type="button" class="btn btn-outline-secondary" onclick="getPDF(this)">Get PDF</button>
-                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                   </div>
               </div>
           </div>

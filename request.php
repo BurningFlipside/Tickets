@@ -20,73 +20,81 @@ if($page->user)
     <form id="request" role="form">
         <fieldset id="request_set">
             <legend>Ticket Request</legend>
-            <div class="form-group">
+            <div class="row">
                 <label for="mail" class="col-sm-2 control-label">Request ID:</label>
                 <div class="col-sm-10">
-                    <input class="form-control" type="text" name="request_id" id="request_id" readonly data-toggle="tooltip" data-placement="top" title="This request ID uniquely identifies your request. Don\'t worry, it should be the same as in previous years."/>
+                    <input class="form-control" type="text" name="request_id" id="request_id" readonly data-toggle="tooltip" data-placement="top" title="This request ID uniquely identifies your request. Don\'t worry, it should be the same as in previous years." disabled/>
                 </div>
             </div>
-            <div class="clearfix visible-sm visible-md visible-lg"></div>
-            <div class="form-group">
+            <div class="row">
                 <label for="givenName" class="col-sm-2 control-label">First Name:</label>
                 <div class="col-sm-10">
                     <input class="form-control" id="givenName" name="givenName" type="text" required data-toggle="tooltip" data-placement="top" title="This is the first name for the mailing address."/>
                 </div>
             </div>
-            <div class="clearfix visible-sm visible-md visible-lg"></div>
-            <div class="form-group">
+            <div class="row">
                 <label for="sn" class="col-sm-2 control-label">Last Name:</label>
                 <div class="col-sm-10">
                     <input class="form-control" id="sn" name="sn" type="text" required data-toggle="tooltip" data-placement="top" title="This is the last name for the mailing address."/>
                 </div>
             </div>
-            <div class="clearfix visible-sm visible-md visible-lg"></div>
-            <div class="form-group">
+            <div class="row">
                 <label for="mail" class="col-sm-2 control-label">Email:</label>
                 <div class="col-sm-10">
                     <input class="form-control" type="text" name="mail" id="mail" readonly data-toggle="tooltip" data-placement="top" title="This is the email address used for further communications. This email address has been set and confirmed by your profile. If you need to use a different email address please edit your profile." value="'.$email.'"/>
                 </div>
             </div>
-            <div class="form-group">
+            <div class="row">
                 <label for="c" class="col-sm-2 control-label">Country:</label>
                 <div class="col-sm-10">
                     <select class="form-control bfh-countries" id="c" name="c" data-country="US" required data-toggle="tooltip" data-placement="top" title="The Country for the mailing address."></select>
                 </div>
             </div>
-            <div class="form-group">
+            <div class="row">
                 <label for="mobile" class="col-sm-2 control-label">Cell Number:</label>
                 <div class="col-sm-10">
                     <input id="mobile" name="mobile" type="text" class="form-control bfh-phone" required data-country="c" data-toggle="tooltip" data-placement="top" title="This phone number may be used by the ticket team in case of a problem with your request."/>
                 </div>
             </div>
-            <div class="clearfix visible-sm visible-md visible-lg"></div>
-            <div class="form-group">
+            <div class="row">
                 <label for="street" class="col-sm-2 control-label">Street Address:</label>
                 <div class="col-sm-10">
                     <textarea class="form-control" required id="street" name="street" rows="2" data-toggle="tooltip" data-placement="top" title="The street address for the mailing address."></textarea>
                 </div>
             </div>
-            <div class="form-group">
+            <div class="row">
                 <label for="zip" class="col-sm-2 control-label">Postal/Zip Code:</label>
                 <div class="col-sm-10">
                     <input class="form-control" required id="zip" name="zip" type="text" data-toggle="tooltip" data-placement="top" title="The zip or postal code for the mailing address."/>
                 </div>
             </div>
-            <div class="clearfix visible-sm visible-md visible-lg"></div>
-            <div class="form-group">
+            <div class="row">
                 <label for="l" class="col-sm-2 control-label">City:</label>
                 <div class="col-sm-10">
                     <input class="form-control" required id="l" name="l" type="text" data-toggle="tooltip" data-placement="top" title="The city for the mailing address."/>
                 </div>
             </div>
-            <div class="form-group">
+            <div class="row">
                 <label for="st" class="col-sm-2 control-label">State:</label>
                 <div class="col-sm-10">
                     <select class="form-control bfh-states" required data-country="c" id="st" name="st" type="text" data-toggle="tooltip" data-placement="top" title="The state/province/or other subdivision of the country for the mailing address."></select>
                 </div>
             </div>
-            <div class="clearfix visible-md visible-lg"></div>
-            <table id="ticket_table" class="table">
+            <div class="row">
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="paymentMethod" id="paymentTraditional">
+                    <label class="form-check-label" for="paymentTraditional">
+                        I want to pay for my tickets with a Money Order or Cashier\'s Check.
+                    </label>
+                    </div>
+                    <div class="form-check">
+                    <input class="form-check-input" type="radio" name="paymentMethod" id="paymentCC">
+                    <label class="form-check-label" for="paymentCC">
+                        I want to pay for my tickets later with a Credit Card. I understand that the tickets will <a href="#" data-bs-toggle="modal" data-bs-target="#costModal">cost more</a> and that all Money Order requests will be granted before mine.
+                    </label>
+                </div>
+            </div>
+            <table id="ticket_table" class="table" hidden>
                 <thead>
                     <tr>
                         <th></th>
@@ -106,34 +114,31 @@ if($page->user)
                     </tr>
                 </tfoot>
             </table>
-        <fieldset id="donations">
-            <legend>Donation</legend>
+        <div id="traditionalPaymentDetails" class="row" hidden>
+            <fieldset id="donations">
+                <legend>Donation</legend>
+            </fieldset>
+            <fieldset>
+                <legend>Envelope Art</legend>
+                <input id="envelopeArt" name="envelopeArt" type="checkbox"/>&nbsp;
+                <label for="envelopeArt">
+                    Allow AAR to use my envelope art in the Survival Guide or Website. It will be credited by the name on the return address.
+                </label>
+            </fieldset>
+        </div>
+        <div id="creditPaymentDetails" class="row" hidden>
+            <div class="col">
+                Donations are not accepted for Credit Card payments. However you should totally still <a href="https://ignitionphilter.com/donate/">donate</a> to Ignition Philter.
+
+                You will be notified at the above email if you have been chosen to get tickets. You will then have two weeks to pay for your tickets. If you do not pay within two weeks your tickets will be released to the next person in line.
+            </div>
+        </div>
+        <div class="row">
+            <div class="col col-sm2">
+                <button type="submit" name="submit" id="submit" class="btn btn-primary" hidden>Submit Request</button>
+            </div>
+        </div>
         </fieldset>
-        <fieldset>
-            <legend>Envelope Art</legend>
-            <input id="envelopeArt" name="envelopeArt" type="checkbox"/>&nbsp;
-            <label for="envelopeArt">
-                Allow AAR to use my envelope art in the Survival Guide or Website. It will be credited by the name on the return address.
-            </label>
-        </fieldset>
-        <fieldset>
-            <legend>Survival Guide</legend>
-            <input id="survivalGuide" name="survivalGuide" type="checkbox"/>&nbsp;
-            <label for="survivalGuide">
-                For $6 please mail me a physical copy of the survival guide. The survival guide is available to everyone electronically. 
-            </label>
-        </fieldset>
-        <fieldset>
-            <legend>Mailing Lists</legend>
-            It is highly recommended that all Burning Flipside participants sign up for one or more email lists to allow
-            AAR, LLC to communicate important details about Burning Flipside before and after the event.<br/>
-            <br/>
-            Sign me up for the following lists:<br/>
-            <table id="email_lists" class="table">
-            </table>
-        </fieldset>
-        <button type="submit" name="submit" class="btn btn-primary">Submit Request</button>
-    </fieldset>
     </form>
 </div>
 <div id="minor_dialog" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true" aria-labelledby="minor-title">
@@ -177,6 +182,27 @@ if($page->user)
             </div>
         </div>
     </div>
+</div>
+<div class="modal fade" id="costModal" tabindex="-1" aria-labelledby="costModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="costModalLabel">Why does it cost more to pay with a Credit Card?</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        There are several reasons why it costs more to pay with a credit card.
+        <ul>
+            <li>First, the credit card companies charge a fee for each transaction. This fee is typically a percentage of the total amount charged, plus a fixed fee per transaction. This fee is passed on to the customer.</li>
+            <li>Second, the non-profit that runs Burning Flipside is allowed a sales tax free day, the organization uses that for ticket opening. Therefore any tickets bought on any other day must pay sales tax. This tax is passed on to the customer.</li>
+            <li>Third, when using Credit Cards versus Money Orders there are things known as "Charge Backs" which is when you or your credit card company dispute the charges. In addition to us not getting the money from the transaction, there are also fees involved with this. So a small fee (rounding to the nearest dollar) has been included to cover charge backs.</li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
 </div>
 ';
 

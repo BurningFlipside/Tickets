@@ -17,7 +17,7 @@ $page->body .= '
             <div class="form-group">
                 <label for="show_short_code" class="col-sm-2 control-label">Current Entry Type:</label>
                 <div class="col-sm-10">
-                    <input class="form-control" type="text" name="currentEarlyEntry" id="currentEarlyEntry"/>
+                    <select class="form-control" name="currentEarlyEntry" id="currentEarlyEntry"></select>
                 </div>
             </div>
             <div class="clearfix visible-sm visible-md visible-lg"></div>

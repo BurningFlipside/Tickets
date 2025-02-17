@@ -1,19 +1,22 @@
-/* global $, getParameterByName */
+/* global bootstrap, Tabulator*/
 /* exported nextTicket, prevTicket, resendTicketEmail, saveTicket, spinHash */
-var ticketData = null;
-var ticketTypes = null;
-var earlyEntry = null;
+let ticketData = null;
 
-function renderShortHash(data) {
-  var shortHash = data.substring(0,8);
-  return '<a style="cursor: pointer;" onclick="viewTicket(\''+data+'\');">'+shortHash+'</a>';
+function renderShortHash(cell) {
+  let data = cell.getValue();
+  let shortHash = data.substring(0,8);
+  return '<a href="#" style="cursor: pointer;" onclick="viewTicket(\''+data+'\');">'+shortHash+'</a>';
 }
 
-function renderTicketType(data) {
-  if(ticketTypes === null || ticketTypes[`${data}`] === undefined) {
-    return data;
+function renderTicketType(cell) {
+  let data = cell.getValue();
+  let typeSelect = document.getElementById('type');
+  for(let option of typeSelect.options) {
+    if(option.value === data) {
+      return option.text;
+    }
   }
-  return ticketTypes[`${data}`];
+  return data;
 }
 
 function getTicketBySelected() {
@@ -24,98 +27,112 @@ function getTicketBySelected() {
 }
 
 function showTicketFromData(data) {
-  var readOnly = true;
+  let readOnly = true;
   let ticket = null;
+  let leftArrow = document.getElementById('left_arrow');
+  let rightArrow = document.getElementById('right_arrow');
+  let saveTicketButton = document.getElementById('saveticket');
   if(data.selected === -1) {
     ticket = data.current;
-    $('#right_arrow').hide();
+    rightArrow.disabled = true;
     if(data.history !== undefined && data.history.length > 0) {
-      $('#left_arrow').show();
+      leftArrow.disabled = false;
     } else {
-      $('#left_arrow').hide();
+      leftArrow.disabled = true;
     }
     readOnly = false;
-    $('#saveticket').removeAttr('disabled');
+    saveTicketButton.disabled = false;
   } else {
     ticket = data.history[data.selected];
     if(data.selected === (data.history.length - 1)) {
-      $('#left_arrow').hide();
+      leftArrow.disabled = true;
     } else {
-      $('#left_arrow').show();
+      leftArrow.disabled = false;
     }
-    $('#right_arrow').show();
-    $('#saveticket').attr('disabled', 'true');
+    rightArrow.disabled = false;
+    saveTicketButton.disabled = true;
   }
-  $('#hash').val(ticket.hash);
-  $('#year').val(ticket.year);
-  $('#firstName').val(ticket.firstName);
-  $('#lastName').val(ticket.lastName);
-  $('#email').val(ticket.email);
-  $('#request_id').val(ticket.request_id);
-  $('#type').val(ticket.type);
-  $('#guardian_first').val(ticket.guardian_first);
-  $('#guardian_last').val(ticket.guardian_last);
-  $('#earlyEntryWindow').val(ticket.earlyEntryWindow);
+  document.getElementById('hash').value = ticket.hash;
+  document.getElementById('year').value = ticket.year;
+  let firstName = document.getElementById('firstName');
+  firstName.value = ticket.firstName;
+  let lastName = document.getElementById('lastName');
+  lastName.value = ticket.lastName;
+  let email = document.getElementById('email');
+  email.value = ticket.email;
+  let requestID = document.getElementById('request_id');
+  requestID.value = ticket.request_id;
+  let typeSelect = document.getElementById('type');
+  typeSelect.value = ticket.type;
+  let guardianFirst = document.getElementById('guardian_first');
+  let guardianLast = document.getElementById('guardian_last');
+  guardianFirst.value = ticket.guardian_first;
+  guardianLast.value = ticket.guardian_last;
+  let eeWindow = document.getElementById('earlyEntryWindow');
+  eeWindow.value = ticket.earlyEntryWindow;
+  let sold = document.getElementById('sold');
   if(ticket.sold === 1 || ticket.sold === '1') {
-    $('#sold').prop('checked', true);
+    sold.checked = true;
   } else {
-    $('#sold').prop('checked', false);
+    sold.checked = false;
   }
+  let used = document.getElementById('used');
   if(ticket.used === 1 || ticket.used === '1') {
-    $('#used').prop('checked', true);
+    used.checked = true;
   } else {
-    $('#used').prop('checked', false);
+    used.checked = false;
   }
+  let voidValue = document.getElementById('void');
   if(ticket.void === 1 || ticket.void === '1') {
-    $('#void').prop('checked', true);
+    voidValue.checked = true;
   } else {
-    $('#void').prop('checked', false);
+    voidValue.checked = false;
   }
-  $('#comments').val(ticket.comments);
+  let comments = document.getElementById('comments');
+  comments.value = ticket.comments;
   if(readOnly) {
-    $('#firstName').prop('disabled', true);
-    $('#lastName').prop('disabled', true);
-    $('#email').prop('disabled', true);
-    $('#request_id').prop('disabled', true);
-    $('#type').prop('disabled', true);
-    $('#guardian_first').prop('disabled', true);
-    $('#guardian_last').prop('disabled', true);
-    $('#sold').prop('disabled', true);
-    $('#used').prop('disabled', true);
-    $('#void').prop('disabled', true);
-    $('#comments').prop('disabled', true);
+    firstName.disabled = true;
+    lastName.disabled = true;
+    email.disabled = true;
+    requestID.disabled = true;
+    typeSelect.disabled = true;
+    guardianFirst.disabled = true;
+    guardianLast.disabled = true;
+    eeWindow.disabled = true;
+    sold.disabled = true;
+    used.disabled = true;
+    voidValue.disabled = true;
+    comments.disabled = true;
   } else {
-    $('#firstName').prop('disabled', false);
-    $('#lastName').prop('disabled', false);
-    $('#email').prop('disabled', false);
-    $('#request_id').prop('disabled', false);
-    $('#type').prop('disabled', false);
-    $('#guardian_first').prop('disabled', false);
-    $('#guardian_last').prop('disabled', false);
-    $('#sold').prop('disabled', false);
-    $('#used').prop('disabled', false);
-    $('#void').prop('disabled', false);
-    $('#comments').prop('disabled', false);
+    firstName.disabled = false;
+    lastName.disabled = false;
+    email.disabled = false;
+    requestID.disabled = false;
+    typeSelect.disabled = false;
+    if(ticket.type === 'A') {
+      guardianFirst.disabled = true;
+      guardianLast.disabled = true;
+    } else {
+      // All other ticket types are minors and so we need guardian info
+      guardianFirst.disabled = false;
+      guardianLast.disabled = false;
+    }
+    eeWindow.disabled = false;
+    sold.disabled = false;
+    used.disabled = false;
+    voidValue.disabled = false;
+    comments.disabled = false;
   }
-  $('#ticket_modal').modal('show');
-}
-
-function ticketDataDone(data) {
-  if(data.selected === undefined) {
-    alert('Unable to retrieve ticket history data');
-    console.log(data);
-    return;
-  }
-  ticketData = data;
-  showTicketFromData(data);
+  let modalElement = document.getElementById('ticket_modal');
+  let modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+  modal.show();
 }
 
 function viewTicket(hash) {
-  $.ajax({
-    url: '../api/v1/tickets/'+hash+'?with_history=1',
-    type: 'get',
-    dataType: 'json',
-    success: ticketDataDone}); 
+  fetch('../api/v1/tickets/'+hash+'?with_history=1').then(response => response.json()).then((data) => {
+    ticketData = data;
+    showTicketFromData(data);
+  });
 }
 
 function prevTicket() {
@@ -132,38 +149,21 @@ function setIfValueDifferent(ticket, obj, inputName, fieldName) {
   if(fieldName === undefined) {
     fieldName = inputName;
   }
-  var input = $('#'+inputName);
-  if(input.attr('type') === 'checkbox') {
-    if(input.is(':checked')) {
+  let input = document.getElementById(inputName);
+  if(input.type === 'checkbox') {
+    if(input.checked) {
       if(ticket[`${fieldName}`] === 0 || ticket[`${fieldName}`] === '0') {
         obj[`${fieldName}`] = 1;
       }
     } else if(ticket[`${fieldName}`] === 1 || ticket[`${fieldName}`] === '1') {
       obj[`${fieldName}`] = 0;
     }
-  } else {
-    var val = $('#'+inputName).val();
-    if(val !== ticket[`${fieldName}`]) {
-      obj[`${fieldName}`] = val;
-    }
-  }
-}
-
-function saveTicketDone(jqXHR) {
-  if(jqXHR.status !== 200) {
-    alert('Unable to save ticket!');
     return;
   }
-  $('#ticket_modal').modal('hide');
-  yearChanged();
-}
-
-function noChangeDone(jqXHR) {
-  if(jqXHR.status !== 200) {
-    alert('Error!');
-    return;
+  let val = input.value;
+  if(val !== ticket[`${fieldName}`]) {
+    obj[`${fieldName}`] = val;
   }
-  $('#ticket_modal').modal('hide');
 }
 
 function saveTicket() {
@@ -182,71 +182,83 @@ function saveTicket() {
   setIfValueDifferent(ticket, obj, 'earlyEntryWindow');
   setIfValueDifferent(ticket, obj, 'comments');
   if(Object.keys(obj).length > 0) {
-    $.ajax({
-      url: '../api/v1/tickets/'+ticket.hash,
-      contentType: 'application/json',
-      data: JSON.stringify(obj),
-      type: 'patch',
-      dataType: 'json',
-      complete: saveTicketDone});
-  } else {
-    $('#ticket_modal').modal('hide');
+    fetch('../api/v1/tickets/'+ticket.hash, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(obj)
+    }).then((response) => {
+      if(!response.ok) {
+        alert('Unable to save ticket!');
+        return;
+      }
+      let modalElement = document.getElementById('ticket_modal');
+      let modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+      modal.hide();
+    });
   }
+  let modalElement = document.getElementById('ticket_modal');
+  let modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+  modal.hide();
 }
 
 function resendTicketEmail() {
-  var ticket = getTicketBySelected();
-  $.ajax({
-    url: '../api/v1/tickets/'+ticket.hash+'/Actions/Ticket.SendEmail',
-    contentType: 'application/json',
-    type: 'post',
-    dataType: 'json',
-    complete: noChangeDone}); 
+  let ticket = getTicketBySelected();
+  fetch('../api/v1/tickets/'+ticket.hash+'/Actions/Ticket.SendEmail', {
+    method: 'POST'
+  }).then((response) => {
+    if(response.status !== 200) {
+      alert('Unable to resend email!');
+      return;
+    }
+    let modalElement = document.getElementById('ticket_modal');
+    let modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+    modal.hide();
+  });
 }
 
 function spinHash() {
-  var ticket = getTicketBySelected();
-  $.ajax({
-    url: '../api/v1/tickets/'+ticket.hash+'/Actions/Ticket.SpinHash',
-    contentType: 'application/json',
-    type: 'post',
-    dataType: 'json',
-    complete: saveTicketDone});
+  let ticket = getTicketBySelected();
+  fetch('../api/v1/tickets/'+ticket.hash+'/Actions/Ticket.SpinHash', {
+    method: 'POST'
+  }).then((response) => {
+    if(response.status !== 200) {
+      alert('Unable to spin hash!');
+      return;
+    }
+    let modalElement = document.getElementById('ticket_modal');
+    let modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+    modal.hide();
+    requeryTable();
+  });
 }
 
-function backendSearchDone(data) {
-  var tickets = data;
-  if(data.old_tickets !== undefined) {
-    tickets = data.old_tickets;
-  }
-  viewTicket(tickets[0].hash);
-}
-
-function tableSearched() {
-  var dtApi = $('#tickets').DataTable();
-  if(dtApi.search() === '') {
+function tableSearched(search) {
+  if(search.value === '') {
     return;
   }
-  if(dtApi.rows({'search':'applied'})[0].length === 0) {
-    $.ajax({
-      url: '../api/v1/tickets/search/'+dtApi.search(),
-      type: 'get',
-      dataType: 'json',
-      success: backendSearchDone
-    });
-  }
+  fetch('../api/v1/tickets/search/'+search.value).then(response => response.json()).then((data) => {
+    if(data.length === 0) {
+      return;
+    }
+    if(data.length === 1) {
+      viewTicket(data[0].hash);
+      return;
+    }
+  });
 }
 
 function requeryTable() {
-  var year = $('#ticket_year').val();
-  var sold = $('#ticketSold').val();
-  var assigned = $('#ticketAssigned').val();
-  var used = $('#ticketUsed').val();
-  var voidVal = $('#ticketVoid').val();
-  var disc = $('#discretionaryUser').val();
-  var ee = $('#earlyEntry').val();
-  var pool = $('#ticketPool').val();
-  var filter = 'year eq '+year;
+  let year = document.getElementById('ticket_year').value;
+  let sold = document.getElementById('ticketSold').value;
+  let assigned = document.getElementById('ticketAssigned').value;
+  let used = document.getElementById('ticketUsed').value;
+  let voidVal = document.getElementById('ticketVoid').value;
+  let disc = document.getElementById('discretionaryUser').value;
+  let ee = document.getElementById('earlyEntry').value;
+  let pool = document.getElementById('ticketPool').value;
+  let filter = 'year eq '+year;
   if(year === '*') {
     filter = 'year ne 999999';
   }
@@ -271,153 +283,145 @@ function requeryTable() {
   if(pool !== '*') {
     filter+=' and pool_id eq '+pool;
   }
-  $('#tickets').DataTable().ajax.url('../api/v1/tickets?filter='+filter+'&fmt=data-table').load();
-}
-
-function soldChanged() {
-  requeryTable();
-}
-
-function assignedChanged() {
-  requeryTable();
-}
-
-function usedChanged() {
-  requeryTable();
-}
-
-function yearChanged() {
-  requeryTable();
-}
-
-function discretionaryChanged() {
-  requeryTable();
-}
-
-function gotTicketYears(jqXHR) {
-  if(jqXHR.status !== 200) {
-    alert('Unable to obtain valid ticket years!');
-    console.log(jqXHR);
-    return;
-  }
-  jqXHR.responseJSON.sort().reverse();
-  let selected = false;
-  for(let year of jqXHR.responseJSON) {
-    var opt = $('<option/>').attr('value', year).text(year);
-    if(!selected) {
-      opt.attr('selected', true);
-      selected = true;
-    }
-    $('#ticket_year').append(opt);
-  }
-  $('#ticket_year').on('change', yearChanged);
-  var e = {};
-  e.currentTarget = {};
-  e.currentTarget.value = $('#ticket_year').val();
-  yearChanged(e);
-}
-
-function gotTicketTypes(jqXHR) {
-  if(jqXHR.status !== 200 || jqXHR.responseJSON === undefined) {
-    console.log(jqXHR);
-    return;
-  }
-  var data = jqXHR.responseJSON;
-  var options = '';
-  ticketTypes = {};
-  for(let type of data) {
-    options+='<option value="'+type.typeCode+'">'+type.description+'</option>';
-    ticketTypes[type.typeCode] = type.description;
-  }
-  $('#type').replaceWith('<select id="type" name="type" class="form-control">'+options+'</select>');
-}
-
-function gotEarlyEntry(jqXHR) {
-  if(jqXHR.status !== 200 || jqXHR.responseJSON === undefined) {
-    console.log(jqXHR);
-    return;
-  }
-  var data = jqXHR.responseJSON;
-  var options = '';
-  earlyEntry = {};
-  for(let ee of data) {
-    options+='<option value="'+ee.earlyEntrySetting+'">'+ee.earlyEntryDescription+'</option>';
-    earlyEntry[ee.earlyEntrySetting] = ee.earlyEntryDescription;
-  }
-  $('#earlyEntryWindow').replaceWith('<select id="earlyEntryWindow" name="earlyEntryWindow" class="form-control">'+options+'</select>');
-  $('#earlyEntry :first-child').after(options);
-}
-
-function gotPools(jqXHR) {
-  if(jqXHR.status !== 200 || jqXHR.responseJSON === undefined) {
-    console.log(jqXHR);
-    return;
-  }
-  var data = jqXHR.responseJSON;
-  var options = '';
-  for(let pool of data) {
-    options+='<option value="'+pool.pool_id+'">'+pool.pool_name+'</option>';
-  }
-  $('#ticketPool :first-child').after(options);
+  let table = Tabulator.findTable('#tickets')[0];
+  table.setData('../api/v1/tickets?filter='+filter);
 }
 
 function initPage() {
-  var sold = getParameterByName('sold');
-  if(sold !== null) {
-    $('#ticketSold').val(sold);
+  const urlParams = new URLSearchParams(window.location.search);
+  if(urlParams.get('sold') !== null) {
+    document.getElementById('ticketSold').value = urlParams.get('sold');
   }
-  var used = getParameterByName('used');
-  if(used !== null) {
-    $('#ticketUsed').val(used);
+  if(urlParams.get('used') !== null) {
+    document.getElementById('ticketUsed').value = urlParams.get('used');
   }
-  var discretionaryUser = getParameterByName('discretionaryUser');
-  if(discretionaryUser !== null) {
-    $('#discretionaryUser').val(discretionaryUser);
+  if(urlParams.get('discretionaryUser') !== null) {
+    document.getElementById('discretionaryUser').value = urlParams.get('discretionaryUser');
   }
-
-  $('#tickets').dataTable({
+  let table = new Tabulator('#tickets', {
+    layout: 'fitColumns',
+    pagination: 'local',
+    paginationSize: 10,
+    paginationSizeSelector: [10, 20, 50, 100],
     columns: [
-      {'data': 'hash', 'render': renderShortHash},
-      {'data': 'firstName'},
-      {'data': 'lastName'},
-      {'data': 'email'},
-      {'data': 'type', 'render': renderTicketType}
-    ]
+      {'title': 'Short Code', 'field': 'hash', 'formatter': renderShortHash},
+      {'title': 'First Name', 'field': 'firstName'},
+      {'title': 'Last Name', 'field': 'lastName'},
+      {'title': 'Email', 'field': 'email'},
+      {'title': 'Type', 'field': 'type', 'formatter': renderTicketType}
+    ],
   });
-  $.ajax({
-    url: '../api/v1/globals/years',
-    type: 'get',
-    dataType: 'json',
-    complete: gotTicketYears});
-  $.ajax({
-    url: '../api/v1/globals/ticket_types',
-    type: 'get',
-    dataType: 'json',
-    complete: gotTicketTypes});
-  $.ajax({
-    url: '../api/v1/earlyEntry',
-    type: 'get',
-    dataType: 'json',
-    complete: gotEarlyEntry});
-  $.ajax({
-    url: '../api/v1/pools',
-    method: 'get',
-    complete: gotPools
+  fetch('../api/v1/globals/years').then(response => response.json()).then(data => {
+    data.sort().reverse();
+    let yearSelect = document.getElementById('ticket_year');
+    for(let year of data) {
+      if(yearSelect.options.length === 1) {
+        yearSelect.add(new Option(year, year, true, true));
+      } else {
+        yearSelect.add(new Option(year, year));
+      }
+    }
+    yearSelect.addEventListener('change', requeryTable);
+    requeryTable();
+  });
+  fetch('../api/v1/globals/ticket_types').then(response => response.json()).then(data => {
+    let typeSelect = document.getElementById('type');
+    typeSelect.outerHTML = '<select id="type" name="type" class="form-control"></select>';
+    typeSelect = document.getElementById('type');
+    for(let type of data) {
+      if(typeSelect.options.length === 0) {
+        typeSelect.add(new Option(type.description, type.typeCode, true, true));
+      } else {
+        typeSelect.add(new Option(type.description, type.typeCode));
+      }
+    }
+  });
+  fetch('../api/v1/earlyEntry').then(response => response.json()).then(data => {
+    let eeSelect = document.getElementById('earlyEntryWindow');
+    let eeSelect2 = document.getElementById('earlyEntry');
+    eeSelect.outerHTML = '<select id="earlyEntryWindow" name="earlyEntryWindow" class="form-control"></select>';
+    eeSelect = document.getElementById('earlyEntryWindow');
+    for(let ee of data) {
+      if(eeSelect.options.length === 0) {
+        let option = new Option(ee.earlyEntryDescription, ee.earlyEntrySetting, true, true);
+        eeSelect.add(option);
+        option = new Option(ee.earlyEntryDescription, ee.earlyEntrySetting);
+        eeSelect2.add(option);
+      } else {
+        let option = new Option(ee.earlyEntryDescription, ee.earlyEntrySetting);
+        eeSelect.add(option);
+        option = new Option(ee.earlyEntryDescription, ee.earlyEntrySetting);
+        eeSelect2.add(option);
+      }
+      eeSelect2.value = '*';
+    }
+  });
+  fetch('../api/v1/pools').then(response => response.json()).then(data => {
+    let poolSelect = document.getElementById('ticketPool');
+    for(let pool of data) {
+      poolSelect.add(new Option(pool.pool_name, pool.pool_id));
+    }
   });
 
-  $('#tickets').on('search.dt', tableSearched);
-  $('#ticketSold').on('change', soldChanged);
-  $('#ticketAssigned').on('change', assignedChanged);
-  $('#ticketUsed').on('change', usedChanged);
-  $('#discretionaryUser').on('change', discretionaryChanged);
-  $('#ticketVoid').on('change', usedChanged);
-  $('#earlyEntry').on('change', usedChanged);
-  $('#ticketPool').on('change', usedChanged);
+  document.getElementById('ticketSold').addEventListener('click', requeryTable);
+  document.getElementById('ticketAssigned').addEventListener('click', requeryTable);
+  document.getElementById('ticketUsed').addEventListener('click', requeryTable);
+  document.getElementById('discretionaryUser').addEventListener('click', requeryTable);
+  document.getElementById('ticketVoid').addEventListener('click', requeryTable);
+  document.getElementById('earlyEntry').addEventListener('click', requeryTable);
+  document.getElementById('ticketPool').addEventListener('click', requeryTable);
 
-  let hash = getParameterByName('hash');
-  if(hash !== null) {
-    viewTicket(hash);
+  if(urlParams.get('hash') !== null) {
+    viewTicket(urlParams.get('hash'));
   }
+  table.on('dataLoaded', (data) => {
+    let tabulatorFooter = document.getElementsByClassName('tabulator-footer')[0];
+    if(data.length <= 10) {
+      tabulatorFooter.style.display = 'none';
+    } else {
+      tabulatorFooter.style.display = 'block';
+      let footerText = document.createElement('div');
+      footerText.style.float = 'left';
+      footerText.innerText = 'Showing '+data.length+' tickets';
+      tabulatorFooter.firstChild.prepend(footerText);
+    }
+  });
+  let tableElem = document.getElementById('tickets');
+  let parent = tableElem.parentElement;
+  let node = document.createElement('div');
+  node.style.float = 'right';
+  node.style.textAlign = 'right';
+  node.innerText = 'Search:';
+  let search = document.createElement('input');
+  search.type = 'text';
+  search.style.border = '1px solid #aaa';
+  search.style.borderRadius = '5px';
+  search.style.padding = '2px';
+  node.appendChild(search);
+  parent.insertBefore(node, tableElem);
+  search.addEventListener('input', () => {
+    table.clearFilter();
+    if(search.value === '') {
+      return;
+    }
+    table.setFilter((data) => {
+      let searchValue = search.value.toLowerCase();
+      for(let key in data) {
+        if(data[`${key}`] === null) {
+          continue;
+        }
+        if(data[`${key}`].toString().toLowerCase().includes(searchValue)) {
+          return true;
+        }
+      }
+      return false;
+    });
+  });
+  table.on('dataFiltered', (filters, rows) => {
+    if(rows.length === 0) {
+      tableSearched(search);
+    }
+  });
 }
 
-$(initPage);
+window.onload = initPage;

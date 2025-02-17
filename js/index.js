@@ -1,121 +1,126 @@
-/* global $, add_notification, getParameterByName, NOTIFICATION_SUCCESS, NOTIFICATION_WARNING, TicketSystem,  */
+/* global addNotification, bootbox, bootstrap, NOTIFICATION_SUCCESS, NOTIFICATION_WARNING, Tabulator,  */
 /* exported copy_request, downloadTicket, editTicket, showLongId, transferTicket, viewTicket, saveTicket */
-var ticketSystem = null;
-
 var outOfWindow = false;
 var testMode = false;
 var ticketYear = false;
-var basicButtonOptions = {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', 'data-html': true};
+const basicButtonOptions = {'class': 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', 'data-html': true};
 
 function tableDrawComplete() {
-  $('#ticket_set').show();
-  if ($('#ticketList').DataTable().data().length !== 0) {
-    //Table contains nothing, just return
-    return;
+  document.querySelector('#ticketList .tabulator-tableholder').style.overflow = 'hidden';
+  if(window.innerWidth < 768) {
+    let tables = Tabulator.findTable('#ticketList');
+    if(tables === null) {
+      return;
+    }
+    let table = tables[0];
+    table.hideColumn('type');
+    table.hideColumn('short_ticket_code');
   }
-  if($(window).width() < 768) {
-    $('#ticketList th:nth-child(3)').hide();
-    $('#ticketList td:nth-child(3)').hide();
-    $('#ticketList th:nth-child(4)').hide();
-    $('#ticketList td:nth-child(4)').hide();
-  }
-}
-
-function getWordsDone(data) {
-  $('#long_id_words').html(data.hash_words);
 }
 
 function showLongId(hash) {
-  $('#long_id').html(hash);
-  $('#long_id_words').html('');
-  $.ajax({
-    url: 'api/v1/tickets/'+hash+'?select=hash_words',
-    type: 'get',
-    dataType: 'json',
-    success: getWordsDone});
-  $('#ticket_view_modal').modal('hide');
-  $('#ticket_id_modal').modal('show');
+  document.getElementById('long_id').innerText = hash;
+  let longIdWords = document.getElementById('long_id_words');
+  longIdWords.innerText = '';
+  fetch('api/v1/tickets/'+hash+'?select=hash_words').then((response) => {
+    if(response.ok) {
+      response.json().then((data) => {
+        longIdWords.innerText = data.hash_words;
+      });
+    }
+  });
+  let viewModalElement = document.getElementById('ticket_view_modal');
+  let idModalElement = document.getElementById('ticket_id_modal');
+  let viewModal = bootstrap.Modal.getOrCreateInstance(viewModalElement);
+  let idModal = bootstrap.Modal.getOrCreateInstance(idModalElement);
+  viewModal.hide();
+  idModal.show();
 }
 
-function findTicketInTableByHash(table, hash) {
-  var json = table.DataTable().ajax.json();
-  for(let ticket of json.data) {
-    if(ticket.hash === hash) { // eslint-disable-line security/detect-possible-timing-attacks
-      return ticket;
-    }
+function findTicketInTableByHash(tableID, hash) {
+  let tables = Tabulator.findTable(tableID);
+  if(tables === false) {
+    return null;
   }
-  return null;
+  let table = tables[0];
+  let data = table.searchData('hash', '=', hash);
+  if(data.length === 0) {
+    return null;
+  }
+  return data[0];
 }
 
 function getTicketDataByHash(hash) {
-  var ticket = findTicketInTableByHash($('#ticketList'), hash);
+  var ticket = findTicketInTableByHash('#ticketList', hash);
   if(ticket === null) {
-    ticket = findTicketInTableByHash($('#discretionary'), hash);
+    ticket = findTicketInTableByHash('#discretionary', hash);
   }
   return ticket;
 }
 
 function viewTicket(control) {
-  var jq = $(control);
-  var id = jq.attr('for');
-  var ticket = getTicketDataByHash(id);
+  let id = control.getAttribute('for');
+  let ticket = getTicketDataByHash(id);
   if(ticket === null) {
     alert('Cannot find ticket');
     return;
   }
-  $('[title]').tooltip('hide');
-  $('#view_first_name').html(ticket.firstName);
-  $('#view_last_name').html(ticket.lastName);
-  $('#view_type').html(ticket.type);
-  $('#view_short_code').html(ticket.hash.substring(0,7)).attr('onclick', 'showLongId(\''+ticket.hash+'\')');
-  $('#ticket_view_modal').modal('show');
-}
-
-function saveTicketDone(data) {
-  if(data.error !== undefined) {
-    alert(data.error);
-    return;
-  }
-  location.reload();
+  document.getElementById('view_first_name').innerText = ticket.firstName;
+  document.getElementById('view_last_name').innerText = ticket.lastName;
+  document.getElementById('view_type').innerText = ticket.type;
+  let shortCode = document.getElementById('view_short_code');
+  shortCode.innerText = ticket.hash.substring(0,8);
+  shortCode.setAttribute('onclick', 'showLongId(\''+ticket.hash+'\')');
+  let ticketViewModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('ticket_view_modal'));
+  ticketViewModal.show();
 }
 
 function saveTicket() {
-  $.ajax({
-    url: 'api/v1/tickets/'+$('#show_short_code').data('hash'),
-    type: 'patch',
-    data: '{"firstName":"'+$('#edit_first_name').val()+'","lastName":"'+$('#edit_last_name').val()+'"}',
-    contentType: 'application/json',
-    processData: false,
-    dataType: 'json',
-    success: saveTicketDone});
-  $('#ticket_edit_modal').modal('hide');
+  let hash = document.getElementById('show_short_code').dataset.hash;
+  let first = document.getElementById('edit_first_name').value;
+  let last = document.getElementById('edit_last_name').value;
+  let data = {'firstName': first, 'lastName': last};
+  fetch('api/v1/tickets/'+hash, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  }).then((response) => {
+    if(!response.ok) {
+      alert('Failed to save ticket!');
+      return;
+    }
+    location.reload();
+  });
+  let ticketEditModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('ticket_edit_modal'));
+  ticketEditModal.hide();
 }
 
 function editTicket(control) {
-  var jq = $(control);
-  var id = jq.attr('for');
-  var ticket = getTicketDataByHash(id);
+  let id = control.getAttribute('for');
+  let ticket = getTicketDataByHash(id);
   if(ticket === null) {
     alert('Cannot find ticket');
     return;
   }
-  $('[title]').tooltip('hide');
-  $('#edit_first_name').val(ticket.firstName);
-  $('#edit_last_name').val(ticket.lastName);
-  $('#show_short_code').val(ticket.hash.substring(0,8)).data('hash', id);
-  $('#ticket_edit_modal').modal('show');
+  document.getElementById('edit_first_name').value = ticket.firstName;
+  document.getElementById('edit_last_name').value = ticket.lastName;
+  let shortCode = document.getElementById('show_short_code');
+  shortCode.value = ticket.hash.substring(0,8);
+  shortCode.dataset.hash = id;
+  let ticketEditModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('ticket_edit_modal'));
+  ticketEditModal.show();
 }
 
 function downloadTicket(control) {
-  var jq = $(control);
-  var id = jq.attr('for');
+  let id = control.getAttribute('for');
   window.open('api/v1/tickets/'+id+'/pdf', '_blank');  // eslint-disable-line security/detect-non-literal-fs-filename
 }
 
 function transferTicket(control) {
-  var jq = $(control);
-  var id = jq.attr('for');
-  var ticket = getTicketDataByHash(id);
+  let id = control.getAttribute('for');
+  let ticket = getTicketDataByHash(id);
   if(ticket === null) {
     alert('Cannot find ticket');
     return;
@@ -123,8 +128,9 @@ function transferTicket(control) {
   window.location.assign('transfer.php?id='+ticket.hash);
 }
 
-function shortHash(data) {
-  return '<a href="#" onclick="showLongId(\''+data+'\')">'+data.substring(0,8)+'</a>';
+function shortHash(cell) {
+  let hash = cell.getValue();
+  return '<a href="#" onclick="showLongId(\''+hash+'\')">'+hash.substring(0,8)+'</a>';
 }
 
 function getOuterHTML(button) {
@@ -135,22 +141,37 @@ function getOuterHTML(button) {
 }
 
 function makeGlyphButton(options, glyphClass, onClick) {
-  options.type = 'button';
-  var button = $('<button/>', options);
-  var glyph = $('<span/>', {'class': glyphClass});
-  button.on('click', onClick);
-  glyph.appendTo(button);
+  let button = document.createElement('button');
+  for(const propName in options) {
+    button.setAttribute(propName, options[`${propName}`]);
+  }
+  button.setAttribute('type', 'button');
+  button.classList.add('btn');
+  button.classList.add('btn-link');
+  let glyph = document.createElement('span');
+  glyph.className = glyphClass;
+  button.appendChild(glyph);
+  button.addEventListener('click', onClick);
+  //TODO unsure why I need to do this, something is wrong...
+  window.setTimeout(() => {
+    let temp = document.querySelector('[title="'+options.title+'"]');
+    temp.addEventListener('click', onClick);
+  }, 100);
   return button;
 }
 
 function makeGlyphLink(options, glyphClass, ref) {
-  var link = $('<a/>', options);
-  var glyph = $('<span/>', {'class': glyphClass});
-  if(ref !== undefined) {
-    link.attr('href', ref);
+  let link = document.createElement('a');
+  for(const propName in options) {
+    link.setAttribute(propName, options[`${propName}`]);
   }
-  glyph.appendTo(link);
-  return getOuterHTML(link);
+  let glyph = document.createElement('span');
+  glyph.className = glyphClass;
+  if(ref !== undefined) {
+    link.href = ref;
+  }
+  link.appendChild(glyph);
+  return link;
 }
 
 function createButtonOptions(title, onClick, forData) {
@@ -196,95 +217,120 @@ function getTransferButton(data) {
   return makeGlyphButton(transferOptions, 'fa fa-envelope');
 }
 
-function makeActions(data) {
-  var res = '';
-  if($(window).width() < 768) {
-    res += getOuterHTML(getViewButton(data));
+function makeActions(cell) {
+  let hash = cell.getValue();
+  let retElem = document.createElement('span');
+  retElem.style.whiteSpace = 'nowrap';
+  if(window.innerWidth < 768) {
+    retElem.appendChild(getViewButton(hash));
   }
-  res += getOuterHTML(getEditButton(data));
-  res += getPDFButton(data);
-  res += getOuterHTML(getTransferButton(data));
-  return res;
+  retElem.appendChild(getEditButton(hash));
+  retElem.appendChild(getPDFButton(hash));
+  retElem.appendChild(getTransferButton(hash));
+  return retElem;
 }
 
 function initTable() {
-  // prevent duplicate initialization error
-  if ($.fn.dataTable === undefined) {
-    //datatable isn't loaded yet retry...
-    setTimeout(initTable, 100);
-    return;
-  }
-  if ($.fn.dataTable.isDataTable('#ticketList')) {
-    $('#ticketList').DataTable();
-  } else {
-    $('#ticketList').dataTable({
-      'ajax': 'api/v1/ticket?fmt=data-table',
-      columns: [
-        { 'data': 'firstName' },
-        { 'data': 'lastName' },
-        { 'data': 'type' },
-        {
-          'data': 'hash',
-          'render': shortHash
-        },
-        {
-          'data': 'hash',
-          'render': makeActions,
-          'class': 'action-buttons',
-          'orderable': false
+  let table = new Tabulator('#ticketList', {
+    layout: 'fitColumns',
+    columns: [
+      { title: 'First Name', field: 'firstName' },
+      { title: 'Last Name', field: 'lastName' },
+      { title: 'Type', field: 'type' },
+      { title: 'Short Ticket Code', field: 'hash', formatter: shortHash},
+      { title: 'Actions', field: 'hash', formatter: makeActions, headerSort: false }
+    ]
+  });
+  fetch('api/v1/ticket').then(response => {
+    if(response.ok) {
+      response.json().then(data => {
+        document.getElementById('ticket_set').style.removeProperty('display');
+        if(data.length === 0) {
+          let ticketList = document.getElementById('ticketList');
+          if(!ticketList) {
+            return;
+          }
+          ticketList.outerHTML = 'You do not have any tickets at this time!<br/>';
+          return;
         }
-      ],
-      paging: false,
-      info: false,
-      searching: false
-    });
-  }
-  $('#ticketList').on('draw.dt', tableDrawComplete);
-  $('[data-toggle="tooltip"]').tooltip();
+        console.log(data);
+        table.setData(data);
+      });
+    }
+  });
+  table.on('dataProcessed', tableDrawComplete);
 }
 
 function addButtonsToRow(row, request) {
-  var cell = $('<td/>', {style: 'white-space: nowrap;'});
-  var editOptions = createButtonOptions('Edit Request');
-  var mailOptions = createButtonOptions('Resend Request Email');
-  var pdfOptions = createButtonOptions('Download Request PDF');
-  var html = makeGlyphLink(editOptions, 'fa fa-pencil-alt', 'request.php?request_id='+request.request_id+'&year='+request.year);
-  cell.append(html);
+  let cell = row.insertCell();
+  cell.style.whiteSpace = 'nowrap';
+  let editOptions = createButtonOptions('Edit Request');
+  let mailOptions = createButtonOptions('Resend Request Email');
+  let pdfOptions = createButtonOptions('Download Request PDF');
+  let html = makeGlyphLink(editOptions, 'fa fa-pencil-alt', 'request.php?request_id='+request.request_id+'&year='+request.year);
+  cell.appendChild(html);
 
-  html = makeGlyphButton(mailOptions, 'fa fa-envelope', request.sendEmail());
-  cell.append(html);
+  html = makeGlyphButton(mailOptions, 'fa fa-envelope', function(){
+    fetch('api/v1/request/'+request.request_id+'/'+request.year+'/Actions/Requests.SendEmail', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }).then(function(response) {
+      if(!response.ok) {
+        bootbox.alert('Unable to send email!');
+        return;
+      }
+      bootbox.alert('Email sent!');
+    });
+  });
+  cell.appendChild(html);
 
-  html = makeGlyphLink(pdfOptions, 'fa fa-download', request.getPdfUri());
-  cell.append(html);
-  cell.appendTo(row);
+  html = makeGlyphLink(pdfOptions, 'fa fa-download', 'api/v1/request/'+request.request_id+'/'+request.year+'/pdf');
+  cell.appendChild(html);
 }
 
 function toggleHiddenRequests() {
-  var rows = $('tr.old_request');
-  if(rows.is(':visible')) {
-    rows.hide();
+  let rows = document.querySelectorAll('tr.old_request');
+  for(let row of rows) {
+    if(row.style.display === 'none') {
+      row.style.display = 'table-row';
+    } else {
+      row.style.display = 'none';
+    }
+  }
+  let toggle = document.querySelector('#old_requests span');
+  if(toggle.classList.contains('fa-chevron-right')) {
+    toggle.classList.remove('fa-chevron-right');
+    toggle.classList.add('fa-chevron-down');
   } else {
-    rows.show();
+    toggle.classList.remove('fa-chevron-down');
+    toggle.classList.add('fa-chevron-right');
   }
 }
 
 function addOldRequestToTable(tbody, request) {
-  var container = tbody.find('tr#old_requests');
-  if(container.length === 0) {
-    tbody.prepend('<tr id="old_requests" style="cursor: pointer;"><td colspan="5"><span class="fa fa-chevron-right"></span> Old Requests</td></tr>');
-    container = tbody.find('tr#old_requests');
-    container.on('click', toggleHiddenRequests);
+  let container = tbody.querySelector('tr#old_requests');
+  if(container === null) {
+    let row = tbody.insertRow();
+    row.id = 'old_requests';
+    row.style.cursor = 'pointer';
+    let cell = row.insertCell();
+    cell.colSpan = 5;
+    cell.innerHTML = '<span class="fa fa-chevron-right"></span> Old Requests';
+    row.addEventListener('click', toggleHiddenRequests);
+    row.setAttribute('onclick', 'toggleHiddenRequests()');
   }
-  var row = $('<tr class="old_request" style="display: none;">');
-  row.append('<td/>');
-  row.append('<td>'+request.year+'</td>');
+  let row = tbody.insertRow();
+  row.className = 'old_request';
+  row.style.display = 'none';
+  row.insertCell();
+  row.insertCell().innerText = request.year;
   if(request.tickets === null) {
-    row.append('<td>0</td>');
-  } else {
-    row.append('<td>'+request.tickets.length+'</td>');
+    request.tickets = [];
   }
-  row.append('<td>$'+request.total_due+'</td>');
-  container.after(row);
+  row.insertCell().innerText = request.tickets.length;
+  row.insertCell().innerText = '$'+request.total_due;
 }
 
 function addRequestToTable(tbody, request, oldRequestOnly) {
@@ -293,106 +339,111 @@ function addRequestToTable(tbody, request, oldRequestOnly) {
     return;
   }
   oldRequestOnly.value = false;
-  var row = $('<tr/>');
-  row.append('<td>'+request.request_id+'</td>');
-  row.append('<td>'+request.year+'</td>');
+  let row = tbody.insertRow();
+  row.insertCell().innerText = request.request_id;
+  row.insertCell().innerText = request.year;
   if(request.tickets === null) {
     request.tickets = [];
   }
-  row.append('<td>'+request.tickets.length+'</td>');
+  row.insertCell().innerText = request.tickets.length;
   if(!outOfWindow || testMode) {
-    row.append('<td>$'+request.total_due+'</td>');
+    row.insertCell().innerText = '$'+request.total_due;
     addButtonsToRow(row, request);
   } else {
-    var cell = $('<td/>');
-    cell.attr('data-original-title', request.status.description);
-    cell.attr('data-container', 'body');
-    cell.attr('data-toggle', 'tooltip');
-    cell.attr('data-placement', 'top');
-    cell.html(request.status.name);
-    cell.appendTo(row);
-    row.append('<td></td>');
+    let cell = row.insertCell();
+    let div = document.createElement('div');
+    div.setAttribute('data-bs-title', request.status.description);
+    div.setAttribute('data-bs-container', 'body');
+    div.setAttribute('data-bs-toggle', 'tooltip');
+    div.setAttribute('data-bs-placement', 'top');
+    div.setAttribute('title', request.status.description);
+    div.innerText = request.status.name;
+    cell.appendChild(div);
+    row.insertCell();
   }
-  row.appendTo(tbody);
-  $('[data-original-title]').tooltip();
 }
 
 function processRequests(requests) {
-  var tbody = $('#requestList tbody');
-  var oldRequestOnly = {};
+  let table = document.getElementById('requestList');
+  let tbody = table.tBodies[0];
+  let oldRequestOnly = {};
   oldRequestOnly.value = true;
   for(let request of requests) {
     addRequestToTable(tbody, request, oldRequestOnly);
   }
   if(outOfWindow === false) {
-    tbody.append('<tr><td></td><td colspan="4" style="text-align: center;"><a href="request.php"><span class="fa fa-plus-square"></span> Create a new request</a></td></tr>');
-    $('#fallback').hide();
+    tbody.innerHTML += '<tr><td></td><td colspan="4" style="text-align: center;"><a href="request.php"><span class="fa fa-plus-square"></span> Create a new request</a></td></tr>';
+    document.getElementById('fallback').style.display = 'none';
   } else {
-    tbody.append('<tr><td colspan="5" style="text-align: center;"></td></tr>');
+    tbody.innerHTML += '<tr><td colspan="5" style="text-align: center;"></td></tr>';
   }
-  if($('[title]').length > 0) {
-    $('[title]').tooltip();
-  }
-  if($(window).width() < 768) {
-    $('#requestList th:nth-child(1)').hide();
-    $('#requestList td:nth-child(1)').hide();
+  if(window.innerWidth < 768) {
+    for(let row of table.rows) {
+      row.cells[0].style.display = 'none';
+    }
   }
 }
 
-function getRequestsDone(requests, err) {
-  if(err !== null) {
-    alert('Error obtaining request!');
-    return;
-  }
+function getRequestsDone(requests) {
+  document.getElementById('request_set').style.removeProperty('display');
   if(requests === undefined || requests.length === 0) {
     if(outOfWindow) {
-      $('#requestList').empty();
+      document.getElementById('requestList').innerHTML = '';
     } else {
-      $('#request_set').empty();
-      $('#request_set').append('You do not currently have a current or previous ticket request.<br/>');
-      $('#request_set').append('<a href="/tickets/request.php">Create a Ticket Request</a>');
+      let requestSet = document.getElementById('request_set');
+      requestSet.innerHTML = 'You do not currently have a current or previous ticket request.<br/><a href="/tickets/request.php">Create a Ticket Request</a>';
     }
   } else {
     processRequests(requests);
-  }
-  if($('#request_set').length > 0) {
-    $('#request_set').show();
   }
 }
 
 function processOutOfWindow(now, start, end, myWindow) {
   if(now < start) {
     let message = 'The request window is not open yet. It starts on '+start.toDateString();
-    if(myWindow.test_mode !== '1') {
-      $('[href="request.php"]').hide();
+    if(myWindow.test_mode !== true) {
+      let links = document.querySelectorAll('[href="request.php"]');
+      for(let link of links) {
+        link.style.display = 'none';
+      }
     }
-    add_notification($('#content'), message);
+    addNotification(document.getElementById('content'), message);
     outOfWindow = true;
     return;
   }
   if(now < start || now > end) {
-    var message = 'The request window is currently closed. No new ticket requests are accepted at this time.';
-    if(myWindow.test_mode === '1') {
+    let message = 'The request window is currently closed. No new ticket requests are accepted at this time.';
+    if(myWindow.test_mode === true) {
       message += ' But test mode is enabled. Any requests created will be deleted before ticketing starts!';
       testMode = true;
     } else {
-      $('[href="request.php"]').hide();
+      let links = document.querySelectorAll('[href="request.php"]');
+      for(let link of links) {
+        link.style.display = 'none';
+      }
     }
-    let div = add_notification($('#request_set'), message);
-    div.after('<div class="w-100"></div>');
-    div.before('<div class="col-sm-1"></div>');
+    let div = addNotification(document.getElementById('request_set'), message);
+    let after = document.createElement('div');
+    after.classList.add('w-100');
+    div.after(after);
+    let before = document.createElement('div');
+    before.classList.add('col-sm-1');
+    div.before(before);
     outOfWindow = true;
     if(!testMode) {
-      $('#requestList th:nth-child(4)').html('Request Status');
+      let table = document.getElementById('requestList');
+      table.tHead.rows[0].cells[3].innerText = 'Request Status';
     }
-    $('#request').collapse('hide');
+    new bootstrap.Collapse('#request', {
+      hide: true
+    });
   }
 }
 
 function processMailInWindow(now, mailStart, end) {
   if(now > mailStart && now < end) {
-    var days = Math.floor(end/(1000*60*60*24) - now/(1000*60*60*24));
-    var message = 'The mail in window is currently open! ';
+    let days = Math.floor(end/(1000*60*60*24) - now/(1000*60*60*24));
+    let message = 'The mail in window is currently open! ';
     if(days === 1) {
       message += 'You have 1 day left to mail your request!';
     } else if(days === 0) {
@@ -400,80 +451,93 @@ function processMailInWindow(now, mailStart, end) {
     } else {
       message += 'You have '+days+' days left to mail your request!';
     }
-    add_notification($('#request_set'), message, NOTIFICATION_WARNING);
+    addNotification(document.getElementById('request_set'), message, NOTIFICATION_WARNING);
   }
 }
 
-function getWindowDone(data, err) {
-  if(ticketYear !== false) {
-    return;
-  }
-  if(err !== null) {
-    if(err.jsonResp !== undefined && err.jsonResp.code !== undefined) {
-      switch(err.jsonResp.code) {
-        case 5:
-          //Not logged in... just silently fail the whole script right here
-          return;
-        default:
-          alert(err.jsonResp.message);
-          break;
-      }
-    }
-    return;
-  }
-  var now = new Date(Date.now());
+function getWindowDone(data) {
+  let now = new Date(Date.now());
   if(data.current < now) {
     now = data.current;
   }
   ticketYear = data.year;
-  processOutOfWindow(now, data.request_start_date, data.request_stop_date, data);
-  processMailInWindow(now, data.mail_start_date, data.request_stop_date);
-  ticketSystem.getRequests(getRequestsDone);
+  let stopDate =  new Date(data.request_stop_date);
+  stopDate.setHours(23, 59, 59);
+  processOutOfWindow(now, new Date(data.request_start_date), stopDate, data);
+  processMailInWindow(now, new Date(data.mail_start_date), stopDate);
+  fetch('api/v1/requests').then(response => {
+    if(response.ok) {
+      response.json().then(requests => {
+        getRequestsDone(requests);
+      });
+    }
+  });
   initTable();
 }
 
 function collapseCard(e) {
-  var x = $(e.target).siblings();
-  x.find('.fa-chevron-up').removeClass('fa-chevron-up').addClass('fa-chevron-down');
+  let icon = e.target.parentElement.querySelector('.fa-chevron-up');
+  icon.classList.remove('fa-chevron-up');
+  icon.classList.add('fa-chevron-down');
 }
 
 function expandCard(e) {
-  var x = $(e.target).siblings();
-  x.find('.fa-chevron-down').removeClass('fa-chevron-down').addClass('fa-chevron-up');
+  let icon = e.target.parentElement.querySelector('.fa-chevron-down');
+  icon.classList.remove('fa-chevron-down');
+  icon.classList.add('fa-chevron-up');
 }
 
 function initIndex() {
-  if(window.TicketSystem === undefined || window.getParameterByName === undefined) {
-    setTimeout(initIndex, 100);
-    return;
+  fetch('api/v1/globals/window').then((response => {
+    if(response.ok) {
+      response.json().then((data) => {
+        getWindowDone(data);
+      });
+    }
+  }));
+  let cards = document.querySelectorAll('.card .collapse');
+  for(let card of cards) {
+    card.addEventListener('hide.bs.collapse', collapseCard);
+    card.addEventListener('show.bs.collapse', expandCard);
   }
-  ticketSystem = new TicketSystem('api/v1');
-  ticketSystem.getWindow(getWindowDone);
-  $('.card .collapse').on('hidden.bs.collapse', collapseCard);
-  $('.card .collapse').on('shown.bs.collapse', expandCard);
-  if(getParameterByName('show_transfer_info') === '1') {
-    var body = $('#content');
-    add_notification(body, 'You have successfully sent an email with the ticket information. The ticket will be fully transfered when the receipient logs in and claims the ticket', NOTIFICATION_SUCCESS);
+  const urlParams = new URLSearchParams(window.location.search);
+  if(urlParams.get('show_transfer_info') === '1') {
+    let body = document.getElementById('content');
+    addNotification(body, 'You have successfully sent an email with the ticket information. The ticket will be fully transferred when the recipient logs in and claims the ticket', NOTIFICATION_SUCCESS);
   }
   fetch('/tickets/api/v1/earlyEntry/passes').then(function(response) {
+    if(!response.ok) {
+      return;
+    }
     response.json().then(function(data) {
       if(data === false || data.length === 0) {
         return;
       }
-      let myBody = $('#content');
+      let div = document.getElementById('eePasses');
       let message = 'You have been granted early entry to the event. Please print out the following pass and bring it with you to the event. Or reassign it to a camp mate (they need to be on the early entry list!)';
-      let div = $('<div class="row">');
-      div.append('<div class="col-sm-1"></div>');
-      div.append('<div class="col-sm-10"><div class="alert alert-warning">'+message+'</div></div>');
-      let table = $('<table class="table">');
-      table.append('<thead><tr><th>Pass Code</th><th>Actions</th></tr></thead>');
-      let tbody = $('<tbody>');
+      let spacer = document.createElement('div');
+      spacer.classList.add('col-sm-1');
+      div.append(spacer);
+      addNotification(div, message, NOTIFICATION_WARNING);
+      let table = document.createElement('table');
+      table.classList.add('table');
+      let row = table.insertRow();
+      let cell = row.insertCell();
+      cell.outerHTML = '<th>Pass Code</th>';
+      cell = row.insertCell();
+      cell.outerHTML = '<th>Actions</th>';
+      let tbody = table.createTBody();
       for(let pass of data) {
-        let row = $('<tr>');
-        row.append('<td>'+pass.id+'</td>');
-        let cell = $('<td>');
-        let button = $('<button>').addClass('btn btn-link').attr('title', 'Assign Pass').html('<i class="fa fa-envelope"></i>');
-        button.click(function() {
+        row = tbody.insertRow();
+        cell = row.insertCell();
+        cell.innerText = pass.id;
+        cell = row.insertCell();
+        let button = document.createElement('button');
+        button.classList.add('btn');
+        button.classList.add('btn-link');
+        button.setAttribute('title', 'Assign Pass');
+        button.innerHTML = '<i class="fa fa-envelope"></i>';
+        button.addEventListener('click', () => {
           bootbox.prompt({
             title: 'Assign Pass',
             message: 'Please enter the email address of the person you want to assign the pass to',
@@ -493,21 +557,30 @@ function initIndex() {
               }
               let obj = {'assignedTo': email};
               obj.ticketGroups = [{'Count': 1, 'Type': 'early_entry'}];
-              $.ajax({
-                url: '/tickets/api/v1/earlyEntry/passes/'+pass.id+'/Actions/Reassign',
+              fetch('/tickets/api/v1/earlyEntry/passes/'+pass.id+'/Actions/Reassign', {
                 method: 'POST',
-                data: JSON.stringify(obj),
-                contentType: 'application/json',
-                complete: function() {
-                  location.reload();
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(obj)
+              }).then(function(postResponse) {
+                if(!postResponse.ok) {
+                  alert('Failed to assign pass!');
+                  return;
                 }
+                location.reload();
               });
             }
           });
         });
         cell.append(button);
-        button = $('<button>').addClass('btn btn-link').attr('title', 'Download Pass').html('<i class="fa fa-file-pdf"></i>');
-        button.click(function() {
+        button = document.createElement('button');
+        button.classList.add('btn');
+        button.classList.add('btn-link');
+        button.setAttribute('title', 'Download Pass');
+        button.innerHTML = '<i class="fa fa-file-pdf"></i>';
+        button.addEventListener('click', () => {
+          // eslint-disable-next-line security/detect-non-literal-fs-filename
           window.open('/tickets/api/v1/earlyEntry/passes/'+pass.id+'/pdf', '_blank');
         });
         cell.append(button);
@@ -516,9 +589,14 @@ function initIndex() {
       }
       table.append(tbody);
       div.append(table);
-      myBody.append(div);
     });
   });
+  window.setTimeout(() => {
+    let tooltips = document.querySelectorAll('[data-bs-title]');
+    for(let tooltip of tooltips){ 
+      new bootstrap.Tooltip(tooltip);
+    }
+  }, 1000);
 }
 
-$(initIndex);
+window.onload = initIndex;

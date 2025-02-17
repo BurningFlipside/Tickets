@@ -1,11 +1,14 @@
 /*global $, TableToExcel*/
 function makeTablesExportable() {
-  var tables = $('table');
+  let tables = document.getElementsByTagName('table');
   for(let table of tables) {
-    var btn = $('<button/>', {type: 'button', 'class': 'btn btn-link'});
-    btn.append('<i class="fas fa-file-excel"></i>');
-    btn.click(doExport.bind(table));
-    btn.appendTo(table);
+    let parent = table.parentElement;
+    let button = document.createElement('button');
+    button.setAttribute('type', 'button');
+    button.setAttribute('class', 'btn btn-link');
+    button.innerHTML = '<i class="fas fa-file-excel"></i>';
+    button.addEventListener('click', doExport.bind(table));
+    parent.appendChild(button);
   }
 }
 

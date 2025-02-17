@@ -15,11 +15,16 @@ $page->content['panels'] = array();
 
 array_push($page->content['panels'], array('title'=>'Request Stats', 'body'=>'
   Total Request Count: <span id="requestCount">?</span><br/>
+  Credit Card Request Count: <span id="ccRequestCount">?</span><br/>
   Received Request Count: <span id="receivedRequestCount">?</span><br/>
+  Received Plus Credit Card Request Count: <span id="receivedPlusCCRequestCount">?</span><br/>
   Problem Request Count: <span id="problemRequestCount">?</span><br/>
   Rejected Request Count: <span id="rejectedRequestCount">?</span><br/>
   Donations Received: <span id="receivedDonations">?</span><br/>
+  Money Orders Received: <span id="receivedMoneyOrders">?</span><br/>
+  Credit Card Orders Received: <span id="receivedCCOrders">?</span><br/>
   Total Money Received: <span id="receivedMoney">?</span><br/>
+  Donations Pledged: <span id="pledgedDonations">?</span> - This is all the donations put onto forms regardless of if we received them or not.<br/>
 '));
 array_push($page->content['panels'], array('title'=>'Request Types', 'body'=>'
   <table id="requestTypesTable" class="table">

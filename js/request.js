@@ -1,38 +1,71 @@
-/* global $, TicketSystem, add_notification, browser_supports_cors, getParameterByName */
+/* global $, bootstrap, TicketSystem, add_notification, browser_supports_cors, getParameterByName */
 /* exported deleteTicket, minorAffirmClicked */
 var ticketSystem;
 
 var ticketConstraints = null;
 var tableRow = 0;
 
-function constraintsAjaxDone(jqXHR) {
-  ticketConstraints = jqXHR.responseJSON;
-  if(tableRow > 0) {
-    var types = $('[id^=ticket_type_]');
+function constraintsAjaxDone(data) {
+  ticketConstraints = data;
+  let tableRowCount = document.getElementById('ticket_table').rows.length;
+  // Ignore the header and footer rows
+  tableRowCount -= 2;
+  if(tableRowCount > 0) {
+    let types = document.querySelectorAll('[id^=ticket_type_]');
     for(let type of types) {
-      populateDropdown($(type), null, types.data('temp'));
+      populateDropdown(type, null, type.dataset.temp);
     }
-    for(let i = 0; i < tableRow; i++) {
+    for(let i = 0; i < tableRowCount; i++) {
       ticketTypeChanged(i);
     }
   }
+  let contentDiv = document.getElementById('content');
+  for(let ticketType of data.ticket_types) {
+    let hiddenCurrentCostBox = document.createElement('input');
+    hiddenCurrentCostBox.type = 'hidden';
+    hiddenCurrentCostBox.id = 'ticketCost'+ticketType.typeCode;
+    hiddenCurrentCostBox.value = ticketType.cost;
+    let hiddenCashCostBox = document.createElement('input');
+    hiddenCashCostBox.type = 'hidden';
+    hiddenCashCostBox.id = 'ticketCashCost'+ticketType.typeCode;
+    hiddenCashCostBox.value = ticketType.cost;
+    let hiddenCreditCostBox = document.createElement('input');
+    hiddenCreditCostBox.type = 'hidden';
+    hiddenCreditCostBox.id = 'ticketCreditCost'+ticketType.typeCode;
+    hiddenCreditCostBox.value = ticketType.squareCost;
+    contentDiv.appendChild(hiddenCurrentCostBox);
+    contentDiv.appendChild(hiddenCashCostBox);
+    contentDiv.appendChild(hiddenCreditCostBox);
+  }
+  let hiddenMaxTotalTicketsBox = document.createElement('input');
+  hiddenMaxTotalTicketsBox.type = 'hidden';
+  hiddenMaxTotalTicketsBox.id = 'maxTotalTickets';
+  hiddenMaxTotalTicketsBox.value = data.max_tickets_per_request;
+  contentDiv.appendChild(hiddenMaxTotalTicketsBox);
 }
 
-function populateDropdown(dropdown, cost, value) {
+function populateDropdown(dropdown, cost, type) {
   if(cost !== null) {
-    cost.val(' ');
+    cost.value = ' ';
   }
-  $('<option/>', {value: ' ', text: ' '}).appendTo(dropdown);
+  dropdown.innerHTML = '';
+  let option = document.createElement('option');
+  option.value = ' ';
+  option.text = ' ';
+  dropdown.appendChild(option);
+  if(ticketConstraints === null) {
+    return;
+  }
   for(let ticketType of ticketConstraints.ticket_types) {
-    var props = {value: ticketType.typeCode, text: ticketType.description};
-    if(ticketType.typeCode === value) {
-      if(cost !== null) {
-        cost.val('$'+ticketType.cost);
-      }
-      props.selected = true;
+    option = document.createElement('option');
+    option.value = ticketType.typeCode;
+    option.text = ticketType.description;
+    if(ticketType.typeCode === type) {
+      option.selected = true;
     }
-    $('<option/>', props).appendTo(dropdown);
+    dropdown.appendChild(option);
   }
+  ticketTypeChanged(dropdown);
 }
 
 function floatValue(i) {
@@ -43,62 +76,101 @@ function floatValue(i) {
 }
 
 function calculateTicketSubtotal() {
-  var total = 0;
-  var costs = $('[name=ticket_cost]');
-  for(let cost of costs) {
-    total += floatValue(cost.value);
+  let total = 0;
+  let costElems = document.querySelectorAll('[name=ticket_cost]');
+  for(let costElem of costElems) {
+    total += floatValue(costElem.value);
   }
-  $('#ticket_subtotal').html('$'+total);
+  document.getElementById('ticket_subtotal').innerHTML = '$'+total;
 }
 
 function addRowToTable(tbody, firstName, lastName, type, rowId) {
-  var row = $('<tr/>');
-  var cell = $('<td/>', {id: 'delete_cell'});
+  let row = document.createElement('tr');
+  let cell = document.createElement('td');
+  cell.id = 'delete_cell';
   if(rowId !== 0) {
-    var button = $('<button/>', {type: 'button', class: 'btn btn-link btn-sm', id: 'delete_'+rowId, onclick: 'deleteTicket()'});
-    $('<span/>', {class: 'fa fa-times'}).appendTo(button);
-    button.appendTo(cell);
+    let button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'btn btn-link btn-sm';
+    button.id = 'delete_' + rowId;
+    button.onclick = deleteTicket;
+    let span = document.createElement('span');
+    span.className = 'fa fa-times';
+    button.appendChild(span);
+    cell.appendChild(button);
   }
-  cell.appendTo(row);
-  cell = $('<td/>');
-  var first = $('<input/>', {type: 'text', id: 'ticket_first', name: 'ticket_first', required: true, value: firstName, class: 'form-control'});
-  first.appendTo(cell);
-  cell.appendTo(row);
-  cell = $('<td/>');
-  var last = $('<input/>', {type: 'text', id: 'ticket_last', name: 'ticket_last', required: true, value: lastName, class: 'form-control'});
-  last.appendTo(cell);
-  cell.appendTo(row);
-  cell = $('<td/>');
-  var cell2 = $('<td/>');
-  var age = $('<select/>', {id: 'ticket_type', name: 'ticket_type', class: 'form-control', required: true, onchange: 'ticketTypeChanged(this)'});
-  var cost = $('<input/>', {type: 'text', id: 'ticket_cost', name: 'ticket_cost', readonly: true, class: 'form-control'});
+  row.appendChild(cell);
+
+  cell = document.createElement('td');
+  let first = document.createElement('input');
+  first.type = 'text';
+  first.id = 'ticket_first';
+  first.name = 'ticket_first';
+  first.required = true;
+  first.value = firstName;
+  first.className = 'form-control';
+  cell.appendChild(first);
+  row.appendChild(cell);
+
+  cell = document.createElement('td');
+  let last = document.createElement('input');
+  last.type = 'text';
+  last.id = 'ticket_last';
+  last.name = 'ticket_last';
+  last.required = true;
+  last.value = lastName;
+  last.className = 'form-control';
+  cell.appendChild(last);
+  row.appendChild(cell);
+
+  let cost = document.createElement('input');
+
+  cell = document.createElement('td');
+  let age = document.createElement('select');
+  age.id = 'ticket_type';
+  age.name = 'ticket_type';
+  age.className = 'form-control';
+  age.required = true;
+  age.onchange = function() { 
+    ticketTypeChanged(this); 
+  };
   if(ticketConstraints !== null) {
     populateDropdown(age, cost, type);
   } else {
-    age.data('temp', type);
+    age.dataset.temp = type;
   }
-  age.appendTo(cell);
-  cell.appendTo(row);
-  cost.appendTo(cell2);
-  cell2.appendTo(row);
-  row.appendTo(tbody);
+  cell.appendChild(age);
+  row.appendChild(cell);
+
+  let cell2 = document.createElement('td');
+  cost.type = 'text';
+  cost.id = 'ticket_cost';
+  cost.name = 'ticket_cost';
+  cost.readOnly = true;
+  cost.className = 'form-control';
+  cell2.appendChild(cost);
+  row.appendChild(cell2);
+
+  tbody.appendChild(row);
   calculateTicketSubtotal();
 }
 
 function requestAjaxDone(data) {
-  $('#givenName').val(data.givenName);
-  $('#sn').val(data.sn);
-  $('#mail').val(data.mail);
-  $('#mail').tooltip({content: 'This field is not editable. If you want to use a different email then please register a new account with that email.'});
-  $('#street').val(data.postalAddress);
-  $('#zip').val(data.postalCode);
-  $('#l').val(data.l);
-  $('#st').val(data.st);
-  $('#mobile').val(data.mobile);
+  document.getElementById('givenName').value = data.givenName;
+  document.getElementById('sn').value = data.sn;
+  let mail = document.getElementById('mail');
+  mail.value = data.mail;
+  mail.disabled = true;
+  document.getElementById('street').value = data.postalAddress;
+  document.getElementById('zip').value = data.postalCode;
+  document.getElementById('l').value = data.l;
+  document.getElementById('st').value = data.st;
+  document.getElementById('mobile').value = data.mobile;
+  let c = document.getElementById('c');
   if(data.c === undefined || data.c.length <= 0) {
-    $('#c').val('US');
+    c.value = 'US';
   } else {
-    $('#c').val(data.c);
+    c.value = data.c;
   }
   if(data.postalAddress === null || data.postalAddress.length === 0 || 
      data.postalCode === null || data.postalCode.length === 0 || 
@@ -108,36 +180,32 @@ function requestAjaxDone(data) {
     add_notification($('#request_set'), 'If you had filled out your profile this data would all be populated.');
   }
 
-  var tbody = $('#ticket_table tbody');
+  let tbody = document.querySelector('#ticket_table tbody');
   addRowToTable(tbody, data.givenName, data.sn, 'A', tableRow++);
 }
 
-function reEvalList() {
-  var list = $(this).data('list');
-  if(shouldBeChecked(list.request_condition)) {
-    $(this).prop('checked', true);
-  }
-}
-
-function reEvalLists() {
-  $('#email_lists :checkbox').each(reEvalList);
-}
-
 function ticketTypeChanged(dropdown) {
-  var dropdownValue = $(dropdown).val();
+  let dropdownValue = dropdown.value;
   if(ticketConstraints !== null) {
-    var count = 0;
-    var types = $('[id^=ticket_type]');
+    let count = 0;
+    let types = document.querySelectorAll('[id^=ticket_type]');
     for(let type of types) {
-      var x = $(type);
-      if(x.val() === dropdownValue) {
+      if(type.value === dropdownValue) {
         count++;
       }
+    }
+    let hiddenCostElem = document.getElementById('ticketCost'+dropdownValue);
+    if (hiddenCostElem === null) {
+      return;
+    }
+    let hiddenCost = hiddenCostElem.value;
+    let row = dropdown.closest('tr');
+    if(row !== null) {
+      row.querySelector('[name="ticket_cost"]').value = '$' + hiddenCost;
     }
     var ticketTypes = ticketConstraints.ticket_types;
     for(let ticketType of ticketTypes) {
       if(ticketType.typeCode === dropdownValue) {
-        $(dropdown).parent().siblings().find('[name="ticket_cost"]').val('$'+ticketType.cost);
         if(count > ticketType.max_per_request) {
           alert('You are only allowed to have '+ticketType.max_per_request+' '+
                 ticketType.description+' tickets per request');
@@ -146,64 +214,90 @@ function ticketTypeChanged(dropdown) {
     }
   }
   calculateTicketSubtotal();
-  reEvalLists();
 }
 
 function addNewTicket() {
-  var tbody = $('#ticket_table tbody');
-  if(tableRow > 1) {
-    var button = $('#delete_'+(tableRow-1));
-    button.attr('disabled', true);
-    var cell = button.parent();
-    cell.attr('data-toggle', 'tooltip');
-    cell.attr('data-placement', 'left');
-    cell.attr('data-container', 'body');
-    cell.attr('title', 'You can only remove the last ticket in the list.');
-    cell.tooltip();
+  let maxTotalTicketsElem = document.getElementById('maxTotalTickets');
+  if(maxTotalTicketsElem !== null) {
+    let maxTotalTickets = maxTotalTicketsElem.value;
+    let rowCount = document.getElementById('ticket_table').rows.length;
+    let addNewTicketButton = document.getElementById('add_new_ticket');
+    // Ignore the header and footer rows
+    rowCount -= 2;
+    if(rowCount >= maxTotalTickets) {
+      addNewTicketButton.disabled = true;
+      let newTicketTooltip = document.getElementById('new_ticket_tooltip');
+      newTicketTooltip.dataset.toggle = 'tooltip';
+      newTicketTooltip.dataset.placement = 'left';
+      newTicketTooltip.setAttribute('title', 'You can have a maximum of '+maxTotalTickets+' tickets per request');
+      new bootstrap.Tooltip(newTicketTooltip);
+      return;
+    }
+    addNewTicketButton.disabled = false;
+  }
+  let tbody = document.querySelector('#ticket_table tbody');
+  if(tbody.rows.length > 1) {
+    let button = document.getElementById('delete_'+(tbody.rows.length-1));
+    button.disabled = true;
+    let cell = button.parentNode;
+    cell.dataset.toggle = 'tooltip';
+    cell.dataset.placement = 'left';
+    cell.dataset.container = 'body';
+    cell.setAttribute('title', 'You must delete the last ticket before adding another');
+    new bootstrap.Tooltip(cell);
   }
   addRowToTable(tbody, '', '', ' ', tableRow++);
-  if(ticketConstraints !== null) {
-    var rows = $('#ticket_table tbody tr');
-    if(rows.length >= ticketConstraints.max_total_tickets) {
-      $(this).prop('disabled', true);
-      $('#new_ticket_tooltip').attr('data-toggle', 'tooltip');
-      $('#new_ticket_tooltip').attr('data-placement', 'left');
-      $('#new_ticket_tooltip').attr('title', 'You can have a maximum of '+ticketConstraints.max_total_tickets+' tickets per request');
-      $('#new_ticket_tooltip').tooltip();
-    }
-  }
 }
 
-function deleteTicket() {
-  let button = $('#delete_'+(tableRow-1));
-  let cell = button.parent();
-  cell.parent().remove();
+function deleteTicket(e) {
+  let row = e.target.closest('tr');
+  let table = row.closest('table');
+  let tbody = table.querySelector('tbody');
+  tbody.removeChild(row);
   tableRow--;
-  button = $('#delete_'+(tableRow-1));
-  button.removeAttr('disabled');
-  cell = button.parent();
-  cell.tooltip('destroy');
+  let button = document.getElementById('delete_'+(tbody.rows.length-1));
+  if(button !== null) {
+    button.disabled = false;
+    let cell = button.parentNode;
+    cell.dataset.toggle = 'tooltip';
+    cell.dataset.placement = 'left';
+    cell.dataset.container = 'body';
+    cell.setAttribute('title', 'Delete this ticket');
+    new bootstrap.Tooltip(cell);
+  }
   calculateTicketSubtotal();
+  let maxTotalTicketsElem = document.getElementById('maxTotalTickets');
+  if(maxTotalTicketsElem !== null) {
+    let maxTotalTickets = maxTotalTicketsElem.value;
+    let rowCount = document.getElementById('ticket_table').rows.length;
+    let addNewTicketButton = document.getElementById('add_new_ticket');
+    // Ignore the header and footer rows
+    rowCount -= 2;
+    if(rowCount < maxTotalTickets) {
+      addNewTicketButton.disabled = false;
+    }
+  }
 }
 
-function donationAmountChanged(elem) {
-  var jq = null;
-  if(elem.target !== undefined) {
-    jq = $(elem.target);
-  } else {
-    jq = $(elem);
-  }
-  var id = jq.attr('id');
-  var textId = id+'_text';
-  if(jq.val() === 'other') {
-    if($('#'+textId).length < 1) {
-      var box = $('<input/>', {name: id, id: textId, 'class': 'form-control', 'placeholder': 'Donation ($)', 'type': 'number'});
-      box.appendTo(jq.parent());
+function donationAmountChanged(e) {
+  let elem = e.target !== undefined ? e.target : e;
+  let id = elem.id;
+  let textId = id+'_text';
+  let textElem = document.getElementById(textId);
+  if(elem.value === 'other') {
+    if(textElem === null) {
+      let box = document.createElement('input');
+      box.name = id;
+      box.id = textId;
+      box.className = 'form-control';
+      box.placeholder = 'Donation ($)';
+      box.type = 'number';
+      elem.parentNode.appendChild(box);
     }
   } else {
-    var boxes = $('#'+textId);
-    if(boxes.length >= 1) {
-      boxes.hide();
+    let boxes = document.getElementById(textId);
+    if(boxes !== null) {
+      boxes.style.display = 'none';
     }
   }
 }
@@ -252,7 +346,7 @@ function addDonationTypeToTable(table, donation) {
   if(donation.thirdParty || donation.url) {
     cell.append('<br/>');
     if(donation.thirdParty) {
-      cell.append('<I>Not Affliated with AAR, LLC</I> ');
+      cell.append('<I>Not Affiliated with Catalyst Collective</I> ');
     }
     if(donation.url) {
       cell.append('<a href="'+donation.url+'" target="_new">More Info</a>');
@@ -287,11 +381,10 @@ function addDonationTypeToTable(table, donation) {
   }
 }
 
-function donationsAjaxDone(jqXHR) {
-  var data = jqXHR.responseJSON;
-  var div = $('#donations');
+function donationsAjaxDone(data) {
+  let div = $('#donations');
   if(data.length > 0) {
-    var table = $('<table/>', {width: '100%'});
+    let table = $('<table/>', {width: '100%'});
     for(let donation of data) {
       addDonationTypeToTable(table, donation);
     }
@@ -306,52 +399,6 @@ function getTicketCount(type) {
   return values.length;
 }
 
-function shouldBeChecked(condition) {
-  if(condition === '1') {
-    return true;
-  }
-  let A = getTicketCount('A');
-  let T = getTicketCount('T');
-  let C = getTicketCount('C');
-  let K = getTicketCount('K');
-  var res = eval(condition);
-  return res;
-}
-
-function addListToRow(list, row) {
-  var cell = $('<td/>');
-  var checkbox = $('<input/>', {id: 'list_'+list.short_name, name: 'list_'+list.short_name, type: 'checkbox'});
-  if(shouldBeChecked(list.request_condition)) {
-    checkbox.attr('checked', 'true');
-  }
-  checkbox.appendTo(cell);
-  cell.appendTo(row);
-  checkbox.data('list', list);
-
-  cell = $('<td/>');
-  cell.append(list.name+' ');
-  if(list.description) {
-    var img = $('<img/>', {src: '/images/info.svg', style: 'height: 1em; width: 1em;', title: list.description});
-    img.appendTo(cell);
-  }
-  cell.appendTo(row);
-}
-
-function listsAjaxDone(jqXHR) {
-  var data = jqXHR.responseJSON;
-  var table = $('#email_lists');
-  if(data.length > 0) {
-    for(let i = 0; i < data.length; i+=2) {
-      var row = $('<tr/>');
-      addListToRow(data[i], row); // eslint-disable-line security/detect-object-injection
-      if(i+1 < data.length) {
-        addListToRow(data[i+1], row);
-      }
-      row.appendTo(table);
-    }
-  }
-}
-
 function requestSubmitDone(data, err) {
   if(err !== null) {
     if(err.jsonResp !== undefined && err.jsonResp.message !== undefined) {
@@ -363,9 +410,7 @@ function requestSubmitDone(data, err) {
     return;
   }
   if(data.need_minor_confirm !== undefined && (data.need_minor_confirm === '1' || data.need_minor_confirm === true)) {
-    $('#minor_dialog').modal({
-      'backdrop': 'static',
-      'keyboard': false});
+    $('#minor_dialog').modal('show');
     $('[title]').tooltip('hide');
   } else {
     window.location = 'index.php';
@@ -394,62 +439,110 @@ function getPosition(string, subString, index) {
   return string.split(subString, index).join(subString).length;
 }
 
-function requestDataSubmitted() {
-  $('[id^=donation_amount_]').each(fixupDonationForm);
-  var obj = {};
-  var a = $('#request').serializeArray();
-  for(let item of a) {
-    var name = item.name;
-    var split = name.split('_');
-    if(split[0] === 'list') {
-      if(obj['lists'] === undefined) {
-        obj['lists'] = {};
+function requestDataSubmitted(e) {
+  e.preventDefault();
+  const form = document.getElementById('request');
+  let formData = new FormData(form);
+  let data = {};
+  for(let pair of formData.entries()) {
+    if(pair[0] === 'paymentMethod') {
+      if(document.getElementById('paymentTraditional').checked) {
+        data['paymentMethod'] = 'traditional';
       }
-      obj['lists'][name.substring(5)] = item.value;
-    } else if(split[0] === 'ticket') {
-      let childName = name.substring(7);
-      if(obj['tickets'] === undefined) {
-        obj['tickets'] = [];
+      if(document.getElementById('paymentCC').checked) {
+        data['paymentMethod'] = 'cc';
       }
-      if(obj['tickets'].length === 0 || obj['tickets'][obj['tickets'].length-1][`${childName}`] !== undefined) {
-        obj['tickets'][obj['tickets'].length] = {};
-      }
-      obj['tickets'][obj['tickets'].length-1][`${childName}`] = item.value;
-    } else if(split[0] === 'donation') {
-      if(obj['donations'] === undefined) {
-        obj['donations'] = {};
-      }
-      let type = name.substring(getPosition(name, '_', 2)+1);
-      type = type.replace(/_/g,' ');
-      if(obj['donations'][type] === undefined) {
-        obj['donations'][type] = {};
-      }
-      obj['donations'][type][split[1]] = item.value;
-      console.log(obj);
-    } else {
-      obj[`${name}`] = item.value;
+      continue;
+    } else if(pair[0].startsWith('ticket_')) {
+      continue;
+    } else if(pair[0].startsWith('donation_')) {
+      continue;
     }
+    data[pair[0]] = pair[1];
   }
-  if(obj.donations !== undefined) {
-    for(let donationType in obj.donations) {
-      if(obj.donations[`${donationType}`].amount === 0) {
-        delete obj.donations[`${donationType}`];
+  data['tickets'] = [];
+  let table = document.getElementById('ticket_table');
+  let tbody = table.querySelector('tbody');
+  for(let i = 0; i < tbody.rows.length; i++) {
+    const row = tbody.rows[i];
+    const ticket = {};
+    for(let j = 0; j < row.cells.length; j++) {
+      const cell = row.cells[j];
+      const input = cell.querySelector('input');
+      if(input !== null) {
+        let split = input.name.split('_');
+        ticket[split[1]] = input.value;
+      } else {
+        const select = cell.querySelector('select');
+        if(select !== null) {
+          let split = select.name.split('_');
+          ticket[split[1]] = select.value;
+        }
       }
     }
-    if($.isEmptyObject(obj.donations)) {
-      delete obj.donations;
-    }
+    data['tickets'].push(ticket);
   }
-
-  ticketSystem.createRequest(obj, requestSubmitDone);
-  $('[id^=donation_amount_]').each(revertDonationForm);
+  const donationTypes = document.getElementById('donations');
+  table = donationTypes.querySelector('table');
+  data['donations'] = {};
+  for(let i = 0; i < table.rows.length; i++) {
+    const row = table.rows[i];
+    const donation = {};
+    let name = '';
+    for(let j = 0; j < row.cells.length; j++) {
+      const cell = row.cells[j];
+      const input = cell.querySelector('input');
+      if(input !== null) {
+        let split = input.name.split('_');
+        split.shift();
+        let dataName = split.shift();
+        name = split.join(' ');
+        if(input.type === 'checkbox') {
+          donation[dataName] = input.checked ? true : false;
+        } else {
+          donation[dataName] = input.value;
+        }
+      } else {
+        const select = cell.querySelector('select');
+        if(select !== null) {
+          let split = select.name.split('_');
+          split.shift();
+          let dataName = split.shift();
+          name = split.join(' ');
+          donation[dataName] = select.value;
+        }
+      }
+    }
+    if(donation.amount === '0') {
+      continue;
+    }
+    data['donations'][name] = donation;
+  }
+  if(Object.keys(data.donations).length === 0) {
+    delete data.donations;
+  }
+  data['request_id'] = document.getElementById('request_id').value;
+  data['mail'] = document.getElementById('mail').value;
+  console.log(data);
+  fetch('api/v1/requests', {
+    method: 'POST',
+    body: JSON.stringify(data),
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  }).then(response => {
+    if(response.ok) {
+      return response.json();
+    }
+    throw {jsonResp: response.json(), response: response};
+  }).then(respData => requestSubmitDone(respData, null)).catch(err => requestSubmitDone(null, err));
   return false;
 }
 
-function resubmitForm() {
+function resubmitForm(e) {
   var form = $('#request');
   $('<input/>', {type: 'hidden', name: 'minor_confirm', value: '1'}).appendTo(form);
-  requestDataSubmitted(form[0]); 
+  requestDataSubmitted(e); 
 }
 
 function minorAffirmClicked() {
@@ -461,7 +554,7 @@ function currentRequestDone(request) {
   if(request === null) {
     ticketSystem.getTicketRequestIdForCurrentUser(requestIdDone);
   } else {
-    var tbody = $('#ticket_table tbody');
+    let tbody = document.querySelector('#ticket_table tbody');
     for(var propertyName in request) {
       switch(propertyName) {
         case 'tickets':
@@ -489,9 +582,6 @@ function currentRequestDone(request) {
             }
           }
           break;
-        case 'survivalGuide':
-	  $('#survivalGuide')[0].checked = request.survivalGuide;
-	  break;
         default:
           $('#'+propertyName).val(request[`${propertyName}`]);
           break;
@@ -519,52 +609,112 @@ function requestIdDone(data, err) {
 }
 
 function initRequest() {
-  var requestId  = getParameterByName('request_id');
-  var year       = getParameterByName('year');
+  let requestId  = getParameterByName('request_id');
+  let year       = getParameterByName('year');
   ticketSystem.getRequest(currentRequestDone, requestId, year);
-  var request = $('#request').data('request');
-  $('#add_new_ticket').on('click', addNewTicket);
+  let request = document.getElementById('request').dataset.request;
+  document.getElementById('add_new_ticket').addEventListener('click', addNewTicket);
   if(request !== undefined) {
-    var tbody = $('#ticket_table tbody');
+    let tbody = document.querySelector('#ticket_table tbody');
     for(let ticket of request.tickets) {
       addRowToTable(tbody, ticket.first, ticket.last, ticket.type.typeCode, tableRow++);
     }
     for(let donation of request.donations) {
-      var id = 'donation_amount_'+donation.type;
-      var dropdown = $('#'+id);
-      dropdown.val(donation.amount);
-      if(dropdown.val() === null) {
-        dropdown.val('other');
-        var box = $('<input/>', {name: id, id: id+'_text', type: 'text', value: donation.amount});
-        box.appendTo(dropdown.parent());
+      let id = 'donation_amount_'+donation.type;
+      let dropdown = document.getElementById(id);
+      dropdown.value = donation.amount;
+      if(dropdown.value === null) {
+        dropdown.value = 'other';
+        let box = document.createElement('input');
+        box.name = id;
+        box.id = id + '_text';
+        box.type = 'text';
+        box.value = donation.amount;
+        dropdown.parentNode.appendChild(box);
       }
       if(donation.disclose !== undefined && donation.disclose === '1') {
-        $('#donation_disclose_'+donation.type.entityName).prop('checked', true);
+        document.getElementById('donation_disclose_' + donation.type.entityName).checked = true;
       }
     }
-    reEvalLists();
   }
-  $('#request').submit(requestDataSubmitted);
+  document.getElementById('request').addEventListener('submit', requestDataSubmitted);
+}
+
+function findElementInPreviousCell(currentElement) {
+  // Get the row containing the current cell
+  const currentCell = currentElement.closest('td');
+
+  // Get the previous cell in the row
+  const previousCell = currentCell.previousElementSibling;
+
+  // Check if the previous cell exists
+  if (previousCell) {
+    // Find the element within the previous cell
+    return previousCell.querySelector('select');
+  }
+  console.log('No previous cell found.');
+}
+
+function showTraditionalPayment() {
+  document.getElementById('creditPaymentDetails').setAttribute('hidden', 'true');
+  document.getElementById('ticket_table').removeAttribute('hidden');
+  document.getElementById('traditionalPaymentDetails').removeAttribute('hidden');
+  document.getElementById('submit').removeAttribute('hidden');
+  document.querySelectorAll("[id^='ticketCost']").forEach((element) => {
+    let type = element.id.replace('ticketCost', '');
+    element.value = document.getElementById('ticketCashCost'+type).value;
+  });
+  document.querySelectorAll("[name='ticket_cost']").forEach((element) => {
+    let typeSelect = findElementInPreviousCell(element);
+    let type = typeSelect.value;
+    let costElem = document.getElementById('ticketCost'+type);
+    if(costElem !== null) {
+      element.value = '$'+costElem.value;
+    }
+  });
+  calculateTicketSubtotal();
+}
+
+function showCreditPayment() {
+  document.getElementById('traditionalPaymentDetails').setAttribute('hidden', 'true');
+  document.getElementById('ticket_table').removeAttribute('hidden');
+  document.getElementById('creditPaymentDetails').removeAttribute('hidden');
+  document.getElementById('submit').removeAttribute('hidden');
+  document.querySelectorAll("[id^='ticketCost']").forEach((element) => {
+    let type = element.id.replace('ticketCost', '');
+    element.value = document.getElementById('ticketCreditCost'+type).value;
+  });
+  document.querySelectorAll("[name='ticket_cost']").forEach((element) => {
+    let typeSelect = findElementInPreviousCell(element);
+    let type = typeSelect.value;
+    let costElem = document.getElementById('ticketCost'+type);
+    if(costElem !== null) {
+      element.value = '$'+costElem.value;
+    }
+  });
+  calculateTicketSubtotal();
+}
+
+async function fetchMultipleAPIs(urls) {
+  try {
+    const responses = await Promise.all(urls.map(url => fetch(url)));
+    const data = await Promise.all(responses.map(response => response.json()));
+    return data;
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    throw error; // Optionally rethrow the error for further handling
+  }
 }
 
 function startPopulateForm() {
-  $.when(
-    $.ajax({
-      url: 'api/v1/globals/constraints',
-      type: 'get',
-      dataType: 'json',
-      complete: constraintsAjaxDone}),
-    $.ajax({
-      url: 'api/v1/globals/donation_types',
-      type: 'get',
-      dataType: 'json',
-      complete: donationsAjaxDone}),
-    $.ajax({
-      url: 'api/v1/globals/lists',
-      type: 'get',
-      dataType: 'json',
-      complete: listsAjaxDone})
-  ).done(initRequest);
+  let promise = fetchMultipleAPIs(['api/v1/globals/constraints', 'api/v1/globals/donation_types']);
+  promise.then((data) => {
+    constraintsAjaxDone(data[0]);
+    donationsAjaxDone(data[1]);
+    initRequest();
+  }).catch((error) => {
+    console.error(error);
+  });
 }
 
 function initInThread() {
@@ -573,10 +723,26 @@ function initInThread() {
     return;
   }
   ticketSystem = new TicketSystem('api/v1');
-  if($('#request_id').length > 0) {
+  if(document.getElementById('request_id') !== null) {
     setTimeout(startPopulateForm, 0);
-    $('[title]').tooltip();
+    const toolTipList = document.querySelectorAll('[title]');
+    toolTipList.forEach((toolTip) => {
+      new bootstrap.Tooltip(toolTip);
+    });
+  } else {
+    // Retry forever until the page is painted
+    setTimeout(initInThread, 10);
+    return;
   }
+  let checkbox = document.getElementById('paymentTraditional');
+  if(checkbox === null) {
+    // Retry forever until the page is painted
+    setTimeout(initInThread, 10);
+    return;
+  }
+  checkbox.addEventListener('change', showTraditionalPayment);
+  checkbox = document.getElementById('paymentCC');
+  checkbox.addEventListener('change', showCreditPayment);
 }
 
-$(initInThread);
+window.onload = initInThread;

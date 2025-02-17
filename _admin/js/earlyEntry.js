@@ -179,7 +179,9 @@ function listPasses(type) {
                   a.href = url;
                   a.download = type+'_'+data[i].id+'.pdf';
                   a.click();
-                  a.parentNode.removeChild(a);
+                  if(a.parentNode !== null) {
+                    a.parentNode.removeChild(a);
+                  }
                 });
               } else {
                 bootbox.alert('Failed to generate PDF');
@@ -197,7 +199,7 @@ function listPasses(type) {
       table.append(thead).append(tbody);
       bootbox.dialog({
         title: 'Early Entry Passes for '+type,
-        size: 'large',
+        size: 'extra-large',
         message: table
       });
     });
@@ -235,10 +237,13 @@ function doTableInit() {
       let counts = {};
       for(let i = 0; i < data.length; i++) {
         if(counts[data[i].type] === undefined) {
-          counts[data[i].type] = {count: 0, used: 0};
+          counts[data[i].type] = {count: 0, used: 0, assigned: 0};
         }
         if (data[i].used) {
           counts[data[i].type].used++;
+        }
+        if(data[i].assignedTo !== passTypes[data[i].type].Email) {
+          counts[data[i].type].assigned++;
         }
         counts[data[i].type].count++;
       }
@@ -247,13 +252,16 @@ function doTableInit() {
         let row = rows[i+1];
         let countCell = row.insertCell();
         let usedCell = row.insertCell();
+        let assignedCell = row.insertCell();
         if(counts[props[i]] === undefined) {
           countCell.textContent = 0;
           usedCell.textContent = 0;
+          assignedCell.textContent = 0;
           continue;
         }
         countCell.textContent = counts[props[i]].count;
         usedCell.textContent = counts[props[i]].used;
+        assignedCell.textContent = counts[props[i]].assigned;
       }
     });
   });
@@ -319,7 +327,9 @@ function pageInit() {
       });
     }
     doTableInit();
+  }).catch((e) => {
+    console.log(e);
   });
 }
 
-$(pageInit);
+window.onload = pageInit;

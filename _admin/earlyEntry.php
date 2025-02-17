@@ -19,6 +19,7 @@ $page->body .= '
                     <th>Type</th>
                     <th>Count</th>
                     <th>Used Count</th>
+                    <th>Assigned Count</th>
                 </thead>
                 <tbody>
                 </tbody>

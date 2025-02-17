@@ -11,19 +11,19 @@ class Ticket extends \Flipside\SerializableObject
     public function __construct($data)
     {
         if(static::$dne === null)
-	{
-            if(file_exists(dirname(__FILE__).'/../../dne.csv'))
 	    {
+            if(file_exists(dirname(__FILE__).'/../../dne.csv'))
+	        {
                 static::$dne = new \Flipside\Data\CSVDataTable(dirname(__FILE__).'/../../dne.csv');
             }
-	    else
-	    {
+	        else
+	        {
                 static::$dne = false;
-	    }
+	        }
         }
         parent::__construct($data);
-	if($this->firstName !== '' && $this->lastName !== '' && static::$dne)
-	{
+	    if(isset($this->firstName) && isset($this->lastName) && $this->firstName !== '' && $this->lastName !== '' && static::$dne)
+	    {
             $test = static::$dne->read(new \Flipside\Data\Filter('firstName eq '.$this->firstName.' and lastName eq '.$this->lastName));
             if(count($test))
 	    {

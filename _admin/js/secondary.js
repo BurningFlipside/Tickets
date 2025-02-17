@@ -1,19 +1,71 @@
-/*global $, add_notification*/
+/*global addNotification, bootstrap, Tabulator*/
 /*exported getCSV, getPDF, saveRequest*/
 function changeYear(control) {
-  var data = 'filter=year eq '+$(control).val()+'&fmt=data-table';
-  var table = $('#requests').DataTable();
-  table.ajax.url('../api/v1/secondary/requests?'+data).load(gotAllRequests);
-}
-
-function gotAllRequests(data) {
-  let requests = data.data;
-  let totalTickets = 0;
-  for(let request of requests) {
-    let tickets = JSON.parse(request.valid_tickets);
-    totalTickets += tickets.length;
-  }
-  add_notification($('#requests_wrapper'), 'There are currently requests for '+totalTickets+' tickets.');
+  let year = control.value;
+  let data = 'filter=year eq '+year;
+  let table = new Tabulator('#requests', {
+    ajaxURL: '../api/v1/secondary/requests?'+data,
+    layout: 'fitColumns',
+    pagination: 'local',
+    paginationSize: 10,
+    columns: [
+      {title: 'Request ID', field: 'request_id'},
+      {title: 'Email', field: 'mail'},
+      {title: 'First Name', field: 'givenName'},
+      {title: 'Last Name', field: 'sn'},
+      {title: 'Total Due', field: 'total_due', formatter: 'money', formatterParams: {symbol: '$'}},
+    ],
+  });
+  table.on('tableBuilt', () => {
+    table.setData();
+  });
+  table.on('dataLoaded', (requestData) => {
+    let totalTickets = 0;
+    for(let request of requestData) {
+      let tickets = JSON.parse(request.valid_tickets);
+      totalTickets += tickets.length;
+    }
+    let container = document.getElementById('requests');
+    container = container.parentElement;
+    if(container.querySelector('.alert') !== null) {
+      container.querySelector('.alert').remove();
+    }
+    addNotification(container, 'There are currently requests for '+totalTickets+' tickets.');
+  });
+  table.on('rowClick', (e, row) => {
+    rowClicked(row);
+  });
+  let tableElem = document.getElementById('requests');
+  let parent = tableElem.parentElement;
+  let node = document.createElement('div');
+  node.style.float = 'right';
+  node.style.textAlign = 'right';
+  node.innerText = 'Search:';
+  let search = document.createElement('input');
+  search.type = 'text';
+  search.style.border = '1px solid #aaa';
+  search.style.borderRadius = '5px';
+  search.style.padding = '2px';
+  node.appendChild(search);
+  parent.insertBefore(node, tableElem);
+  search.addEventListener('input', () => {
+    table.clearFilter();
+    if(search.value === '') {
+      return;
+    }
+    table.setFilter((filterData) => {
+      let searchValue = search.value.toLowerCase();
+      for(let key in filterData) {
+        if(filterData[`${key}`] === null) {
+          continue;
+        }
+        if(filterData[`${key}`].toString().toLowerCase().includes(searchValue)) {
+          return true;
+        }
+      }
+      return false;
+    });
+  });
 }
 
 function ticketRequestDone(data) {
@@ -21,127 +73,115 @@ function ticketRequestDone(data) {
     alert(data.error);
     console.log(data);
   } else {
-    changeYear($('#year'));
+    changeYear(document.getElementById('year'));
   }
 }
 
-function saveRequestDone() {
-  $('#modal').modal('hide');
-  $.ajax({
-    url: '../api/v1/secondary/requests/'+$('#request_id').val()+'/current/Actions/Ticket',
-    processData: false,
-    dataType: 'json',
-    type: 'post',
-    success: ticketRequestDone});
+function ticketRequest(requestId) {
+  fetch('../api/v1/secondary/requests/'+requestId+'/current/Actions/Ticket').then((response) => {
+    if(!response.ok) {
+      alert('Failed to create ticket request.');
+      return;
+    }
+    response.json().then(ticketRequestDone);
+  });
 }
 
 function saveRequest() {
-  var obj = $('#request_edit_form').serializeObject();
+  let form = document.getElementById('request_edit_form');
+  let obj = Object.fromEntries(new FormData(form));
   obj.total_due = obj.total_due.substring(1); // eslint-disable-line camelcase
-  $.ajax({
-    url: '../api/v1/secondary/requests/'+$('#request_id').val()+'/current',
-    contentType: 'application/json',
-    data: JSON.stringify(obj),
-    processData: false,
-    dataType: 'json',
-    type: 'patch',
-    success: saveRequestDone});
+  let requestId = obj.request_id;
+  fetch('../api/v1/secondary/requests/'+requestId+'/current', {
+    method: 'PATCH',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(obj),
+  }).then((response) => {
+    if(!response.ok) {
+      alert('Failed to save request.');
+      return;
+    }
+    let modalElement = document.getElementById('modal');
+    let modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+    modal.hide();
+    ticketRequest(requestId);
+  });
 }
 
 function getPDF() {
-  var year = $('#year').val();
-  window.location = '../api/v1/secondary/'+$('#request_id').val()+'/'+year+'/pdf';
+  let year = document.getElementById('year').value;
+  let requestID = document.getElementById('request_id').value;
+  window.location = '../api/v1/secondary/'+requestID+'/'+year+'/pdf';
 }
 
 function getCSV() {
-  var year = $('#year').val();
-  window.location = '../api/v1/secondary/requests?$format=csv&$filter=year eq '+year;
+  let tabulator = Tabulator.findTable('#requests')[0];
+  tabulator.download('csv', 'requests.csv');
 }
 
-function rowClicked() {
-  var tr = $(this).closest('tr');
-  var row = $('#requests').DataTable().row(tr);
-  var data = row.data();
-  $('#ticketButton').prop('disabled', true);
-  $('#modal').modal();
-  $('#modal_title').html('Request #'+data.request_id);
-  $('#request_id').val(data.request_id);
-  $('#givenName').val(data.givenName);
-  $('#sn').val(data.sn);
-  $('#mail').val(data.mail);
-  $('#c').val(data.c);
-  $('#street').val(data.street);
-  $('#zip').val(data.zip);
-  $('#l').val(data.l);
-  $('#st').val(data.st);
-  $('#ticket_table tbody').empty();
+function rowClicked(row) {
+  var data = row.getData();
+  let ticketButton = document.getElementById('ticketButton');
+  ticketButton.disabled = true;
+  let modalElement = document.getElementById('modal');
+  let modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+  document.getElementById('modal_title').innerHTML = 'Request #'+data.request_id.substring(0,16)+'...';
+  document.getElementById('request_id').value = data.request_id;
+  document.getElementById('givenName').value = data.givenName;
+  document.getElementById('sn').value = data.sn;
+  document.getElementById('mail').value = data.mail;
+  document.getElementById('c').value = data.c;
+  document.getElementById('street').value = data.street;
+  document.getElementById('zip').value = data.zip;
+  document.getElementById('l').value = data.l;
+  document.getElementById('st').value = data.st;
+  let ticketTable = document.getElementById('ticket_table');
+  let tbody = ticketTable.tBodies[0];
+  tbody.innerHTML = '';
   if(typeof(data.valid_tickets) === 'string') {
     data.valid_tickets = JSON.parse(data.valid_tickets); // eslint-disable-line camelcase
   }
   for(let ticket of data.valid_tickets) {
-    let newRow = $('<tr/>');
-    var type = ticket.substring(0, 1);
-    var id = ticket;
-    $('<td/>').html('<input type="text" id="ticket_first_'+id+'" name="ticket_first_'+id+'" class="form-control" value="'+data['ticket_first_'+id]+'"/>').appendTo(newRow);
-    $('<td/>').html('<input type="text" id="ticket_last_'+id+'" name="ticket_last_'+id+'" class="form-control" value="'+data['ticket_last_'+id]+'"/>').appendTo(newRow);
-    $('<td/>').html(type).appendTo(newRow);
-    newRow.appendTo($('#ticket_table tbody'));
+    let newRow = tbody.insertRow();
+    let type = ticket.substring(0, 1);
+    let id = ticket;
+    let cell = newRow.insertCell();
+    cell.innerHTML = '<input type="text" id="ticket_first_'+id+'" name="ticket_first_'+id+'" class="form-control" value="'+data['ticket_first_'+id]+'"/>';
+    cell = newRow.insertCell();
+    cell.innerHTML = '<input type="text" id="ticket_last_'+id+'" name="ticket_last_'+id+'" class="form-control" value="'+data['ticket_last_'+id]+'"/>';
+    cell = newRow.insertCell();
+    cell.innerText = type;
   }
-  /*
-  let i = 0;
-  for(let ticket of data.tickets) {
-    let newRow = $('<tr/>');
-    $('<td/>').html('<input type="text" id="ticket_first_'+i+'" name="ticket_first_'+i+'" class="form-control" value="'+ticket.first+'"/>').appendTo(newRow);
-    $('<td/>').html('<input type="text" id="ticket_last_'+i+'" name="ticket_last_'+i+'" class="form-control" value="'+ticket.last+'"/>').appendTo(newRow);
-    $('<td/>').html('<input type="text" id="ticket_type_'+i+'" name="ticket_type_'+i+'" class="form-control" value="'+ticket.type+'"/>').appendTo(newRow);
-    newRow.appendTo($('#ticket_table tbody'));
-    i++;
-  }*/
-  $('#total_due').val('$'+data.total_due);
-  $('#total_received').val(data.total_received);
+  document.getElementById('total_due').value = '$'+data.total_due;
+  document.getElementById('total_received').value = data.total_received;
   if(data.total_due === data.total_received) {
-    $('#ticketButton').prop('disabled', false);
+    ticketButton.disabled = false;
   }
+  modal.show();
 }
 
-function totalChanged() {
-  var due = $('#total_due').val().substring(1);
-  var received = $('#total_received').val();
+function totalChanged(e) {
+  let due = document.getElementById('total_due').value.substring(1);
+  let received = e.target.value;
   if(due === received || (received[0] === '$' && due === received.substring(1))) {
-    $('#ticketButton').prop('disabled', false);
+    document.getElementById('ticketButton').disabled = false;
   }
-}
-
-function gotTicketYears(jqXHR) {
-  if(jqXHR.status !== 200) {
-    alert('Unable to obtain valid ticket years!');
-    console.log(jqXHR);
-    return;
-  }
-  jqXHR.responseJSON.sort().reverse();
-  for(let year of jqXHR.responseJSON) {
-    $('#year').append($('<option/>').attr('value', year).text(year));
-  }
-  changeYear($('#year'));
 }
 
 function initPage() {
-  $.ajax({
-    url: '../api/v1/globals/years',
-    type: 'get',
-    dataType: 'json',
-    complete: gotTicketYears});
-  $('#requests').dataTable({
-    'columns': [ 
-      {'data': 'request_id'},
-      {'data': 'mail'},
-      {'data': 'givenName'},
-      {'data': 'sn'},
-      {'data': 'total_due'}
-    ]
+  fetch('../api/v1/globals/years').then(response => response.json()).then((data) => {
+    data.sort().reverse();
+    let yearSelect = document.getElementById('year');
+    for(let year of data) {
+      if(yearSelect.options.length === 0) {
+        yearSelect.add(new Option(year, year, true, true));
+      } else {
+        yearSelect.add(new Option(year, year));
+      }
+    }
+    changeYear(yearSelect);
   });
-  $('#requests tbody').on('click', 'td', rowClicked);
-  $('#total_received').on('change', totalChanged);
+  document.getElementById('total_received').addEventListener('change', totalChanged);
 }
 
-$(initPage);
+window.onload = initPage;

@@ -10,7 +10,25 @@ var chartData = {
       backgroundColor: ['#d53e4f', '#f46d43', '#fdae61', '#66c2a5']
     }],
     labels: []
-  }
+  },
+  tooltips: {
+    callbacks: {
+      label: function(tooltipItem, data) {
+        //get the concerned dataset
+        var dataset = data.datasets[tooltipItem.datasetIndex];
+        //calculate the total of this data set
+        var total = dataset.data.reduce(function(previousValue, currentValue, currentIndex, array) {
+          return previousValue + currentValue;
+        });
+        //get the current items value
+        var currentValue = dataset.data[tooltipItem.index];
+        //calculate the precentage based on the total and current item, also this does a rough rounding to give a whole number
+        var percentage = Math.floor(((currentValue/total) * 100)+0.5);
+  
+        return percentage + "%";
+      }
+    }
+  } 
 };
 
 var chart2 = null;
@@ -81,7 +99,7 @@ function gotTicketTypes(jqXHR){
   for(let type of jqXHR.responseJSON) {
     var obj = {label: type.description, type: type.typeCode};
     $.ajax({
-      url: '../api/v1/tickets?$filter=year%20eq%20current%20and%20type%20eq%20%27'+type.typeCode+'%27&$count=true&$select=@odata.count',
+      url: '../api/v1/tickets?$filter=year%20eq%20current%20and%20type%20eq%20%27'+type.typeCode+'%27%20and%20sold%20eq%201&$count=true&$select=@odata.count',
       type: 'get',
       context: obj,
       complete: gotTicketType

@@ -1,8 +1,7 @@
-/* global $, browser_supports_font_face, getTicketDataByHash */
+/* global getTicketDataByHash, Tabulator */
 /* exported cancelTransfer, sellTicket */
 function sellTicket(control) {
-  var jq = $(control);
-  var id = jq.attr('for');
+  let id = control.getAttribute('for');
   var ticket = getTicketDataByHash(id);
   if(ticket === null) {
     alert('Cannot find ticket');
@@ -11,169 +10,168 @@ function sellTicket(control) {
   window.location = '_admin/pos.php?id='+ticket.hash;
 }
 
-function makeDiscretionaryAction(data, type, fullTicket) {
-  var res = '';
-  var viewOptions = {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'View Ticket Code', for: data, onclick: 'view_ticket(this)'};
-  var pdfOptions =  {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Download PDF', for: data, onclick: 'downloadTicket(this)'};
-  var sellOptions = {class: 'btn btn-link btn-sm', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'Sell Ticket<br/>Use this option to sell<br/>the ticket to someone else', 'data-html': true, for: data, onclick: 'sellTicket(this)'};
+function makeDiscretionaryAction(cell, type, fullTicket) {
+  let data = cell.getValue();
+  let res = '';
+  let sellOptions = {title: 'Sell Ticket<br/>Use this option to sell<br/>the ticket to someone else', 'data-bs-html': true, for: data, onclick: 'sellTicket(this)'};
+  sellOptions['data-bs-title'] = sellOptions.title;
   if(fullTicket.transferInProgress === 1) {
     return 'Ticket Sale in Progress';
   }
-  if(browser_supports_font_face()) {
-    if($(window).width() < 768) {
-      viewOptions.type = 'button';
-      var button = $('<button/>', viewOptions);
-      var glyph = $('<span/>', {class: 'fa fa-search'});
-      glyph.appendTo(button);
-      res += button.prop('outerHTML');
-    }
-    pdfOptions.type = 'button';
-    button = $('<button/>', pdfOptions);
-    glyph = $('<span/>', {class: 'fa fa-download'});
-    glyph.appendTo(button);
-    if(button.prop('outerHTML') === undefined) {
-      res += new XMLSerializer().serializeToString(button[0]);
-    } else {
-      res += button.prop('outerHTML');
-    }
-
-    var rand = Math.floor(Math.random() * 7);
-
-    sellOptions.type = 'button';
-    button = $('<button/>', sellOptions);
-    switch(rand) {
-      case 0:
-        glyph = $('<span/>', {class: 'fa fa-dollar-sign'});
-        break;
-      case 1:
-        glyph = $('<span/>', {class: 'fa fa-euro-sign'});
-        break;
-      case 2:
-        glyph = $('<span/>', {class: 'fa fa-yen-sign'});
-        break;
-      case 3:
-        glyph = $('<span/>', {class: 'fa fa-pound-sign'});
-        break;
-      case 4:
-        glyph = $('<span/>', {class: 'fab fa-bitcoin'});
-        break;
-      case 5:
-        glyph = $('<span/>', {class: 'fa fa-lira-sign'});
-        break;
-      case 6:
-        glyph = $('<span/>', {class: 'fa fa-ruble-sign'});
-        break;
-    }
-    glyph.appendTo(button);
-    if(button.prop('outerHTML') === undefined) {
-      res += new XMLSerializer().serializeToString(button[0]);
-    } else {
-      res += button.prop('outerHTML');
-    }
-  } else {
-    if($(window).width() < 768) {
-      var link = $('<a/>', viewOptions);
-      link.append('View');
-      res += link.prop('outerHTML');
-      res += '|';
-    }
-    link = $('<a/>', pdfOptions);
-    link.append('Download');
-    res += link.prop('outerHTML');
-    res += '|';
-
-    link = $('<a/>', sellOptions);
-    link.append('Sell');
-    res += link.prop('outerHTML');
+  if(window.innerWidth < 768) {
+    let button = document.createElement('button');
+    button.className = 'btn btn-link btn-sm';
+    button.setAttribute('type', 'button');
+    button.setAttribute('data-bs-toggle', 'tooltip');
+    button.setAttribute('data-bs-placement', 'top');
+    button.setAttribute('title', 'View Ticket Code');
+    button.setAttribute('for', data);
+    button.setAttribute('onclick', 'viewTicket(this)');
+    let glyph = document.createElement('span');
+    glyph.className = 'fa fa-search';
+    button.appendChild(glyph);
+    res += button.outerHTML;
   }
+  let button = document.createElement('button');
+  button.className = 'btn btn-link btn-sm';
+  button.setAttribute('type', 'button');
+  button.setAttribute('data-bs-toggle', 'tooltip');
+  button.setAttribute('data-bs-placement', 'top');
+  button.setAttribute('title', 'Download PDF');
+  button.setAttribute('for', data);
+  button.setAttribute('onclick', 'downloadTicket(this)');
+  let glyph = document.createElement('span');
+  glyph.className = 'fa fa-download';
+  button.appendChild(glyph);
+  res += button.outerHTML;
+  
+  let rand = Math.floor(Math.random() * 7);
+  button = document.createElement('button');
+  button.className = 'btn btn-link btn-sm';
+  button.setAttribute('type', 'button');
+  button.setAttribute('data-bs-toggle', 'tooltip');
+  button.setAttribute('data-bs-placement', 'top');
+  button.setAttribute('title', 'Sell Ticket<br/>Use this option to sell<br/>the ticket to someone else');
+  button.setAttribute('data-bs-html', 'true');
+  button.setAttribute('for', data);
+  //button.setAttribute('onclick', 'sellTicket(this)');
+  button.setAttribute('onclick', 'editTicket(this)');
+  glyph = document.createElement('span');
+  switch(rand) {
+    case 0:
+      glyph.className = 'fa fa-dollar-sign';
+      break;
+    case 1:
+      glyph.className = 'fa fa-euro-sign';
+      break;
+    case 2:
+      glyph.className = 'fa fa-yen-sign';
+      break;
+    case 3:
+      glyph.className = 'fa fa-pound-sign';
+      break;
+    case 4:
+      glyph.className = 'fab fa-bitcoin';
+      break;
+    case 5:
+      glyph.className = 'fa fa-lira-sign';
+      break;
+    case 6:
+      glyph.className = 'fa fa-ruble-sign';
+      break;
+  }
+  button.appendChild(glyph);
+  res += button.outerHTML;
   return res;
 }
 
-function cancelDone(jqXHR) {
-  if(jqXHR.status !== 200) {
-    console.log(jqXHR);
-    alert('Failed to cancel transfer!');
+function cancelTransfer(longId) {
+  fetch('api/v1/ticket/'+longId+'/Actions/Ticket.SpinHash', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  }).then((response) => {
+    if(!response.ok) {
+      console.error(response);
+      alert('Failed to cancel transfer!');
+      return;
+    }
+    location.reload();
+  });
+}
+
+function createOverlay(row) {
+  let div = document.createElement('div');
+  let data = row.getData();
+  let longId = data.hash;
+  div.id = 'overlay_'+longId;
+  let existingDiv = document.getElementById(div.id);
+  if(existingDiv !== null) {
+    existingDiv.remove();
+  }
+  let link = document.createElement('a');
+  link.href = '#';
+  link.setAttribute('onclick', 'cancelTransfer(\''+longId+'\')');
+  link.innerText = 'Cancel Transfer';
+  div.append(link);
+  let rowElement = row.getElement();
+  div.style.position = 'absolute';
+  div.style.backgroundColor = '#C0C0C0';
+  div.style.top = rowElement.offsetTop+'px';
+  div.style.left = rowElement.offsetLeft+'px';
+  div.style.width = '100%';
+  div.style.height = rowElement.offsetHeight+'px';
+  div.style.opacity = 0.8;
+  div.style.textAlign = 'center';
+  div.style.verticalAlign = 'middle';
+  let wrapper = document.getElementById('discretionary').getElementsByClassName('tabulator-tableholder');
+  wrapper[0].appendChild(div);
+}
+
+function dTableDrawComplete(data) {
+  if(data.length === 0) {
     return;
   }
-  location.reload();
-}
-
-function cancelTransfer(longId) {
-  $.ajax({
-    url: 'api/v1/ticket/'+longId+'/Actions/Ticket.SpinHash',
-    method: 'POST',
-    contentType: 'application/json',
-    complete: cancelDone
-  });
-}
-
-function createOverlay(index, value) {
-  var row = $(value);
-  var div = $('<div>');
-  let linkText = row[0].cells[3].children[0].attributes.onclick.nodeValue;
-  let longId = linkText.substring(linkText.indexOf("'")+1, linkText.lastIndexOf("'"));
-  div.append('<a href="#" onclick="cancelTransfer(\''+longId+'\')">Cancel Transfer</a>');
-  div.css({
-    position: 'absolute',
-    'background-color': '#C0C0C0',
-    'top': row[0].offsetTop,
-    'left': row[0].offsetLeft,
-    width: row.width(),
-    height: row.height(),
-    opacity: 0.8,
-    'text-align': 'center'
-  });
-  $('#discretionary_wrapper').append(div);
-}
-
-function dTableDrawComplete() {
-  if($('#discretionary').DataTable().data().length !== 0) {
-    $('#discretionary_set').show();
-  }
-  if($(window).width() < 768) {
-    $('#discretionary th:nth-child(1)').hide();
-    $('#discretionary td:nth-child(1)').hide();
-    $('#discretionary th:nth-child(2)').hide();
-    $('#discretionary td:nth-child(2)').hide();
-  }
-  $.each($('.transferInProgress'), createOverlay);
-}
-
-function rowCreated(row, data) {
-  if(data.transferInProgress === '1') {
-    $(row).addClass('transferInProgress');
+  document.getElementById('discretionary_set').style.removeProperty('display');
+  if(window.innerWidth < 768) {
+    let tables = Tabulator.findTable('#discretionary');
+    if(tables === false) {
+      return;
+    }
+    tables[0].hideColumn('firstName');
+    tables[0].hideColumn('lastName');
   }
 }
 
-function shortHashDisc(data) {
+function shortHashDisc(cell) {
+  let data = cell.getValue();
   return '<a href="#" onclick="showLongId(\''+data+'\')">'+data.substring(0,8)+'</a>';
 }
 
-function initDiscretionaryTable() {
-  $('#discretionary').dataTable({
-    'ajax': 'api/v1/ticket/discretionary?fmt=data-table',
-    'createdRow': rowCreated,
-    columns: [
-      {'data': 'firstName'},
-      {'data': 'lastName'},
-      {'data': 'type'},
-      {'data': 'hash', 'render': shortHashDisc},
-      {'data': 'hash', 'render': makeDiscretionaryAction, 'class': 'action-buttons', 'orderable': false}
-    ],
-    paging: false,
-    info: false,
-    searching: false
-  });
-
-  $('#discretionary').on('draw.dt', dTableDrawComplete);
-}
-
 function initDiscretionary() {
-  if($('#discretionary').dataTable === undefined) {
-    setTimeout(initDiscretionary, 100);
-    return;
-  }
-  initDiscretionaryTable();
+  let table = new Tabulator('#discretionary', {
+    ajaxURL: 'api/v1/ticket/discretionary',
+    layout: 'fitColumns',
+    columns: [
+      {title: 'First Name', field: 'firstName'},
+      {title: 'Last Name', field: 'lastName'},
+      {title: 'Type', field: 'type', width: 70},
+      {title: 'Short Ticket Code', field: 'hash', formatter: shortHashDisc, width: 160},
+      {title: '', field: 'hash', formatter: makeDiscretionaryAction, width: 80},
+    ],
+    rowFormatter: function(row) {
+      let data = row.getData();
+      if(data.transferInProgress === 1) {
+        row.getElement().classList.add('transferInProgress');
+        createOverlay(row);
+      }
+    }
+  });
+  table.on('tableBuilt', () => {
+    table.setData();
+  });
+  table.on('dataProcessed', dTableDrawComplete);
 }
 
-$(initDiscretionary);
+window.addEventListener('load', initDiscretionary);

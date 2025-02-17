@@ -1,75 +1,78 @@
-/*global $*/
 /*exported genTickets*/
-function generationDone(jqXHR) {
-  if(jqXHR.status !== 200) {
-    alert('Failed to generate tickets');
-    return;
-  }
-  let data = jqXHR.responseJSON;
-  var str = 'Created '+data.passed+' tickets\n';
-  if(data.failed > 0) {
-    str += 'Failed to create '+data.failed+' tickets';
-  }
-  alert(str);
-  location.reload();
-}
-
 function genTickets() {
-  var totalCount = 0;
-  var elements = $('#additional [type="number"]');
-  var obj = $('#gen_form').serializeObject();
+  let totalCount = 0;
+  let elements = document.querySelectorAll('#additional [type="number"]');
+  let genForm = document.getElementById('gen_form');
+  let obj = Object.fromEntries(new FormData(genForm));
   obj.types = {};
   for(let element of elements) {
-    totalCount += 1*$(element).val();
-    obj.types[element.id] = 1*$(element).val();
+    totalCount += 1*element.value;
+    obj.types[element.id] = 1*element.value;
   }
   if(totalCount === 0) {
     alert('No additional tickets created!');
     return false;
   }
-  $.ajax({
-    url: '../api/v1/tickets/Actions/GenerateTickets',
-    contentType: 'application/json',
-    type: 'post',
-    data: JSON.stringify(obj),
-    dataType: 'json',
-    processData: false,
-    complete: generationDone});
+  fetch('../api/v1/tickets/Actions/GenerateTickets', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(obj)
+  }).then(response => {
+    if(!response.ok) {
+      alert('Failed to generate tickets');
+      return;
+    }
+    response.json().then(data => {
+      let str = 'Created '+data.passed+' tickets\n';
+      if(data.failed > 0) {
+        str += 'Failed to create '+data.failed+' tickets';
+      }
+      alert(str);
+      location.reload();
+    });
+  });
   return false;
 }
 
-function gotTicketType(jqXHR) {
-  if(jqXHR.status !== 200) {
-    alert('Unable to get ticket count for type '+this+'!');
-    return;
-  }
-  var field = $('#'+this+'Current');
-  field.html(jqXHR.responseJSON['@odata.count']);
-}
-
-function gotTicketTypes(jqXHR) {
-  if(jqXHR.status !== 200) {
-    alert('Unable to get ticket types!');
-    return;
-  }
-  var current = $('#current tbody');
-  var additional = $('#additional tbody');
-  for(let type of jqXHR.responseJSON) {
-    current.append('<tr><td>'+type.description+'</td><td id="'+type.typeCode+'Current"></td></tr>');
-    additional.append('<tr><td>'+type.description+'</td><td><input type="number" id="'+type.typeCode+'" value="0"/></td></tr>');
-    $.ajax({
-      url: '../api/v1/tickets?$filter=year%20eq%20current%20and%20type%20eq%20%27'+type.typeCode+'%27&$count=true&$select=@odata.count',
-      type: 'get',
-      context: type.typeCode,
-      complete: gotTicketType});
-  }
-}
-
 function initPage() {
-  $.ajax({
-    url: '../api/v1/tickets/types',
-    type: 'get',
-    complete: gotTicketTypes});
+  fetch('../api/v1/tickets/types').then(response => {
+    if(!response.ok) {
+      return;
+    }
+    response.json().then(data => {
+      let currentTable = document.getElementById('current');
+      let additionalTable = document.getElementById('additional');
+      currentTable = currentTable.tBodies[0];
+      additionalTable = additionalTable.tBodies[0];
+      for(let type of data) {
+        let row = currentTable.insertRow();
+        let row1 = additionalTable.insertRow();
+        let cell = row.insertCell();
+        let cell1 = row1.insertCell();
+        cell.textContent = type.description;
+        cell1.textContent = type.description;
+        cell = row.insertCell();
+        cell1 = row1.insertCell();
+        cell.id = type.typeCode+'Current';
+        let input = document.createElement('input');
+        input.type = 'number';
+        input.id = type.typeCode;
+        input.value = 0;
+        input.className = 'form-control';
+        cell1.appendChild(input);
+        fetch('../api/v1/tickets?$filter=year eq current and type eq \''+type.typeCode+'\'&$count=true&$select=@odata.count').then(typeResponse => {
+          if(!typeResponse.ok) {
+            return;
+          }
+          typeResponse.json().then(typeData => {
+            document.getElementById(type.typeCode+'Current').textContent = typeData['@odata.count'];
+          });
+        });
+      }
+    });
+  });
 }
 
-$(initPage);
+window.onload = initPage;

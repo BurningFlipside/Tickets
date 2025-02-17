@@ -107,4 +107,5 @@ function initPage() {
   $.ajax({url: '../api/v1/globals/costs', complete: gotCosts});
 }
 
-$(initPage);
+window.addEventListener('load', initPage);
+

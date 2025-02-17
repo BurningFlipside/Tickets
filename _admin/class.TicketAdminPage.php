@@ -73,7 +73,8 @@ class TicketAdminPage extends \Flipside\Http\FlipAdminPage
             'Requested Tickets' => 'request_tickets.php',
             'Problem Requests '.$probs => 'problems.php',
             'Invalid Requests' => 'requests_invalid.php',
-            'Secondary Requests' => 'secondary.php'
+            'Secondary Requests' => 'secondary.php',
+            'Credit Card Requests' => 'requestsCC.php'
         );
         $ticket_menu = array(
             'All Tickets'      => 'tickets.php',
@@ -91,6 +92,10 @@ class TicketAdminPage extends \Flipside\Http\FlipAdminPage
             'Edit Ticket PDF'    => 'ticket_pdf.php',
             'Edit Early Entry PDF' => 'eePass_pdf.php'
         );
+        $cc_menu = array(
+            'Pending' => 'pendingSales.php',
+            'Completed' => 'completedSales.php'
+        );
         if($this->user->isInGroupNamed('AAR') || $this->user->isInGroupNamed('AFs'))
         {
             $ticket_menu['My Discretionary Tickets'] = 'tickets.php?discretionaryUser='.$this->user['mail'];
@@ -101,7 +106,7 @@ class TicketAdminPage extends \Flipside\Http\FlipAdminPage
         $this->content['header']['sidebar']['Tickets'] = array('icon' => 'fa-ticket-alt', 'menu' => $ticket_menu);
         $this->content['header']['sidebar']['Data Entry'] = array('icon' => 'fa-pencil-alt', 'url' => 'data.php');
         $this->content['header']['sidebar']['Sales'] = array('icon' => 'fa-dollar-sign', 'url' => 'pos.php');
-        $this->content['header']['sidebar']['Pending Sales'] = array('icon' => 'fa-credit-card', 'url' => 'pendingSales.php');
+        $this->content['header']['sidebar']['Credit Card Sales'] = array('icon' => 'fa-credit-card', 'menu' => $cc_menu);
         $this->content['header']['sidebar']['EarlyEntry'] = array('icon' => 'fa-calendar-day', 'url' => 'earlyEntry.php');
         $this->content['header']['sidebar']['Gate'] = array('icon' => 'fa-sign-in-alt', 'url' => 'gate.php');
         if($this->user->isInGroupNamed('AAR'))

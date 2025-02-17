@@ -4,8 +4,8 @@ error_reporting(E_ALL);
 require_once('class.TicketPage.php');
 $page = new TicketPage('Burning Flipside - Tickets');
 
-$page->addWellKnownJS(JS_DATATABLE, false);
-$page->addWellKnownCSS(CSS_DATATABLE);
+$page->addWellKnownJS(JS_TABULATOR, false);
+$page->addWellKnownCSS(CSS_TABULATOR);
 $page->addWellKnownJS(JS_BOOTBOX);
 
 $discretionary = '';
@@ -18,8 +18,8 @@ if($page->user !== false && $page->user !== null && ($page->user->isInGroupNamed
             <div class="col-sm-10">
                 <div class="card">
                     <div class="card-header" id="discretionaryHeader">
-                      <button class="btn btn-light" type="button" data-toggle="collapse" data-target="#discretionaryDiv" aria-expanded="true" aria-controls="discretionaryDiv" style="width: 100%">
-                        <span class="float-left">Discretionary Tickets</span><span class="float-right"><i class="fa fa-chevron-up"></i></span>
+                      <button class="btn btn-light text-start" type="button" data-bs-toggle="collapse" data-bs-target="#discretionaryDiv" aria-expanded="true" aria-controls="discretionaryDiv" style="width: 100%">
+                        <span class="text-start">Discretionary Tickets</span><span class="float-end"><i class="fa fa-chevron-up"></i></span>
                       </button>
                     </div>
                     <div id="discretionaryDiv" class="collapse show" aria-labelledby="discretionaryHeader">
@@ -48,8 +48,8 @@ if($page->user !== false && $page->user !== null && ($page->user->isInGroupNamed
         <div class="col-sm-10">
             <div class="card">
                 <div class="card-header" id="requestHeader">
-                  <button class="btn btn-light" type="button" data-toggle="collapse" data-target="#request" aria-expanded="true" aria-controls="request" style="width: 100%">
-                    <span class="float-left">Ticket Request</span><span class="float-right"><i class="fa fa-chevron-up"></i></span>
+                  <button class="btn btn-light text-start" type="button" data-bs-toggle="collapse" data-bs-target="#request" aria-expanded="true" aria-controls="request" style="width: 100%">
+                    <span class="text-start">Ticket Request</span><span class="float-end text-end"><i class="fa fa-chevron-up"></i></span>
                   </button>
                 </div>
                 <div id="request" class="collapse show" aria-labelledby="requestHeader">
@@ -77,8 +77,8 @@ if($page->user !== false && $page->user !== null && ($page->user->isInGroupNamed
         <div class="col-sm-10">
             <div class="card">
                 <div class="card-header" id="ticketHeader">
-                  <button class="btn btn-light" type="button" data-toggle="collapse" data-target="#ticket" aria-expanded="true" aria-controls="ticket" style="width: 100%">
-                    <span class="float-left">Tickets</span><span class="float-right"><i class="fa fa-chevron-up"></i></span>
+                  <button class="btn btn-light text-start" type="button" data-bs-toggle="collapse" data-bs-target="#ticket" aria-expanded="true" aria-controls="ticket" style="width: 100%">
+                    <span class="text-start">Tickets</span><span class="float-end"><i class="fa fa-chevron-up"></i></span>
                   </button>
                 </div>
                 <div id="ticket" class="collapse show" aria-labelledby="ticketHeader">
@@ -101,6 +101,8 @@ if($page->user !== false && $page->user !== null && ($page->user->isInGroupNamed
         </div>
     </div>
     '.$discretionary.'
+    <div class="row" id="eePasses">
+    </div>
     <div class="row">
         <div class="col-sm-1"></div>
         <div class="col-sm-10">
@@ -119,14 +121,14 @@ if($page->user !== false && $page->user !== null && ($page->user->isInGroupNamed
                 <div class="modal-content">
                     <div class="modal-header">
                       <h4 class="modal-title" id="modal_title">Full Ticket ID</h4>
-                      <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <div class="alert alert-info" role="alert"><strong>Notice: </strong>Providing this ID to another person is as good as handing them your ticket. The Flipside Ticket Team will never ask for this information. Only provide this code to someone whom you are selling or giving the ticket to!</div>
                         Long Ticket ID: <div class="well" id="long_id"></div><br/>
                         Long Ticket ID (Word Method): <div class="well" id="long_id_words"></div><br/>
                     </div>
-                    <div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Close</button></div>
+                    <div class="modal-footer"><button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button></div>
                 </div>
             </div>
         </div>
@@ -136,7 +138,7 @@ if($page->user !== false && $page->user !== null && ($page->user->isInGroupNamed
                 <div class="modal-content">
                     <div class="modal-header">
                       <h4 class="modal-title" id="modal_title">Ticket Information</h4>
-                      <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         First Name: <span id="view_first_name"></span><br/>
@@ -144,7 +146,7 @@ if($page->user !== false && $page->user !== null && ($page->user->isInGroupNamed
                         Type: <span id="view_type"></span><br/>
                         Short Code: <a href="#" id="view_short_code"></a><br/>
                     </div>
-                    <div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Close</button></div>
+                    <div class="modal-footer"><button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button></div>
                 </div>
             </div>
         </div>
@@ -154,7 +156,7 @@ if($page->user !== false && $page->user !== null && ($page->user->isInGroupNamed
                 <div class="modal-content">
                     <div class="modal-header">
                       <h4 class="modal-title" id="modal_title">Edit Ticket</h4>
-                      <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                      <button type="button" class="btn-close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
                     </div>
                     <div class="modal-body">
                         <div class="row">
@@ -177,7 +179,7 @@ if($page->user !== false && $page->user !== null && ($page->user->isInGroupNamed
                         </div>
                         <div class="clearfix visible-sm visible-md visible-lg"></div>
                     </div>
-                    <div class="modal-footer"><button type="button" class="btn btn-default" onclick="saveTicket()">Save</button><button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button></div>
+                    <div class="modal-footer"><button type="button" class="btn btn-primary" onclick="saveTicket()">Save</button><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button></div>
                 </div>
             </div>
         </div>

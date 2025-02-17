@@ -10,6 +10,8 @@ class RequestAPI extends Flipside\Http\Rest\RestAPI
         $app->get('/countsByDay[/{year}]', array($this, 'getCountsByDay'));
         $app->get('/donations', array($this, 'getDonations'));
         $app->get('/moneyReceived', array($this, 'getMoney'));
+        $app->get('/requestIdMapping', array($this, 'getRequestIdMapping'));
+        $app->get('/creditCardRequests[/{year}]', array($this, 'getCreditCardRequests'));
         $app->get('/{request_id}[/{year}]', array($this, 'getRequest'));
         $app->get('/{request_id}/{year}/pdf', array($this, 'getRequestPdf'));
         $app->get('/{request_id}/{year}/donations', array($this, 'getRequestDonations'));
@@ -21,7 +23,9 @@ class RequestAPI extends Flipside\Http\Rest\RestAPI
         $app->post('/Actions/MakePublic', array($this, 'makePublic'));
         $app->post('/{request_id}/{year}/Actions/Requests.GetPDF', array($this, 'getRequestPdf'));
         $app->post('/{request_id}/{year}/Actions/Requests.SendEmail', array($this, 'sendRequestEmail'));
+        $app->get('/{request_id}/{year}/Actions/Requests.GetBucket', array($this, 'getRequestBucket'));
         $app->post('/{request_id}/{year}/Actions/Requests.GetBucket', array($this, 'getRequestBucket'));
+        $app->post('/{request_id}/{year}/Actions/Requests.IssuePaymentLink', array($this, 'issuePaymentLink'));
         $app->patch('/{request_id}[/{year}]', array($this, 'editRequest'));
     }
 
@@ -48,6 +52,27 @@ class RequestAPI extends Flipside\Http\Rest\RestAPI
         $data = array('mail'=>$this->user->mail, 'request_id'=>$id);
         $dataTable->create($data);
         return $id;
+    }
+
+    public function getRequestIdMapping($request, $response, $args)
+    {
+        $this->validateLoggedIn($request);
+        if($this->user === false)
+        {
+            throw new Exception('Must be logged in', \Http\Rest\ACCESS_DENIED);
+        }
+        if($this->user->isInGroupNamed('TicketAdmins') === false)
+        {
+            return $response->withStatus(401);
+        }
+        $odata = $request->getAttribute('odata', new \Flipside\ODataParams(array()));
+        $dataTable = \Flipside\DataSetFactory::getDataTableByNames('tickets', 'RequestIDs');
+        $requests = $dataTable->read($odata->filter, $odata->select, $odata->top, $odata->skip, $odata->orderby);
+        if($requests === false)
+        {
+            return $response->withJson(array());
+        }
+        return $response->withJson($requests);
     }
 
     protected function getRequestHelper($request_id, $year)
@@ -202,7 +227,11 @@ class RequestAPI extends Flipside\Http\Rest\RestAPI
         }
         if($odata->count)
         {
-            $requests = array('@odata.count'=>count($requests), 'value'=>$requests);
+            if($odata->top || $odata->skip) {
+                $requests = array('@odata.count'=>$requestDataTable->count($filter), 'value'=>$requests);
+            } else {
+                $requests = array('@odata.count'=>count($requests), 'value'=>$requests);
+            }
         }
         return $response->withJson($requests);
     }
@@ -226,6 +255,57 @@ class RequestAPI extends Flipside\Http\Rest\RestAPI
             $types[$i]['count'] = intval($types[$i]['count']);
         }
         return $response->withJson($types);
+    }
+
+    public function getCreditCardRequests($request, $response, $args)
+    {
+        $this->validateLoggedIn($request);
+        if($this->user->isInGroupNamed('TicketAdmins') === false)
+        {
+            return $response->withStatus(401);
+        }
+        $year = 'current';
+        if(isset($args['year']))
+        {
+            $year = $args['year'];
+        }
+        $requestDataTable = \Tickets\DB\RequestDataTable::getInstance();
+        $pendingDataTable = \Flipside\DataSetFactory::getDataTableByNames('tickets', 'PendingPurchases');
+        $filter = false;
+        if($year === 'current')
+        {
+            $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+            $year = $settings['year'];
+        }
+        $filter = new \Flipside\Data\Filter("(year eq $year and paymentMethod eq 'cc')");
+        $odata = $request->getAttribute('odata', new \Flipside\ODataParams(array()));
+        $requests = $requestDataTable->read($filter, $odata->select, $odata->top, $odata->skip, $odata->orderby);
+        if($requests === false)
+        {
+            $requests = array();
+        }
+        $request_count = count($requests);
+        for($i = 0; $i < $request_count; $i++)
+        {
+            $requests[$i]->enhanceStatus();
+            if($requests[$i]->private_status !== 0)
+            {
+                $requests[$i]->pendingInfo = array('status'=>'sold');
+                continue;
+            }
+            $pendingInfo = $pendingDataTable->read(new \Flipside\Data\Filter("requestID eq '".$requests[$i]->request_id."'"));
+            if($pendingInfo !== false)
+            {
+                $pendingInfo = $pendingInfo[0];
+                $pendingInfo['status'] = 'issued';
+                $requests[$i]->pendingInfo = $pendingInfo;
+            }
+            else
+            {
+                $requests[$i]->pendingInfo = array('status'=>'pending');
+            }
+        }
+        return $response->withJson($requests);
     }
 
     public function getRequest($request, $response, $args)
@@ -299,11 +379,11 @@ class RequestAPI extends Flipside\Http\Rest\RestAPI
         $request = new \Tickets\Flipside\Request($obj);
         if(!isset($request->request_id))
         {
-            throw new Exception('Required Parameter request_id is missing', \Http\Rest\INVALID_PARAM);
+            throw new Exception('Required Parameter request_id is missing', \Flipside\Http\Rest\INVALID_PARAM);
         }
         if(!isset($request->tickets) || !is_array($request->tickets))
         {
-            throw new Exception('Required Parameter tickets is missing', \Http\Rest\INVALID_PARAM);
+            throw new Exception('Required Parameter tickets is missing', \Flipside\Http\Rest\INVALID_PARAM);
         }
         $settings = \Tickets\DB\TicketSystemSettings::getInstance();
         $ticket_count = count($obj['tickets']);
@@ -315,7 +395,7 @@ class RequestAPI extends Flipside\Http\Rest\RestAPI
         {
              $request->validateRequestId($this->user->mail);
         }
-        $ret = $request->validateTickets(isset($obj['minor_confirm']));
+        $ret = $request->validateTickets(isset($obj['minor_confirm']), $obj['paymentMethod']);
         if($ret !== false)
         {
              return $response->withJson($ret);
@@ -621,6 +701,45 @@ class RequestAPI extends Flipside\Http\Rest\RestAPI
         return $response->withJson($request);
     }
 
+    public function issuePaymentLink($httpRequest, $response, $args)
+    {
+        $this->validateLoggedIn($httpRequest);
+        $request_id = 'me';
+        $year = 'current';
+        if(isset($args['request_id']))
+        {
+            $request_id = $args['request_id'];
+        }
+        if(isset($args['year']))
+        {
+            $year = $args['year'];
+        }
+        $request = $this->getRequestHelper($request_id, $year);
+        if($request === false)
+        {
+            return $response->withStatus(404);
+        }
+        if($request->paymentMethod != 'cc') {
+            throw new \Exception('Payment type is not credit card!', \Flipside\Http\Rest\INVALID_PARAM);
+        }
+        $pendingPurchaseDataTable = \Flipside\DataSetFactory::getDataTableByNames('tickets', 'PendingPurchases');
+        $filter = new \Flipside\Data\Filter("requestID eq '".$request->request_id."'");
+        $pending = $pendingPurchaseDataTable->read($filter);
+        if($pending !== false)
+        {
+            $pending = $pending[0];
+            if($pending['status'] === 'issued')
+            {
+                // Already issued just return the existing link
+                return $response->withJson($pending['squareLink']);
+            }
+        }
+        $square = new \Tickets\SquarePurchase($this->user, $request->mail, $request->givenName, $request->sn, -1, '', 'Request');
+        $square->setRequestID($request->request_id);
+        $square->addTicketsFromRequest($request->tickets);
+        return $response->withJson($square->createLink());
+    }
+
     public function editRequest($httpRequest, $response, $args)
     {
         $this->validateLoggedIn($httpRequest);
@@ -676,7 +795,7 @@ class RequestAPI extends Flipside\Http\Rest\RestAPI
         $old_request = $this->getRequestHelper($request_id, $year);
         if(isset($request->tickets))
         {
-            $ret = $request->validateTickets(isset($obj['minor_confirm']));
+            $ret = $request->validateTickets(isset($obj['minor_confirm']), $obj['paymentMethod']);
             if($ret !== false)
             {
                 return $response->withJson($ret);
@@ -865,13 +984,27 @@ class RequestAPI extends Flipside\Http\Rest\RestAPI
         $settings = \Tickets\DB\TicketSystemSettings::getInstance();
         $year = $settings['year'];
         $ticketDataSet = \Flipside\DataSetFactory::getDataSetByName('tickets');
-        $data = $ticketDataSet->raw_query('SELECT ROUND(SUM(total_received),2) AS amount FROM tblTicketRequest WHERE year='.$year.' AND private_status IN (6,1)');
+        $data = $ticketDataSet->raw_query('SELECT ROUND(SUM(total_received),2) AS amount FROM tblTicketRequest WHERE year='.$year.' AND private_status IN (6,1) AND paymentMethod="traditional"');
         if(empty($data))
         {
              return $response->withJson(0);
         }
         $data = $data[0];
-        return $response->withJson($data['amount']);
+        $total = (float)$data['amount'];
+        $ret = array('moneyOrders'=>$data['amount']);
+        $data = $ticketDataSet->raw_query('SELECT ROUND(SUM(total_due),2) AS amount FROM tblTicketRequest WHERE year='.$year.' AND private_status IN (6,1) AND paymentMethod="cc"');
+        if(empty($data))
+        {
+             $ret['creditCards'] = 0;
+        }
+        else
+        {
+            $data = $data[0];
+            $ret['creditCards'] = $data['amount'];
+            $total += (float)$data['amount'];
+        }
+        $ret['total'] = $total;
+        return $response->withJson($ret);
     }
 }
 /* vim: set tabstop=4 shiftwidth=4 expandtab: */

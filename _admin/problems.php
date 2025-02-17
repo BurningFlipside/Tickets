@@ -4,8 +4,8 @@ error_reporting(E_ALL);
 require_once('class.TicketAdminPage.php');
 $page = new TicketAdminPage('Burning Flipside - Tickets');
 
-$page->addWellKnownJS(JS_DATATABLE, false);
-$page->addWellKnownCSS(CSS_DATATABLE);
+$page->addWellKnownJS(JS_TABULATOR, false);
+$page->addWellKnownCSS(CSS_TABULATOR);
 
 $page->body .= '
         <div class="row">

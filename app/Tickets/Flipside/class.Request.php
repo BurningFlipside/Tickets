@@ -77,7 +77,7 @@ class Request extends \Flipside\SerializableObject
 	$this->status = static::$statuses[$this->status];
     }
 
-    public function validateTickets($minorConfirm)
+    public function validateTickets($minorConfirm, $paymentMethod)
     {
         $settings = \Tickets\DB\TicketSystemSettings::getInstance();
         $count = count($this->tickets);
@@ -97,15 +97,18 @@ class Request extends \Flipside\SerializableObject
                 $tmp->first = $ticket['first'];
                 $tmp->last = $ticket['last'];
                 $tmp->type = $ticket['type'];
-                if(!isset($ticket['cost']))
+                $type = \Tickets\TicketType::getTicketType($ticket['type']);
+                switch($paymentMethod)
                 {
-                    $type = \Tickets\TicketType::getTicketType($ticket['type']);
-                    $tmp->cost = $type['cost'];
+                    case 'cc':
+                    case 'CC':
+                        $tmp->cost = $type['squareCost'];
+                        break;
+                    default:
+                        $tmp->cost = $type['cost'];
+                        break;
                 }
-                else
-                {
-                    $tmp->cost = $ticket['cost'];
-                }
+                $tmp->cost = $type['cost'];
                 $ticket = $tmp;
                 $this->tickets[$i] = $tmp;
             }
@@ -160,9 +163,18 @@ class Request extends \Flipside\SerializableObject
         $count = count($this->tickets);
         for($i = 0; $i < $count; $i++)
         {
-             $ticket = $this->tickets[$i];
-             $type = \Tickets\TicketType::getTicketType($ticket->type);
-             $amt += $type->cost;
+            $ticket = $this->tickets[$i];
+            $type = \Tickets\TicketType::getTicketType($ticket->type);
+            switch($this->paymentMethod)
+            {
+                case 'cc':
+                case 'CC':
+                    $amt += $type->squareCost;
+                    break;
+                default:
+                    $amt += $type->cost;
+                    break;
+            }
         }
         return $amt;
     }
@@ -178,11 +190,11 @@ class Request extends \Flipside\SerializableObject
         {
              if(is_array($donation))
              {
-                 $amt += $donation['amount'];
+                 $amt += (int)$donation['amount'];
              }
              else
              {
-                 $amt += $donation->amount;
+                 $amt += (int)$donation->amount;
              }
         }
         return $amt;
@@ -262,5 +274,38 @@ class Request extends \Flipside\SerializableObject
         $ret['comments'] = '';
         $ret['bucket'] = -1;
         return $ret;
+    }
+
+    function update($datatable=false)
+    {
+        if($datatable === false)
+        {
+            $datatable = self::getDataTable();
+        }
+        $data = $this->encodeForSQL();
+        $reqId = $data['request_id'];
+        $year = $this['year'];
+        return $datatable->update(new \Flipside\Data\Filter("request_id eq '$reqId' and year eq $year"), $data);
+    }
+
+    static function getRequestByID($requestId, $year = false) {
+        if($year === false)
+        {
+            $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+            $year = $settings['year'];
+        }
+        $dataTable = \Flipside\DataSetFactory::getDataTableByNames('tickets', 'TicketRequest');
+        $filter = new \Flipside\Data\Filter("request_id eq '$requestId' and year eq $year");
+        $requests = $dataTable->read($filter);
+        if($requests === false || count($requests) === 0)
+        {
+            return false;
+        }
+        return new Request($requests[0]);
+    }
+
+    protected static function getDataTable()
+    {
+        return \Flipside\DataSetFactory::getDataTableByNames('tickets', 'TicketRequest');
     }
 }

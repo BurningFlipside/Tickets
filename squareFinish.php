@@ -21,6 +21,25 @@ if(empty($purchase))
     return;
 }
 $purchase = $purchase[0];
+if($purchase['requestID'] != null && $purchase['requestID'] != '')
+{
+    $requestID = $purchase['requestID'];
+    $request = \Tickets\Flipside\Request::getRequestByID($requestID);
+    if($request === false)
+    {
+        $page->addNotification('Request missing! Did you already claim your tickets?');
+        $page->printPage();
+        return;
+    }
+    $request->status = 6;
+    $request->private_status = 6;
+    if($request->update() === false)
+    {
+        $page->addNotification('Failed to update request!');
+        $page->printPage();
+        return;
+    }
+}
 $ticketIds = json_decode($purchase['ticketIds']);
 $tickets = \Tickets\Ticket::get_tickets(new \Flipside\Data\Filter('hash in ('.implode(',', $ticketIds).')'));
 if(empty($tickets))
@@ -37,6 +56,18 @@ for($i = 0; $i < $count; $i++)
 
 $page->addNotification('Tickets purchase successful! Click <a href="index.php" class="alert-link">here</a> to view your tickets.');
 $page->printPage();
+$dataTable2 = \Flipside\DataSetFactory::getDataTableByNames('tickets', 'CompletedCCSales');
+unset($purchase['issuedAt']);
+$settings = \Tickets\DB\TicketSystemSettings::getInstance();
+$year = $settings['year'];
+$purchase['year'] = $year;
+$ret = $dataTable2->create($purchase);
+if($ret === false)
+{
+    $page->addNotification('Failed to save purchase!');
+    $page->printPage();
+    return;
+}
 
 $dataTable->delete($filter);
 // vim: set tabstop=4 shiftwidth=4 expandtab:

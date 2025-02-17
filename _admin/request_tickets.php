@@ -4,12 +4,15 @@ error_reporting(E_ALL);
 require_once('class.TicketAdminPage.php');
 $page = new TicketAdminPage('Burning Flipside - Tickets');
 $page->setTemplateName('admin-table.html');
-$page->addWellKnownJS(JS_DATATABLE, false);
-$page->addWellKnownCSS(CSS_DATATABLE);
+$page->addWellKnownJS(JS_TABULATOR, false);
+$page->addWellKnownCSS(CSS_TABULATOR);
 
 $page->content['pageHeader'] = 'Requested Tickets';
 $page->content['selectors'] = '
-  Request Year: <select id="year" onchange="changeYear(this)"></select>
+  <label for="year" class="col-sm-2 control-label">Request Year:</label>
+  <div class="col-sm-4">
+    <select id="year" class="form-control" onchange="changeYear(this)"></select>
+  </div>
 ';
 $page->content['table'] = array('id' => 'tickets', 'headers'=>array('Request ID', 'First Name', 'Last Name', 'Type'));
 

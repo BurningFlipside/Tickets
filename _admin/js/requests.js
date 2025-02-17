@@ -1,11 +1,10 @@
-/*global $, TicketRequest, TicketSystem*/
-/*exported changeStatusFilter, editRequest, getCSV, getPDF, saveRequest*/
-var ticketSystem = new TicketSystem('../api/v1');
+/*global bootstrap, Tabulator*/
+/*exported changeStatusFilter, editRequest, getCSV, getPDF, saveRequest, excelLoaded*/
 
-function requeryTable() {
-  var year = $('#year').val();
-  var status = $('#statusFilter').val();
-  var filter = '';
+function recreateTable() {
+  let year = document.getElementById('year').value;
+  let status = document.getElementById('statusFilter').value;
+  let filter = '';
   if(year !== '*') {
     filter = 'year eq '+year;
   } else {
@@ -14,208 +13,293 @@ function requeryTable() {
   if(status !== '*') {
     filter+=' and private_status eq '+status;
   }
-  var table = $('#requests').DataTable();
-  table.ajax.url(ticketSystem.getRequestDataTableUri(filter)).load();
+  let tables = Tabulator.findTable('#requests');
+  if(tables === false) {
+    return;
+  }
+  let table = tables[0];
+  table.setData('../api/v1/requests?$filter='+filter);
 }
 
 function changeYear() {
-  requeryTable();
+  recreateTable();
 }
 
 function changeStatusFilter() {
-  requeryTable();
-}
-
-function drawDone() {
-  $('td.details-control').html('<span class="fa fa-plus"></span>');
-}
-
-function saveRequestDone(data, err) {
-  if(err !== null) {
-    if(err.jsonResp !== undefined && err.jsonResp.message !== undefined) {
-      alert(err.jsonResp.message);
-    } else {
-      console.log(err);
-      alert('Unable to update request!');
-    }
-    return;
-  }
-  $('#modal').modal('hide');
-  changeYear($('#year'));
+  recreateTable();
 }
 
 function saveRequest() {
-  var obj = {};
-  var a = $('#request_edit_form').serializeArray();
-  for(var i = 0; i < a.length; i++) {
-    var name = a[i].name; // eslint-disable-line security/detect-object-injection
-    var split = name.split('_');
-    if(split[0] === 'ticket') {
-      var childName = split[1];
+  let obj = {};
+  for(let element of document.forms.request_edit_form.elements) {
+    if(element.type === 'checkbox') {
+      obj[element.name] = element.checked;
+      continue;
+    }
+    if(element.name.startsWith('ticket_')) {
+      let name = element.name.split('_')[1];
       if(obj['tickets'] === undefined) {
         obj['tickets'] = [];
       }
-      if(obj['tickets'].length === 0 || obj['tickets'][obj['tickets'].length-1][childName] !== undefined) { // eslint-disable-line security/detect-object-injection
-        obj['tickets'][obj['tickets'].length] = {}; // eslint-disable-line security/detect-object-injection
+      if(obj['tickets'].length === 0 || obj['tickets'][obj['tickets'].length-1][`${name}`] !== undefined) {
+        obj['tickets'][obj['tickets'].length] = {};
       }
-      obj['tickets'][obj['tickets'].length-1][childName] = a[i].value; // eslint-disable-line security/detect-object-injection
-    } else if(split[0] === 'donation') {
+      obj['tickets'][obj['tickets'].length-1][`${name}`] = element.value;
+      continue;
+    }
+    if(element.name.startsWith('donation_')) {
+      let split = element.name.split('_');
       if(obj['donations'] === undefined) {
         obj['donations'] = {};
       }
       if(obj['donations'][split[2]] === undefined) {
         obj['donations'][split[2]] = {};
       }
-      obj['donations'][split[2]][split[1]] = a[i].value; // eslint-disable-line security/detect-object-injection
-    } else {
-      if(a[i].value === 'on') { // eslint-disable-line security/detect-object-injection
-        a[i].value = 1; // eslint-disable-line security/detect-object-injection
-      }
-      if(name === 'critvol') {
-        name = 'crit_vol';
-      }
-      obj[name] = a[i].value; // eslint-disable-line security/detect-object-injection
+      obj['donations'][split[2]][split[1]] = element.value;
+      continue;
     }
+    obj[element.name] = element.value;
   }
+  let id = obj['request_id'];
+  delete obj['request_id'];
+  obj.crit_vol = obj.critvol; // eslint-disable-line camelcase
+  delete obj.critvol;
+  let year = document.getElementById('year').value;
   obj.minor_confirm = true; // eslint-disable-line camelcase
-  ticketSystem.updateRequest(obj, saveRequestDone); 
+  fetch('../api/v1/requests/'+id+'/'+year, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(obj)
+  }).then((response) => {
+    if(!response.ok) {
+      response.json().then((data) => {
+        if(data.message !== undefined) {
+          alert(data.message);
+          return;
+        }
+        alert('Unable to update request!');
+      });
+    } else {
+      let modal = bootstrap.Modal.getInstance(document.getElementById('modal'));
+      modal.hide();
+      changeYear(document.getElementById('year'));
+    }
+  }).catch((err) => {
+    alert('Unable to update request!');
+    console.log(err);
+  });
 }
 
 function editRequest() {
-  window.location = '../request.php?request_id='+$('#request_id').val();
+  window.location = '../request.php?request_id='+document.getElementById('request_id').value;
 }
 
 function getPDF() {
-  var request = $('#modal').data('request');
-  window.location = request.getPdfUri();
+  let requestId = document.getElementById('request_id').value;
+  let year = document.getElementById('year').value;
+  window.location = '../api/v1/requests/'+requestId+'/'+year+'/pdf';
 }
 
 function getCSV() {
-  var uri = $('#requests').DataTable().ajax.url();
-  uri = uri.replace('fmt=data-table', '$format=csv2');
-  window.location = uri;
-}
-
-function gotAsyncRequest(data) {
-  this.row.data(data);
-  $('#modal').modal('hide');
-  let myBind = rowClicked.bind(this.row.node());
-  myBind(); 
-}
-
-function rowClicked() {
-  var tr = $(this).closest('tr');
-  var row = $('#requests').DataTable().row(tr);
-  var data = new TicketRequest(row.data(), ticketSystem);
-  $('#modal').modal();
-  $('#modal_title').html('Request #'+data.request_id);
-  $('#request_id').val(data.request_id);
-  $('#givenName').val(data.givenName);
-  $('#sn').val(data.sn);
-  $('#mail').val(data.mail);
-  if(data.c === undefined) {
-    let myBind = gotAsyncRequest.bind({row: row});
-    ticketSystem.getRequest(myBind, data.request_id, data.year);
+  let tables = Tabulator.findTable('#requests');
+  if(tables === false) {
     return;
   }
-  $('#c').val(data.c);
-  $('#mobile').val(data.mobile);
-  $('#street').val(data.street);
-  $('#zip').val(data.zip);
-  $('#l').val(data.l);
-  $('#st').val(data.st);
-  $('#ticket_table tbody').empty();
-  for(let i = 0; i < data.tickets.length; i++) {
-    let newRow = $('<tr/>');
-    let ticket = data.tickets[i]; // eslint-disable-line security/detect-object-injection
-    $('<td/>').html('<input type="text" id="ticket_first_'+i+'" name="ticket_first_'+i+'" class="form-control" value="'+ticket.first+'"/>').appendTo(newRow);
-    $('<td/>').html('<input type="text" id="ticket_last_'+i+'" name="ticket_last_'+i+'" class="form-control" value="'+ticket.last+'"/>').appendTo(newRow);
-    $('<td/>').html('<input type="text" id="ticket_type_'+i+'" name="ticket_type_'+i+'" class="form-control" value="'+ticket.type+'"/>').appendTo(newRow);
-    newRow.appendTo($('#ticket_table tbody'));
+  let table = tables[0];
+  table.download('csv', 'requests.csv', {bom:true});
+}
+
+function rowClicked(e, row) {
+  let data = row.getData();
+  let modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modal'));
+  let title = document.getElementById('modal_title');
+  title.innerHTML = 'Request #'+data.request_id;
+  document.getElementById('request_id').value = data.request_id;
+  document.getElementById('givenName').value = data.givenName;
+  document.getElementById('sn').value = data.sn;
+  document.getElementById('mail').value = data.mail;
+  document.getElementById('year').value = data.year;
+  document.getElementById('mobile').value = data.mobile;
+  document.getElementById('street').value = data.street;
+  document.getElementById('zip').value = data.zip;
+  document.getElementById('l').value = data.l;
+  document.getElementById('st').value = data.st;
+  let table = document.getElementById('ticket_table');
+  let tbody = table.tBodies[0];
+  tbody.innerHTML = '';
+  for(let ticket of data.tickets) {
+    let newRow = tbody.insertRow();
+    let cell = newRow.insertCell();
+    let input = document.createElement('input');
+    input.className = 'form-control';
+    input.type = 'text';
+    input.name = 'ticket_first';
+    input.value = ticket.first;
+    cell.appendChild(input);
+    cell = newRow.insertCell();
+    input = document.createElement('input');
+    input.className = 'form-control';
+    input.type = 'text';
+    input.name = 'ticket_last';
+    input.value = ticket.last;
+    cell.appendChild(input);
+    cell = newRow.insertCell();
+    input = document.createElement('input');
+    input.className = 'form-control';
+    input.type = 'text';
+    input.name = 'ticket_type';
+    input.value = ticket.type;
+    cell.appendChild(input);
   }
-  $('#donation_table tbody').empty();
+  table = document.getElementById('donation_table');
+  tbody = table.tBodies[0];
+  tbody.innerHTML = '';
   if(data.donations !== null) {
     for(let donationName in data.donations) {
-      let newRow = $('<tr/>');
-      let amount = data.donations[`${donationName}`].amount;
-      $('<td/>').html(donationName).appendTo(newRow);
-      $('<td/>').html('<input type="text" id="donation_amount_'+donationName+'" name="donation_amount_'+donationName+'" class="form-control" value="'+amount+'"/>').appendTo(newRow);
-      newRow.appendTo($('#donation_table tbody'));
+      if(!data.donations[`${donationName}`].amount) {
+        continue;
+      }
+      row = tbody.insertRow();
+      let cell = row.insertCell();
+      cell.innerHTML = donationName;
+      cell = row.insertCell();
+      let input = document.createElement('input');
+      input.className = 'form-control';
+      input.type = 'text';
+      input.name = 'donation_amount_'+donationName;
+      input.value = data.donations[`${donationName}`].amount;
+      cell.appendChild(input);
     }
   }
-  $('#total_due').val('$'+data.total_due);
-  $('#status').val(data.private_status);
-  $('#total_received').val(data.total_received);
-  $('#comments').val(data.comments);
-  $('#bucket').val(data.bucket);
+  document.getElementById('total_due').value = data.total_due;
+  document.getElementById('status').value = data.private_status;
+  document.getElementById('total_received').value = data.total_received;
+  document.getElementById('comments').value = data.comments;
+  document.getElementById('bucket').value = data.bucket;
+  document.getElementById('paymentMethod').value = data.paymentMethod;
+  let envelopeArt = document.getElementById('envelopeArt');
   if(data.envelopeArt) {
-    $('#envelopeArt').prop('checked', true);
+    envelopeArt.checked = true;
   } else {
-    $('#envelopeArt').prop('checked', false);
+    envelopeArt.checked = false;
   }
-
+  let critVol = document.getElementById('critvol');
   if(data.crit_vol) {
-    $('#critvol').prop('checked', true);
+    critVol.checked = true;
   } else {
-    $('#critvol').prop('checked', false);
+    critVol.checked = false;
   }
+  let protected = document.getElementById('protected');
   if(data.protected) {
-    $('#protected').prop('checked', true);
+    protected.checked = true;
   } else {
-    $('#protected').prop('checked', false);
+    protected.checked = false;
   }
-  $('#modal').data('request', data);
+  modal.show();
 }
 
-function statusAjaxDone(jqXHR) {
-  if(jqXHR.status !== 200) {
-    return;
-  }
-  for(let status of jqXHR.responseJSON) {
-    $('#status').append('<option value="'+status.status_id+'">'+status.name+'</option>');
-    $('#statusFilter').append('<option value="'+status.status_id+'">'+status.name+'</option>');
-  }
-}
-
-function gotTicketYears(jqXHR) {
-  if(jqXHR.status !== 200) {
-    alert('Unable to obtain valid ticket years!');
-    console.log(jqXHR);
-    return;
-  }
-  jqXHR.responseJSON.sort().reverse();
-  for(var i = 0; i < jqXHR.responseJSON.length; i++) {
-    let value = jqXHR.responseJSON[i]; // eslint-disable-line security/detect-object-injection
-    if(i === 0) {
-      $('#year').append($('<option/>').attr('value', value).text(value).attr('selected', true));
-    } else {
-      $('#year').append($('<option/>').attr('value', value).text(value));
+function excelLoaded() {
+  let csv = document.getElementById('csv');
+  let excel = document.createElement('button');
+  excel.className = 'btn btn-link btn-sm';
+  excel.innerHTML = '<i class="fa fa-file-excel"></i>';
+  excel.addEventListener('click', () => {
+    let tables = Tabulator.findTable('#requests');
+    if(tables === false) {
+      return;
     }
-  }
-  changeYear($('#year'));
+    let table = tables[0];
+    table.download('xlsx', 'requests.xlsx', {sheetName:'Requests'});
+  });
+  csv.parentNode.append(excel);
 }
 
 function initPage() {
-  $.ajax({
-    url: '../api/v1/globals/years',
-    type: 'get',
-    dataType: 'json',
-    complete: gotTicketYears});
-  $('#requests').on('draw.dt', drawDone);
-  $('#requests').dataTable({
-    'columns': [ 
-      {'data': 'request_id'},
-      {'data': 'givenName'},
-      {'data': 'sn'},
-      {'data': 'mail'},
-      {'data': 'total_due'}
+  let table = new Tabulator('#requests', {
+    columns: [
+      {title: 'Request ID', field: 'request_id'},
+      {title: 'First Name', field: 'givenName'},
+      {title: 'Last Name', field: 'sn'},
+      {title: 'Email', field: 'mail'},
+      {title: 'Total Due', field: 'total_due'},
+      {title: 'Total Received', field: 'total_received'},
+      {title: 'Status', field: 'private_status'},
+      {title: 'City', field: 'l'},
+      {title: 'State', field: 'st'},
+      {title: 'Year', field: 'year'},
+      {title: 'Envelope Art', field: 'envelopeArt', formatter: 'tickCross'},
+      {title: 'Crit Vol', field: 'crit_vol', formatter: 'tickCross'},
+      {title: 'Protected', field: 'protected', formatter: 'tickCross'},
+      {title: 'Payment Method', field: 'paymentMethod'}
+    ],
+    pagination: 'local',
+    paginationSize: 10,
+    initialSort: [
+      {column: 'request_id', dir: 'asc'}
     ]
   });
-  $('#requests tbody').on('click', 'td:not(.details-control)', rowClicked);
-  $.ajax({
-    url: '../api/v1/globals/statuses',
-    dataType: 'json',
-    complete: statusAjaxDone});
+  fetch('../api/v1/globals/years').then((response) => {
+    if(!response.ok) {
+      return;
+    }
+    response.json().then((data) => {
+      data.sort().reverse();
+      let yearSelect = document.getElementById('year');
+      for(let year of data) {
+        if(yearSelect.options.length === 1) {
+          yearSelect.add(new Option(year, year, true, true));
+        } else {
+          yearSelect.add(new Option(year, year));
+        }
+      }
+      changeYear(yearSelect);
+    });
+  });
+  fetch('../api/v1/globals/statuses').then((response) => {
+    if(!response.ok) {
+      return;
+    }
+    response.json().then((data) => {
+      let statusSelect = document.getElementById('statusFilter');
+      for(let status of data) {
+        statusSelect.add(new Option(status.name, status.status_id));
+      }
+    });
+  });
+  table.on('rowClick', rowClicked);
+  let tableElem = document.getElementById('requests');
+  let parent = tableElem.parentElement;
+  let node = document.createElement('div');
+  node.style.float = 'right';
+  node.style.textAlign = 'right';
+  node.innerText = 'Search:';
+  let search = document.createElement('input');
+  search.type = 'text';
+  search.style.border = '1px solid #aaa';
+  search.style.borderRadius = '5px';
+  search.style.padding = '2px';
+  node.appendChild(search);
+  parent.insertBefore(node, tableElem);
+  search.addEventListener('input', () => {
+    table.clearFilter();
+    if(search.value === '') {
+      return;
+    }
+    table.setFilter((data) => {
+      let searchValue = search.value.toLowerCase();
+      for(let key in data) {
+        if(data[`${key}`] === null) {
+          continue;
+        }
+        if(data[`${key}`].toString().toLowerCase().includes(searchValue)) {
+          return true;
+        }
+      }
+      return false;
+    });
+  });
 }
 
-$(initPage);
+window.onload = initPage;

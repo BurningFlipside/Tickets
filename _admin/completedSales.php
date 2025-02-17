@@ -7,8 +7,8 @@ $page->setTemplateName('admin-table-new.html');
 
 $page->addWellKnownJS(JS_BOOTBOX);
 
-$page->content['pageHeader'] = 'Pending Sales';
-$page->content['table'] = array('id' => 'sales', 'headers'=>array('Cancel', 'Seller/Pool', 'Purchaser', 'Ticket Count', 'Square Link'));
+$page->content['pageHeader'] = 'Completed Sales';
+$page->content['table'] = array('id' => 'sales', 'headers'=>array('Seller/Pool', 'Purchaser', 'Ticket Count', 'Amount', 'Square Order ID'));
 $page->content['selectors'] = '<div id="alert"></div>';
 
 $page->printPage();

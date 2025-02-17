@@ -4,8 +4,8 @@ error_reporting(E_ALL);
 require_once('class.TicketAdminPage.php');
 $page = new TicketAdminPage('Burning Flipside - Tickets');
 
-$page->addWellKnownJS(JS_DATATABLE, false);
-$page->addWellKnownCSS(CSS_DATATABLE);
+$page->addWellKnownJS(JS_TABULATOR, false);
+$page->addWellKnownCSS(CSS_TABULATOR);
 
 $page->body .= '
         <div class="row">
@@ -23,17 +23,18 @@ $page->body .= '
             <hr/>
         </div>
         <div class="row">
-            <div class="card">
-                <div class="card-header" role="tab" id="advanced_hdr">
-                    <h4 class="card-title">
-                        <a class="collapsed" data-toggle="collapse" href="#advanced" aria-expanded="false" aria-controls="advanced">Advanced Search</a>
-                    </h4>
-                </div>
-                <div id="advanced" class="collapse" aria-labelledby="advanced_hdr" data-parent="#advanced_hdr">
-                    <div class="card-body">
+            <div class="accordion" id="accordionExample">
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="advancedHdr">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#advanced" aria-expanded="true" aria-controls="advanced">
+                            Advanced Search
+                        </button>
+                    </h2>
+                    <div id="advanced" class="accordion-collapse collapse" aria-labelledby="advancedHdr" data-bs-parent="#accordionExample">
+                        <div class="accordion-body">
                         <div class="input-group">
                             <div class="input-group-btn">
-                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false" id="type" data-type="*">All <span class="caret"></span></button>
+                                <button type="button" class="btn btn-default dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" id="type" data-type="*">All <span class="caret"></span></button>
                                 <ul class="dropdown-menu" role="menu">
                                     <li><a href="#" onclick="changeMenu(\'*\', \'All\');">All</a></li>
                                     <li><a href="#" onclick="changeMenu(\'mail\', \'Email\');">Email</a></li>
@@ -48,12 +49,12 @@ $page->body .= '
                 </div>
             </div>
         </div>
-        <div class="modal fade in" aria-hidden="false" id="modal">
+        <div class="modal fade in modal-lg" aria-hidden="false" id="modal">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
                       <h4 class="modal-title" id="modal_title"></h4>
-                      <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                       <div class="row">
@@ -99,7 +100,7 @@ $page->body .= '
                         <input type="hidden" name="id" id="request_id_hidden"/>
                         </form>
                     </div>
-                    <div class="modal-footer"><button type="button" class="btn btn-default" id="save_btn" onclick="saveRequest(this)">Ok</button><button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button></div>
+                    <div class="modal-footer"><button type="button" class="btn btn-primary" id="save_btn" onclick="saveRequest(this)">Ok</button><button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button></div>
                 </div>
             </div>
         </div>
@@ -108,7 +109,7 @@ $page->body .= '
                 <div class="modal-content">
                     <div class="modal-header">
                         <h4 class="modal-title">Requests</h4>
-                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                     <table id="request_table" class="table">

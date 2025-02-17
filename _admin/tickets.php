@@ -4,8 +4,8 @@ error_reporting(E_ALL);
 require_once('class.TicketAdminPage.php');
 $page = new TicketAdminPage('Burning Flipside - Tickets');
 
-$page->addWellKnownJS(JS_DATATABLE, false);
-$page->addWellKnownCSS(CSS_DATATABLE);
+$page->addWellKnownJS(JS_TABULATOR, false);
+$page->addWellKnownCSS(CSS_TABULATOR);
 
 $page->body .= '
         <div class="row">
@@ -88,10 +88,10 @@ $page->body .= '
                 <div class="modal-content">
                     <div class="modal-header">
                       <h4 class="modal-title">Ticket</h4>
-                      <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                      <div class-"containter-fluid">
+                      <div class-"container-fluid">
                         <form id="ticket_data">
                           <div class="row">
                             <label for="hash" class="col-sm-2 col-form-label">ID:</label>
@@ -158,8 +158,10 @@ $page->body .= '
                             </div>
                           </div>
                         </form>
-                        <div class="col-md-6" style="text-align: center;"><a onclick="prevTicket()" style="cursor: pointer;" id="left_arrow"><span class="fa fa-chevron-left"></span></a></div>
-                        <div class="col-md-6" style="text-align: center;"><a onclick="nextTicket()" style="cursor: pointer;" id="right_arrow"><span class="fa fa-chevron-right"></span></a></div>
+                        <div class="row">
+                          <div class="col-md-6" style="text-align: center;"><button class="btn btn-primary" onclick="prevTicket()" style="cursor: pointer;" id="left_arrow"><span class="fa fa-chevron-left"></span></button></div>
+                          <div class="col-md-6" style="text-align: center;"><button class="btn btn-primary" onclick="nextTicket()" style="cursor: pointer;" id="right_arrow"><span class="fa fa-chevron-right"></span></button></div>
+                        </div>
                         <div class="clearfix visible-sm visible-md visible-lg"></div>
                     </div></div>
                     <div class="modal-footer">

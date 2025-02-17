@@ -54,7 +54,9 @@ function assignTicketsToIndividual(email) {
 }
 
 function drawTable() {
+  let tableElem = document.getElementById('discretionary');
   var table = $('#discretionary tbody');
+  let totals = {unsold: 0, pending: 0, sold: 0};
   for(var mail in disc) {
     var row = $('<tr>');
     var count = Object.keys(disc[`${mail}`]).length;
@@ -77,11 +79,28 @@ function drawTable() {
       row.append('<td rowspan="'+count+'">'+mail+'</td>');
     }
     for(var type in disc[`${mail}`]) {
-      row.append('<td>'+type+'</td><td>'+disc[`${mail}`][`${type}`]['unsold']+'</td><td>'+disc[`${mail}`][`${type}`]['pending']+'</td><td>'+disc[`${mail}`][`${type}`]['sold']+'</td>');
+      let unsold = disc[`${mail}`][`${type}`]['unsold'];
+      let pending = disc[`${mail}`][`${type}`]['pending'];
+      let sold = disc[`${mail}`][`${type}`]['sold'];
+      totals.unsold += unsold;
+      totals.pending += pending;
+      totals.sold += sold;
+      row.append('<td>'+type+'</td><td>'+unsold+'</td><td>'+pending+'</td><td>'+sold+'</td>');
       table.append(row);
       row = $('<tr>');
     }
   }
+  let rowElem = tableElem.insertRow();
+  let cell = rowElem.insertCell();
+  cell = rowElem.insertCell();
+  cell.innerHTML = 'Totals';
+  cell = rowElem.insertCell();
+  cell = rowElem.insertCell();
+  cell.innerText = totals.unsold;
+  cell = rowElem.insertCell();
+  cell.innerText = totals.pending;
+  cell = rowElem.insertCell();
+  cell.innerText = totals.sold;
 }
 
 function gotUsers() {

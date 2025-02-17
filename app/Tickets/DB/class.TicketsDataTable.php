@@ -77,9 +77,9 @@ class TicketsDataTable extends SingletonDataTable
                 {
                     unset($res[$i]['hash']);
 		}
-		if($res[$i]['firstName'] !== '' && $res[$i]['lastName'] !== '' && $this->dne)
+		if(isset($res[$i]['firstName']) && isset($res[$i]['lastName']) && $res[$i]['firstName'] !== '' && $res[$i]['lastName'] !== '' && $this->dne)
 		{
-                    $test = $this->dne->read(new \Flipside\Data\Filter('firstName eq '.$res[$i]['firstName'].' and lastName eq '.$res[$i]['lastName']));
+            $test = $this->dne->read(new \Flipside\Data\Filter('firstName eq '.$res[$i]['firstName'].' and lastName eq '.$res[$i]['lastName']));
 		    if(count($test))
 		    {
                         $res[$i]['contactActual'] = true;
@@ -115,6 +115,21 @@ class TicketsDataTable extends SingletonDataTable
     function raw_query($query)
     {
         return $this->data_table->raw_query($query);
+    }
+
+    public function beginTransaction()
+    {
+        return $this->data_table->beginTransaction();
+    }
+
+    public function commit()
+    {
+        return $this->data_table->commit();
+    }
+
+    public function rollBack()
+    {
+        return $this->data_table->rollBack();
     }
 }
 ?>

@@ -23,6 +23,7 @@ require('class.TicketAPI.php');
 require('class.TicketHistoryAPI.php');
 require('class.Square.php');
 require('class.PendingPurchaseAPI.php');
+require('class.CompletedPurchaseAPI.php');
 require('class.EarlyEntryAPI.php');
 
 $site = new \Flipside\Http\WebSite();
@@ -45,5 +46,6 @@ $site->registerAPI('/ticket', new TicketAPI());
 $site->registerAPI('/tickets', new TicketAPI());
 $site->registerAPI('/tickets_history', new TicketHistoryAPI());
 $site->registerAPI('/pendingSales', new PendingPurchaseAPI());
+$site->registerAPI('/completeSales', new CompletedPurchaseAPI());
 $site->run();
 /* vim: set tabstop=4 shiftwidth=4 expandtab: */

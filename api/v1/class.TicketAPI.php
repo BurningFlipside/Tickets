@@ -19,8 +19,8 @@ class TicketAPI extends Flipside\Http\Rest\RestAPI
         $app->post('/{hash}/Actions/Ticket.Sell', array($this, 'sellTicket'));
         $app->post('/pos/sell', array($this, 'sellMultipleTickets'));
         $app->post('/Actions/VerifyShortCode/{code}', array($this, 'verifyShortCode'));
-	$app->post('/Actions/GenerateTickets', array($this, 'generateTickets'));
-	$app->post('/Actions/CheckDNE', array($this, 'checkDNE'));
+	    $app->post('/Actions/GenerateTickets', array($this, 'generateTickets'));
+	    $app->post('/Actions/CheckDNE', array($this, 'checkDNE'));
         $app->post('/Actions/PopulatePool', array($this, 'populatePool'));
         $app->post('/Actions/submitWaiver', array($this, 'submitWaiver'));
         $app->post('/Actions/EE', array($this, 'doEarlyEntry'));
@@ -402,9 +402,9 @@ class TicketAPI extends Flipside\Http\Rest\RestAPI
         {
             return $response->withStatus(404);
         }
-        if($ticket->transferInProgress === '1')
+        if($ticket->transferInProgress === '1' || $ticket->transferInProgress === 1)
         {
-            $ticket->transferInProgress = '0';
+            $ticket->transferInProgress = 0;
         }
         return $response->withJson($ticket->insert_to_db());
     }
@@ -449,7 +449,7 @@ class TicketAPI extends Flipside\Http\Rest\RestAPI
             {
                 $message = $obj['message'];
             }
-            $square = new \Tickets\SquarePurchase($this->user, $obj['email'], $firstName, $lastName, $pool, $message);
+            $square = new \Tickets\SquarePurchase($this->user, $obj['email'], $firstName, $lastName, $pool, $message, 'POS');
             $square->addSpecificTicket($ticket);
             $uri = $square->createLink();
             return $response->withJson(array('uri'=>$uri));
@@ -511,7 +511,7 @@ class TicketAPI extends Flipside\Http\Rest\RestAPI
             {
                 $message = $obj['message'];
             }
-            $square = new \Tickets\SquarePurchase($this->user, $obj['email'], $firstName, $lastName, $pool, $message);
+            $square = new \Tickets\SquarePurchase($this->user, $obj['email'], $firstName, $lastName, $pool, $message, 'POS');
             $square->addTickets($obj['tickets']);
             $uri = $square->createLink();
             return $response->withJson(array('uri'=>$uri));
