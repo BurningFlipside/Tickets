@@ -218,6 +218,7 @@ function excelLoaded() {
 
 function initPage() {
   let table = new Tabulator('#requests', {
+    index: 'request_id',
     columns: [
       {title: 'Request ID', field: 'request_id'},
       {title: 'First Name', field: 'givenName'},
@@ -301,6 +302,16 @@ function initPage() {
       }
       return false;
     });
+  });
+  table.on('dataProcessed', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+    if(id !== null) {
+      let rows = table.searchRows('request_id', '=', id);
+      if(rows.length > 0) {
+        rowClicked(null, rows[0]);
+      }
+    }
   });
 }
 

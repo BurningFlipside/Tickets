@@ -6,7 +6,7 @@ function initTable(table) {
   let tabulator = new Tabulator(table, {
     ajaxURL: view,
     columns: [
-      {title: 'Request ID', field: 'request_id'},
+      {title: 'Request ID', field: 'request_id', formatter: 'link', formatterParams: {urlPrefix: 'requests.php?id=', labelField: 'request_id'}},
       {title: 'Private Status', field: 'private_status'},
       {title: 'Total Due', field: 'total_due', sorter: 'number'},
       {title: 'Total Received', field: 'total_received', sorter: 'number'},
