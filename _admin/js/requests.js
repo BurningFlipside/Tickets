@@ -263,8 +263,10 @@ function initPage() {
     }
     response.json().then((data) => {
       let statusSelect = document.getElementById('statusFilter');
+      let modalStatus = document.getElementById('status');
       for(let status of data) {
         statusSelect.add(new Option(status.name, status.status_id));
+        modalStatus.add(new Option(status.name, status.status_id));
       }
     });
   });
