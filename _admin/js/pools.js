@@ -137,7 +137,7 @@ function gotUnassignedTickets(jqXHR) {
 
 function poolAssign(poolId) {
   $.ajax({
-    url: '../api/v1/tickets?$filter=year eq current and pool_id eq -1 and assigned eq 0',
+    url: '../api/v1/tickets?$filter=year eq current and pool_id eq -1 and assigned eq 0 and transferInProgress eq 0 and sold eq 0',
     method: 'get',
     context: poolId,
     complete: gotUnassignedTickets

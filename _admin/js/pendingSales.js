@@ -8,6 +8,7 @@ function gotData(results) {
   }, {});
   let tables = Tabulator.findTable('#sales');
   if(tables === false) {
+    console.log('Failed to find table');
     return;
   }
   let table = tables[0];
@@ -26,8 +27,8 @@ function gotData(results) {
         sale.squareLink = sale.squareInformation.url;
       }
     }
-    table.addData(sale);
   }
+  table.setData(pendingSales.value);
   document.getElementById('alert').innerHTML = '<div class="alert alert-info" role="alert">There are '+pendingSales.value.length+' pending sales with '+ticketCount+' tickets.</div>';
 }
 

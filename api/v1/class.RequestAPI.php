@@ -888,7 +888,7 @@ class RequestAPI extends Flipside\Http\Rest\RestAPI
             $year = $args['year'];
         }
         $ticketDataSet = \Flipside\DataSetFactory::getDataSetByName('tickets');
-        $data = $ticketDataSet->raw_query('SELECT count(*),private_status FROM tblTicketRequest WHERE year='.$year.' GROUP BY private_status');
+        $data = $ticketDataSet->raw_query('SELECT count(*),private_status FROM tblTicketRequest WHERE year='.$year.' AND paymentMethod="traditional" GROUP BY private_status');
         $data2 = $ticketDataSet->raw_query('SELECT * FROM tblRequestStatus');
         $data3 = $ticketDataSet->raw_query('SELECT count(*),private_status FROM tblTicketRequest WHERE year='.$year.' AND private_status != status GROUP BY private_status');
         $count = count($data);

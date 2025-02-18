@@ -24,8 +24,8 @@ function gotData(results) {
     if(sale.amount === 0) {
       zeroAmount = true;
     }
-    table.addData(sale);
   }
+  table.setData(completeSales.value);
   if(zeroAmount) {
     let alertDiv = document.getElementById('alert');
     let alert = document.createElement('div');
@@ -167,6 +167,9 @@ function renderOrderId(cell) {
                 break;
               case 'MASTERCARD':
                 paymentLink.innerHTML = money+' - <i class="fab fa-cc-mastercard"></i> '+tender.card_details.card.last_4;
+                break;
+              case 'AMERICAN_EXPRESS':
+                paymentLink.innerHTML = money+' - <i class="fab fa-cc-amex"></i> '+tender.card_details.card.last_4;
                 break;
               case 'DISCOVER':
                 paymentLink.innerHTML = money+' - <i class="fab fa-cc-discover"></i> '+tender.card_details.card.last_4;

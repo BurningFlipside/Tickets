@@ -86,7 +86,7 @@ class PoolAPI extends AdminTicketDataTableAPI
                 throw new Exception('Invalid type "'.$type.'"');
             }
             $intVal = (int)$value;
-            $res = $dataTable->raw_query("UPDATE tblTickets SET pool_id=$poolId WHERE type='$type' AND pool_id=-1 AND assigned=0 AND year=$year LIMIT $intVal");
+            $res = $dataTable->raw_query("UPDATE tblTickets SET pool_id=$poolId WHERE type='$type' AND pool_id=-1 AND assigned=0 AND sold=0 AND transferInProgress=0 AND year=$year LIMIT $intVal");
             if($res === false)
             {
                 throw new Exception('Unable to allocate '.$type.' tickets to pool '.$poolId);

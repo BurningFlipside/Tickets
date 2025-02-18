@@ -5,6 +5,7 @@ require_once('class.TicketAdminPage.php');
 $page = new TicketAdminPage('Burning Flipside - Tickets');
 
 $page->addWellKnownJS(JS_DATATABLE);
+$page->addWellKnownJS(JS_BOOTBOX);
 $page->addWellKnownCSS(CSS_DATATABLE);
 
     $page->body .= '
@@ -87,6 +88,17 @@ $page->addWellKnownCSS(CSS_DATATABLE);
                                     <button type="button" class="btn btn-default" id="known_change_max_buckets" for="max_buckets" onclick="knownChange(this)"><span class="fa fa-check"></span></button>
                                 </span>
                             </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" for="problematicSpreadsheetID">Problematic Individuals Google Sheet</label>
+                        <div class="col-sm-8">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="problematicSpreadsheetID" name="problematicSpreadsheetID" readonly/>
+                                <button type="button" class="btn btn-default" id="knownProblematicSpreadsheetID" for="problematicSpreadsheetID" title="Lookup Sheet on Google Drive"><span class="fab fa-google-drive"></span></button>
+                            </div>
+                        </div>
+                        <div class="col-sm-2">
                         </div>
                     </div>
                 </fieldset>

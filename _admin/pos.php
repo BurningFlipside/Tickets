@@ -6,6 +6,7 @@ $page = new TicketAdminPage('Burning Flipside - Tickets');
 
 $page->addWellKnownJS(JS_DATATABLE);
 $page->addWellKnownCSS(CSS_DATATABLE);
+$page->addWellKnownJS(JS_BOOTBOX);
 $page->addJS('https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js');
 
 $page->body .= '

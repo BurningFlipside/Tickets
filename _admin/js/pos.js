@@ -1,4 +1,4 @@
-/*global $, add_notification, getParameterByName*/
+/*global $, add_notification, getParameterByName, bootbox*/
 /*exported finalPost, nextTab, prevTab */
 var selectedPool = 0;
 var tickets = null;
@@ -135,27 +135,60 @@ function finalPost() {
     if(obj.posType === 'square') {
       completeFunc = didSquareSale;
     }
-    var dataStr = JSON.stringify(obj);
-    if(id !== null) {
-      $.ajax({
-        url: '/tickets/api/v1/tickets/'+id+'/Actions/Ticket.Sell',
-        contentType: 'application/json',
-        type: 'POST',
-        dataType: 'json',
-        processData: false,
-        data: dataStr,
-        complete: completeFunc});
-      return;
-    }
+    fetch('../api/v1/google/problematicActors/Actions/Test', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email: obj.email,
+        first: obj.firstName,
+        last: obj.lastName
+      })
+    }).then((response) => {
+      if(response.status === 200) {
+        submit(id, obj, completeFunc);
+        return;
+      }
+      if(response.status === 451) {
+        alert('This sale is being blocked because the purchaser is on the problematic actors list. Please check the list.');
+        return;
+      }
+      if(response.status === 409) {
+        bootbox.confirm('<i class="fas fa-exclamation-triangle" style="color: red;"></i> There is someone with the same name on the problematic actors list. Please check before continuing. Are you sure you want to continue?', (result) => {
+          if(result === true) {
+            submit(id, obj, completeFunc);
+          }
+        });
+        return;
+      }
+      console.error('Unknown response from verification, let it go through.', response);
+      submit(id, obj, completeFunc);
+    });
+  }
+}
+
+function submit(id, obj, completeFunc) {
+  var dataStr = JSON.stringify(obj);
+  if(id !== null) {
     $.ajax({
-      url: '/tickets/api/v1/ticket/pos/sell',
+      url: '/tickets/api/v1/tickets/'+id+'/Actions/Ticket.Sell',
       contentType: 'application/json',
       type: 'POST',
       dataType: 'json',
       processData: false,
       data: dataStr,
       complete: completeFunc});
+    return;
   }
+  $.ajax({
+    url: '/tickets/api/v1/ticket/pos/sell',
+    contentType: 'application/json',
+    type: 'POST',
+    dataType: 'json',
+    processData: false,
+    data: dataStr,
+    complete: completeFunc});
 }
 
 function prevTab() {

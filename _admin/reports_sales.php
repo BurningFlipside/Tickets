@@ -6,6 +6,7 @@ $page = new TicketAdminPage('Burning Flipside - Tickets');
 $page->setTemplateName('admin-accordian.html');
 $page->addWellKnownJS(JS_DATATABLE, false);
 $page->addWellKnownCSS(CSS_DATATABLE);
+$page->addJS('https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js');
 
 $page->content['pageHeader'] = 'Sales Reports';
 $page->content['panels'] = array();
@@ -20,6 +21,9 @@ array_push($page->content['panels'], array('title'=>'Sales over Time', 'body'=>'
       <tr><th>Net Sales</th></tr>
     </tbody>
   </table>
+'));
+array_push($page->content['panels'], array('title'=>'Credit Card Sales this Year', 'body'=>'
+  <canvas id="ccSales"></canvas>
 '));
 
 $page->printPage();

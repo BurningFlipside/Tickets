@@ -192,7 +192,7 @@ class Request extends \Flipside\SerializableObject
              {
                  $amt += (int)$donation['amount'];
              }
-             else
+             else if(property_exists($donation, 'amount'))
              {
                  $amt += (int)$donation->amount;
              }

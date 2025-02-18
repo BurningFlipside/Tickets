@@ -1,4 +1,4 @@
-/* global $, create_modal */
+/* global $, create_modal, bootbox */
 /* exported knownChange */
 function addRowToTable(tbody, name, value) {
   var row = $('<tr/>');
@@ -75,6 +75,7 @@ function unsetTestMode() {
 }
 
 function knownChange(control) {
+  console.log(control);
   var jq = $(control);
   var varValue = '';
   var varName = '';
@@ -84,6 +85,7 @@ function knownChange(control) {
   } else {
     varName = jq.attr('name');
     varValue = jq.val();
+    console.log('Name: '+varName+' Value: '+varValue);
   }
   if(varName === 'test_mode' && varValue === '0') {
     var html = '<strong>Warning!</strong> Unsetting Test mode will delete all test entries are you sure you want to continue?';
@@ -130,6 +132,84 @@ function variablesDone(jqXHR) {
   populateKnownForm(jqXHR.responseJSON);
 }
 
+function verifySpreadsheet(spreadsheetID) {
+  fetch('../api/v1/google/spreadsheets/'+spreadsheetID+'/isProblematicPersonsFormat').then((response) => {
+    if(response.status === 200) {
+      let problematicSpreadsheetID = document.getElementById('problematicSpreadsheetID');
+      problematicSpreadsheetID.value = spreadsheetID;
+      knownChange(problematicSpreadsheetID);
+      return;
+    }
+    if(response.status === 404) {
+      alert('Spreadsheet is not present!');
+      return;
+    }
+    if(response.status === 400) {
+      bootbox.confirm('Spreadsheet does not have the correct format. Would you like to make this sheet the correct format? <b>NOTE: All data in the spreadsheet will be lost!', (result) => {
+        if(result === true) {
+          fetch('../api/v1/google/spreadsheets/'+spreadsheetID+'/Actions.MakeProblematicPersonSpreadsheet', {method: 'POST'}).then((actionResponse) => {
+            if(actionResponse.status === 200) {
+              let problematicSpreadsheetID = document.getElementById('problematicSpreadsheetID');
+              problematicSpreadsheetID.value = spreadsheetID;
+              knownChange(problematicSpreadsheetID);
+              return;
+            }
+            alert('Failed to make the spreadsheet the correct format!');
+          });
+        }
+      });
+      return;
+    }
+  });
+}
+
+function lookupSpreadsheet() {
+  fetch('../api/v1/google/spreadsheets').then((response) => {
+    if(response.status !== 200) {
+      console.log(response);
+      alert('Failed to get spreadsheets!');
+      return;
+    }
+    return response.json();
+  }).then((data) => {
+    let message = document.createElement('div');
+    let info = document.createElement('div');
+    info.classList.add('alert', 'alert-info');
+    info.textContent = 'Spreadsheets must be shared with the service account "ticketsystemservice@burning-flipside-ticket-system.iam.gserviceaccount.com" otherwise it will not show up in the list.';
+    message.appendChild(info);
+    let text = document.createElement('p');
+    text.textContent = 'Select the spreadsheet that contains the Known Problematic Persons list.';
+    message.appendChild(text);
+    let select = document.createElement('select');
+    select.classList.add('form-control');
+    select.id = 'spreadsheetID';
+    for(let sheet of data) {
+      let option = document.createElement('option');
+      option.value = sheet.id;
+      option.textContent = sheet.name;
+      select.appendChild(option);
+    }
+    message.appendChild(select);
+    bootbox.dialog({
+      title: 'Known Problematic Persons Spreadsheet Lookup',
+      message: message,
+      buttons: {
+        cancel: {
+          label: 'Cancel',
+          className: 'btn-default',
+        },
+        confirm: {
+          label: 'Link',
+          className: 'btn-primary',
+          callback: () => {
+            verifySpreadsheet(select.value);
+          },
+        }
+      }
+    });
+  });
+}
+
 function initVars() {
   $('#tabs a:first').tab('show');
   $.ajax({
@@ -137,6 +217,10 @@ function initVars() {
     type: 'get',
     dataType: 'json',
     complete: variablesDone});
+  let problematicLookupButton = document.getElementById('knownProblematicSpreadsheetID');
+  if(problematicLookupButton) {
+    problematicLookupButton.addEventListener('click', lookupSpreadsheet);
+  }
 }
 
-$(initVars);
+window.addEventListener('load', initVars);

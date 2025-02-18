@@ -248,7 +248,7 @@ class TicketAPI extends Flipside\Http\Rest\RestAPI
             for($j = 0; $j < $count1; $j++)
             {
                 $user = $members[$j];
-                $filter = new \Flipside\Data\Filter('year eq '.$year.' and type eq \''.$type.'\' and pool_id eq -1 and assigned eq 0 and sold eq 0 and discretionary eq 0');
+                $filter = new \Flipside\Data\Filter('year eq '.$year.' and type eq \''.$type.'\' and pool_id eq -1 and assigned eq 0 and sold eq 0 and transferInProgress eq 0 and discretionary eq 0');
                 $tickets = $ticket_data_table->read($filter, false, $ticketCount);
                 if($this->assignDiscrtionaryTicketsToUser($tickets, $user, $ticket_data_table) === false)
                 {

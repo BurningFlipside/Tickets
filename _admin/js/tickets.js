@@ -272,7 +272,7 @@ function requeryTable() {
     filter+=' and used eq '+used;
   }
   if(disc !== '') {
-    filter+=' and discretionaryOrig eq \''+disc+'\'';
+    filter+=' and discretionaryOrig eq \''+disc+'\' and discretionary eq 1';
   }
   if(voidVal !== '*') {
     filter+=' and void eq '+voidVal;

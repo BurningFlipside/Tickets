@@ -25,6 +25,7 @@ require('class.Square.php');
 require('class.PendingPurchaseAPI.php');
 require('class.CompletedPurchaseAPI.php');
 require('class.EarlyEntryAPI.php');
+require('class.Google.php');
 
 $site = new \Flipside\Http\WebSite();
 $site->registerAPI('/', new BaseAPI());
@@ -42,6 +43,7 @@ $site->registerAPI('/request', new RequestAPI());
 $site->registerAPI('/requests_w_tickets', new RequestWithTicketsAPI());
 $site->registerAPI('/secondary', new SecondaryAPI());
 $site->registerAPI('/square', new SquareAPI());
+$site->registerAPI('/google', new GoogleAPI());
 $site->registerAPI('/ticket', new TicketAPI());
 $site->registerAPI('/tickets', new TicketAPI());
 $site->registerAPI('/tickets_history', new TicketHistoryAPI());
