@@ -77,6 +77,14 @@ class Request extends \Flipside\SerializableObject
 	$this->status = static::$statuses[$this->status];
     }
 
+    public function changePaymentType($paymentMethod)
+    {
+        $this->paymentMethod = $paymentMethod;
+        $this->ticketAmount = $this->calculateTicketTotal();
+        $this->donationAmount = $this->calculateDonationTotal();
+        $this->total_due = $this->ticketAmount + $this->donationAmount;
+    }
+
     public function validateTickets($minorConfirm, $paymentMethod)
     {
         $settings = \Tickets\DB\TicketSystemSettings::getInstance();

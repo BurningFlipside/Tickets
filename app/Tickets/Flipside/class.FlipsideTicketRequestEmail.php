@@ -11,8 +11,11 @@ class FlipsideTicketRequestEmail extends \Flipside\Email\Email
         parent::__construct();
         $this->request = $request;
         $this->settings = \Tickets\DB\TicketSystemSettings::getInstance();
-        $pdf = new \Tickets\Flipside\RequestPDF($request);
-        $this->addAttachmentFromBuffer('Flipside '.$this->request->year.' Ticket Request Form.pdf', $pdf->toPDFBuffer(), 'application/pdf');
+        if($request->paymentMethod !== 'cc')
+        {
+            $pdf = new \Tickets\Flipside\RequestPDF($request);
+            $this->addAttachmentFromBuffer('Flipside '.$this->request->year.' Ticket Request Form.pdf', $pdf->toPDFBuffer(), 'application/pdf');
+        }
     }
 
     public function getFromAddress()
@@ -44,6 +47,10 @@ class FlipsideTicketRequestEmail extends \Flipside\Email\Email
         );
         $long_text = \Tickets\DB\LongTextStringsDataTable::getInstance();
         $raw_text = $long_text['request_email_source'];
+        if($this->request->paymentMethod === 'cc')
+        {
+            $raw_text = $long_text['request_cc_email_source'];
+        }
         if($html === true)
         {
             $text = strtr($raw_text, $vars);

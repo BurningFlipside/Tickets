@@ -268,6 +268,41 @@ function doTableInit() {
 }
 
 function addEEFromGoogleSheet() {
+  GoogleIsLoggedIn().then((loggedIn) => {
+    if(loggedIn) {
+      addEEFromGoogleSheetLoggedIn();
+    } else {
+      addEEFromGoogleSheetNotLoggedIn();
+    }
+  });
+}
+
+function addEEFromGoogleSheetLoggedIn() {
+  fetch('../api/v1/google/user/spreadsheets').then((response) => {
+    if(!response.ok) {
+      return;
+    }
+    return response.json();
+  }).then((data) => {
+    let inputOptions = [];
+    for(let sheet of data) {
+      inputOptions.push({text: sheet.name, value: sheet.id});
+    }
+    bootbox.prompt({
+      title: 'Which spreadsheet would you like to read?',
+      inputType: 'select',
+      inputOptions: inputOptions,
+      callback: (result) => {
+        if(result === null) {
+          return;
+        }
+        loadDataFromSpreadSheet(result);
+      }
+    });
+  });
+}
+
+function addEEFromGoogleSheetNotLoggedIn() {
   bootbox.prompt({
     size: 'small',
     title: 'Enter the URL of the Google Sheet',
@@ -281,31 +316,34 @@ function addEEFromGoogleSheet() {
         return;
       }
       let sheetId = parts[5];
-      fetch('/tickets/api/v1/earlyEntry/Actions/CheckEESpreadSheet', {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          spreadSheetId: sheetId
-        })
-      }).then(function(response) {
-        if(response.ok) {
-          response.json().then(function(data) {
-            console.log(data);
-            if(data.errorCount > 0) {
-              bootbox.alert(data.errorCount+' entries in spreadsheet could not be updated in the database');
-              return;
-            }
-            bootbox.alert('Early Entry statuses added successfully');
-          });
-        } else {
-          bootbox.alert('Failed to add Early Entry Passes');
-        }
-      });
+      loadDataFromSpreadSheet(sheetId);
     }
   });
+}
 
+function loadDataFromSpreadSheet(sheetId) {
+  fetch('/tickets/api/v1/earlyEntry/Actions/CheckEESpreadSheet', {
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      spreadSheetId: sheetId
+    })
+  }).then(function(response) {
+    if(response.ok) {
+      response.json().then(function(data) {
+        console.log(data);
+        if(data.errorCount > 0) {
+          bootbox.alert(data.errorCount+' entries in spreadsheet could not be updated in the database');
+          return;
+        }
+        bootbox.alert('Early Entry statuses added successfully');
+      });
+    } else {
+      bootbox.alert('Failed to add Early Entry Passes');
+    }
+  });
 }
 
 function pageInit() {

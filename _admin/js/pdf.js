@@ -49,13 +49,21 @@ function gotPDFSource(jqXHR) {
 }
 
 function pageInit() {
-  $.ajax({
-    url: '../api/v1/globals/long_text/pdf_source',
-    type: 'get',
-    complete: gotPDFSource});
+  fetch('../api/v1/globals/long_text/pdf_source').then(response => {
+    if(!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    return response.json();
+  }).then(data => {
+    console.log(data);
+    $('#pdf-source').val(data.value);
+  }).catch(error => {
+    alert('Unable to obtain PDF source!');
+    console.error('There was a problem with the fetch operation:', error);
+  });
   $('#pdf-source').ckeditor({
     'allowedContent': true
   });
 }
 
-$(pageInit);
+window.onload = pageInit;

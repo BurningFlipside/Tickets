@@ -26,7 +26,9 @@ class RequestAPI extends Flipside\Http\Rest\RestAPI
         $app->get('/{request_id}/{year}/Actions/Requests.GetBucket', array($this, 'getRequestBucket'));
         $app->post('/{request_id}/{year}/Actions/Requests.GetBucket', array($this, 'getRequestBucket'));
         $app->post('/{request_id}/{year}/Actions/Requests.IssuePaymentLink', array($this, 'issuePaymentLink'));
+        $app->get('/{request_id}/{year}/Actions/Request.ConvertToCCAndIssue', array($this, 'convertToCCAndIssue'));
         $app->patch('/{request_id}[/{year}]', array($this, 'editRequest'));
+        $app->post('/creditCardRequests/Actions/Requests.SendCCReminder', array($this, 'sendCCReminder'));
     }
 
     protected function returnRequestId()
@@ -1005,6 +1007,99 @@ class RequestAPI extends Flipside\Http\Rest\RestAPI
         }
         $ret['total'] = $total;
         return $response->withJson($ret);
+    }
+
+    public function sendCCReminder($request, $response) 
+    {
+        $this->validateLoggedIn($request);
+        if(!$this->user->isInGroupNamed('TicketAdmins'))
+        {
+             return $response->withStatus(401);
+        }
+        $obj = $request->getParsedBody();
+        $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+        $year = $settings['year'];
+        $ticketDataSet = \Flipside\DataSetFactory::getDataSetByName('tickets');
+        $requestDataTable = \Tickets\DB\RequestDataTable::getInstance();
+        $pendingDataTable = \Flipside\DataSetFactory::getDataTableByNames('tickets', 'PendingPurchases');
+        $filter = false;
+        $year = $settings['year'];
+        $filter = new \Flipside\Data\Filter("(year eq $year and paymentMethod eq 'cc' and private_status eq 0)");
+        $odata = $request->getAttribute('odata', new \Flipside\ODataParams(array()));
+        $requests = $requestDataTable->read($filter, $odata->select, $odata->top, $odata->skip, $odata->orderby);
+        if($requests === false)
+        {
+            $requests = array();
+        }
+        $recipients = array();
+        $request_count = count($requests);
+        $email_provider = \Flipside\EmailProvider::getInstance();
+        for($i = 0; $i < $request_count; $i++)
+        {
+            $pendingInfo = $pendingDataTable->read(new \Flipside\Data\Filter("requestID eq '".$requests[$i]->request_id."'"));
+            if($pendingInfo !== false)
+            {
+                $pendingInfo = $pendingInfo[0];
+                $requests[$i]->pendingInfo = $pendingInfo;
+                $email = new \Flipside\Email\Email();
+                $email->setSubject($obj['subject']);
+                $email->setFromAddress('tickets@burningflipside.com');
+                $email->addToAddress($requests[$i]->mail);
+                $vars           = array(
+                    '${link}'        => $pendingInfo['squareLink'],
+                    '${first_name}'  => $requests[$i]->givenName,
+                    '${last_name}'   => $requests[$i]->sn
+                );
+                $body = strtr($obj['body'], $vars);
+                $email->setHTMLBody($body);
+                $res = $email_provider->sendEmail($email);
+                $recipients[$requests[$i]->mail] = $res;
+            }
+        }
+        return $response->withJson($recipients);
+    }
+
+    public function convertToCCAndIssue($httpRequest, $response, $args)
+    {
+        $this->validateLoggedIn($httpRequest);
+        if(!$this->user->isInGroupNamed('TicketAdmins'))
+        {
+             return $response->withStatus(401);
+        }
+        $request_id = 'me';
+        $year = 'current';
+        if(isset($args['request_id']))
+        {
+            $request_id = $args['request_id'];
+        }
+        if(isset($args['year']))
+        {
+            $year = $args['year'];
+        }
+        $requestDataTable = \Tickets\DB\RequestDataTable::getInstance();
+        $filter = new \Flipside\Data\Filter("request_id eq '".$request_id."' and year eq ".$year);
+        $requests = $requestDataTable->read($filter);
+        if($requests === false)
+        {
+            return $response->withStatus(404);
+        }
+        $request = $requests[0];
+        if($request->paymentMethod != 'traditional') {
+            throw new \Exception('Payment type is not money order!', \Flipside\Http\Rest\INVALID_PARAM);
+        }
+        $pendingPurchaseDataTable = \Flipside\DataSetFactory::getDataTableByNames('tickets', 'PendingPurchases');
+        $filter2 = new \Flipside\Data\Filter("requestID eq '".$request->request_id."'");
+        $pending = $pendingPurchaseDataTable->read($filter2);
+        if($pending !== false)
+        {
+            $pending = $pending[0];
+            $request->changePaymentType('cc');
+            $requestDataTable->update($filter, $request);
+            throw new \Exception('Already issued a pending sale for this request!', \Flipside\Http\Rest\INVALID_PARAM);
+        }
+        $request->changePaymentType('cc');
+        $requestDataTable->update($filter, $request);
+        return $this->issuePaymentLink($httpRequest, $response, $args);
     }
 }
 /* vim: set tabstop=4 shiftwidth=4 expandtab: */

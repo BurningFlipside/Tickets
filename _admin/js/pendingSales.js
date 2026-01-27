@@ -13,6 +13,8 @@ function gotData(results) {
   }
   let table = tables[0];
   let ticketCount = 0;
+  let ticketAmount = 0;
+  // TODO actually get the amounts from the backend...
   for(let sale of pendingSales.value) {
     for(let ticket of sale.tickets) {
       if(poolObj[ticket.pool_id] !== undefined) {
@@ -20,6 +22,22 @@ function gotData(results) {
       }
     }
     ticketCount += sale.tickets.length;
+    for(let i = 0; i < sale.tickets.length; i++) {
+      switch (sale.tickets[i].type) {
+        case 'A':
+          ticketAmount += 197;
+          break;
+        case 'K':
+          ticketAmount += 47;
+          break;
+        case 'T':
+          ticketAmount += 197;
+          break;
+        case 'C':
+          ticketAmount += 0;
+          break;
+      }
+    }
     if(!sale.squareLink) {
       if(!sale.squareInformation) {
         sale.squareLink = '<i style="color: red;">Cannot locate square link!</i>';
@@ -28,8 +46,12 @@ function gotData(results) {
       }
     }
   }
+  let formatter = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+  });
   table.setData(pendingSales.value);
-  document.getElementById('alert').innerHTML = '<div class="alert alert-info" role="alert">There are '+pendingSales.value.length+' pending sales with '+ticketCount+' tickets.</div>';
+  document.getElementById('alert').innerHTML = '<div class="alert alert-info" role="alert">There are '+pendingSales.value.length+' pending sales with '+ticketCount+' tickets totalling '+formatter.format(ticketAmount)+'.</div>';
 }
 
 function renderSeller(cell) {
@@ -67,6 +89,10 @@ function doCancel(target) {
   });
 }
 
+function showShortCodes(target) {
+  bootbox.alert('Short Codes: '+target.dataset.id); 
+}
+
 function cancelSale(cell) {
   let value = cell.getValue();
   let button = document.createElement('a');
@@ -79,11 +105,33 @@ function cancelSale(cell) {
   return button;
 }
 
+function getShortCodes(cell) {
+  let data = cell.getRow().getData();
+  let value = '';
+  let ticketIds = [];
+  for(let ticket of data.tickets) {
+    if(!ticket) {
+      continue
+    }
+    ticketIds.push(ticket.hash.substring(0, 8));
+  }
+  value = ticketIds.join(',');
+  let button = document.createElement('a');
+  button.classList.add('btn', 'btn-primary');
+  button.dataset.id = value;
+  button.innerHTML = '<i class="fas fa-ticket-alt"></i>';
+  button.addEventListener('click', () => {
+    showShortCodes(button);
+  });
+  return button;
+}
+
 function initPage() {
   let table = new Tabulator('#sales', {
     layout: 'fitColumns',
     columns: [
       {title: 'Cancel', formatter: cancelSale, maxWidth: 150, field: 'purchaseId'},
+      {title: 'Short Codes', formatter: getShortCodes, maxWidth: 150, field: 'purchaseId'},
       {title: 'Seller/Pool', formatter: renderSeller},
       {title: 'Purchaser', formatter: renderPurchaser},
       {title: 'Ticket Count', field: 'tickets.length', maxWidth: 150},
@@ -95,6 +143,7 @@ function initPage() {
     fetch('../api/v1/pools').then((response) => response.json()),
   ];
   Promise.allSettled(promises).then(gotData);
+  AddSearchToTable(document.getElementById('sales'));
 }
 
 window.addEventListener('load', initPage);

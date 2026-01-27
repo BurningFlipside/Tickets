@@ -10,12 +10,167 @@ class GoogleAPI extends \Flipside\Http\Rest\RestAPI
 
     public function setup($app)
     {
+        $app->get('/loginLink', array($this, 'getLoginLink'));
+        $app->get('/loginStatus', array($this, 'getLoginStatus'));
+        $app->get('/oauth2callback', array($this, 'OAuth2Callback'));
+        // The /spreadsheets endpoints are for spreadsheets the system has direct access to without a user
         $app->get('/spreadsheets', array($this, 'listPossibleSpreadSheets'));
         $app->get('/spreadsheets/{id}/isProblematicPersonsFormat', array($this, 'isProblematicPersonsFormat'));
         $app->post('/spreadsheets/{id}/Actions.MakeProblematicPersonSpreadsheet', array($this, 'makeProblematicPersonsFormat'));
+        // The /user/spreadsheets endpoints are for spreadsheets in the user's drive if they are logged in...
+        $app->get('/user/spreadsheets', array($this, 'listPossibleSpreadSheetsUser'));
+        $app->post('/user/spreadsheets', array($this, 'makeSpreadSheetUser'));
         $app->get('/problematicActors', array($this, 'getProblematicActors'));
         $app->patch('/problematicActors', array($this, 'updateProblematicActors'));
         $app->post('/problematicActors/Actions/Test', array($this, 'checkProblematicActors'));
+    }
+
+    protected function encryptValue($value)
+    {
+        $settings = \Flipside\Settings::getInstance();
+        $key = hex2bin($settings->getGlobalSetting('tokenEncryptionKey'));
+        $nonceSize = openssl_cipher_iv_length('aes-256-ctr');
+        $nonce = openssl_random_pseudo_bytes($nonceSize);
+        $cipherText = openssl_encrypt($value, 'aes-256-ctr', $key, OPENSSL_RAW_DATA, $nonce);
+        return base64_encode($nonce.$cipherText);
+    }
+
+    protected function decryptValue($value)
+    {
+        $settings = \Flipside\Settings::getInstance();
+        $key = hex2bin($settings->getGlobalSetting('tokenEncryptionKey'));
+        $value = base64_decode($value);
+        $nonceSize = openssl_cipher_iv_length('aes-256-ctr');
+        $nonce = mb_substr($value, 0, $nonceSize, '8bit');
+        $cipherText = mb_substr($value, $nonceSize, null, '8bit');
+        return openssl_decrypt($cipherText, 'aes-256-ctr', $key, OPENSSL_RAW_DATA, $nonce);
+    }
+
+    protected function removeTokenFromDB()
+    {
+        $dataTable = \Flipside\DataSetFactory::getDataTableByNames('tickets', 'google');
+        $filter = new \Flipside\Data\Filter('email eq \''.$this->user->mail.'\'');
+        $dataTable->delete($filter);
+    }
+
+    protected function storeTokenInDB($token)
+    {
+        $dataTable = \Flipside\DataSetFactory::getDataTableByNames('tickets', 'google');
+        $filter = new \Flipside\Data\Filter('email eq \''.$this->user->mail.'\'');
+        $entries = $dataTable->read($filter);
+        $myToken = array();
+        if($entries !== false && count($entries) !== 0)
+        {
+            $myToken['accessToken'] = $this->encryptValue($token['access_token']);
+            $myToken['refreshToken'] = $this->encryptValue($token['refresh_token']);
+            $dataTable->update($filter, $myToken);
+            return;
+        }
+        $myToken['accessToken'] = $this->encryptValue($token['access_token']);
+        $myToken['refreshToken'] = $this->encryptValue($token['refresh_token']);
+        $myToken['email'] = $this->user->mail;
+        $dataTable->create($myToken);
+    }
+
+    protected function getTokenFromDB()
+    {
+        $dataTable = \Flipside\DataSetFactory::getDataTableByNames('tickets', 'google');
+        $filter = new \Flipside\Data\Filter('email eq \''.$this->user->mail.'\'');
+        $entries = $dataTable->read($filter);
+        if($entries === false || count($entries) !== 1)
+        {
+            return null;
+        }
+        $settings = \Flipside\Settings::getInstance();
+        $key = hex2bin($settings->getGlobalSetting('tokenEncryptionKey'));
+        $entry = $entries[0];
+        $access_token = $this->decryptValue($entry['accessToken']);
+        $refresh_token = $this->decryptValue($entry['refreshToken']);
+        $token = array();
+        $token['access_token'] = $access_token;
+        $token['refresh_token'] = $refresh_token;
+        return $token;
+    }
+
+    protected function doGoogleClientSetup()
+    {
+        $this->userClient = new \Google_Client();
+        $this->userClient->setAuthConfigFile('/var/www/secure_settings/ticket-user.json');
+        $this->userClient->setAccessType('offline'); // Need this to get a refresh token
+        $this->userClient->setPrompt('consent');
+        $this->userClient->setApprovalPrompt("consent");
+        $this->userClient->addScope(array(\Google_Service_Oauth2::USERINFO_PROFILE, \Google_Service_Oauth2::USERINFO_EMAIL, \Google_Service_Sheets::SPREADSHEETS, \Google_Service_Drive::DRIVE, \Google_Service_Docs::DOCUMENTS));
+        $this->token = $this->getTokenFromDB();
+        if ($this->token !== null && $this->client->isAccessTokenExpired()) {
+            // Try the access token first...
+            $this->userClient->setAccessToken($this->token);
+            if(!$this->userClient->isAccessTokenExpired())
+            {
+                // Don't need to do anything, the access token is still valid.
+                return true;
+            }
+            if(!isset($this->token['refresh_token']))
+            {
+                var_dump('Did not have a refresh token');
+                return false;
+            }
+            $res = $this->userClient->fetchAccessTokenWithRefreshToken($this->token['refresh_token']);
+            $this->token = $this->userClient->getAccessToken();
+            if($this->token)
+            {
+                $this->storeTokenInDB($this->token);
+            }
+        }
+        return !$this->userClient->isAccessTokenExpired();
+    }
+
+    public function getLoginLink($request, $response, $args)
+    {
+        // Ignore the return code cause if we are asking this we don't care if we are already logged in or not
+        $this->validateLoggedIn($request);
+        if(!$this->user->isInGroupNamed('TicketAdmins'))
+        {
+            return $response->withStatus(401);
+        }
+        $this->doGoogleClientSetup();
+        $ret = array('uri' => $this->userClient->createAuthUrl());
+        return $response->withJson($ret);
+    }
+
+    public function OAuth2Callback($request, $response, $args)
+    {
+        $this->validateLoggedIn($request);
+        if(!$this->user->isInGroupNamed('TicketAdmins'))
+        {
+            return $response->withStatus(401);
+        }
+        // Cleanup any tokens before we start a new session with Google
+        $this->removeTokenFromDB();
+        $this->doGoogleClientSetup();
+        $this->userClient->authenticate($request->getQueryParam('code'));
+        $this->token = $this->userClient->getAccessToken();
+        if($this->token === null)
+        {
+            return $response->withStatus(500);
+        }
+        $this->storeTokenInDB($this->token);
+        return $response->withRedirect('/tickets/_admin/google.php');
+    }
+
+    public function getLoginStatus($request, $response, $args)
+    {
+        $this->validateLoggedIn($request);
+        if(!$this->user->isInGroupNamed('TicketAdmins'))
+        {
+            return $response->withStatus(401);
+        }
+        $res = array('loggedIn' => $this->doGoogleClientSetup());
+        if($res['loggedIn'] === true)
+        {
+            $oauth2Service = new \Google_Service_Oauth2($this->userClient);
+            $res['user'] = $oauth2Service->userinfo->get();
+        }
+        return $response->withJson($res);
     }
 
     public function getProblematicActors($request, $response)
@@ -45,6 +200,56 @@ class GoogleAPI extends \Flipside\Http\Rest\RestAPI
             $myFiles[] = array('id' => $file->getId(), 'name' => $file->getName());
         }
         return $response->withJson($myFiles);
+    }
+
+    public function listPossibleSpreadSheetsUser($request, $response)
+    {
+        $this->validateLoggedIn($request);
+        if(!$this->user->isInGroupNamed('TicketAdmins')) {
+            return $response->withStatus(403);
+        }
+        $this->doGoogleClientSetup();
+        $service = new \Google_Service_Drive($this->userClient);
+        $files = $service->files->listFiles(array('q' => 'mimeType=\'application/vnd.google-apps.spreadsheet\' and trashed=false', 'fields' => 'files(id, name)', 'includeItemsFromAllDrives' => true, 'supportsAllDrives'=>true));
+        $myFiles = array();
+        foreach($files->files as $file)
+        {
+            $myFiles[] = array('id' => $file->getId(), 'name' => $file->getName());
+        }
+        return $response->withJson($myFiles);
+    }
+
+    public function makeSpreadSheetUser($request, $response)
+    {
+        $this->validateLoggedIn($request);
+        if(!$this->user->isInGroupNamed('TicketAdmins')) {
+            return $response->withStatus(403);
+        }
+        $this->doGoogleClientSetup();
+        $data = $request->getParsedBody();
+        if(!isset($data['name']))
+        {
+            return $response->withStatus(400)->withJson(array('error' => 'Name is required'));
+        }
+        if(!isset($data['data']))
+        {
+            return $response->withStatus(400)->withJson(array('error' => 'Data is required'));
+        }
+        $service = new Google_Service_Sheets($this->userClient);
+        $spreadsheet = new Google_Service_Sheets_Spreadsheet([
+            'properties' => [
+                'title' => $data['name']
+            ]
+        ]);
+        $spreadsheet = $service->spreadsheets->create($spreadsheet, [
+            'fields' => 'spreadsheetId'
+        ]);
+        $body = new Google_Service_Sheets_ValueRange([
+            'values' => $data['data']
+        ]);
+        $params = ['valueInputOption' => 'RAW'];
+        $service->spreadsheets_values->update($spreadsheet->spreadsheetId, 'Sheet1!A1', $body, $params);
+        return $response->withJson(array('id' => $spreadsheet->spreadsheetId));
     }
 
     public function isProblematicPersonsFormat($request, $response, $args)

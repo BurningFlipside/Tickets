@@ -7,6 +7,9 @@ $page->setTemplateName('admin-accordian.html');
 $page->addWellKnownJS(JS_DATATABLE, false);
 $page->addWellKnownCSS(CSS_DATATABLE);
 $page->addJS('https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js');
+$page->addJS('https://cdn.jsdelivr.net/gh/linways/table-to-excel@v1.0.4/dist/tableToExcel.js');
+$page->addJS('js/excel.js');
+$page->addJS('js/libs/google.js');
 
 $page->content['pageHeader'] = 'Sales Reports';
 $page->content['panels'] = array();

@@ -24,6 +24,8 @@ class TicketAPI extends Flipside\Http\Rest\RestAPI
         $app->post('/Actions/PopulatePool', array($this, 'populatePool'));
         $app->post('/Actions/submitWaiver', array($this, 'submitWaiver'));
         $app->post('/Actions/EE', array($this, 'doEarlyEntry'));
+        $app->post('/Actions/CanPurchase', array($this, 'canPurchase'));
+        $app->get('/Actions/CanPurchase', array($this, 'canPurchase'));
     }
 
     public function listTickets($request, $response, $app)
@@ -250,6 +252,10 @@ class TicketAPI extends Flipside\Http\Rest\RestAPI
                 $user = $members[$j];
                 $filter = new \Flipside\Data\Filter('year eq '.$year.' and type eq \''.$type.'\' and pool_id eq -1 and assigned eq 0 and sold eq 0 and transferInProgress eq 0 and discretionary eq 0');
                 $tickets = $ticket_data_table->read($filter, false, $ticketCount);
+                if($tickets === false)
+                {
+                    return $response->withJson(array('res'=>$res, 'messages'=>'Not enough tickets of type!'));
+                }
                 if($this->assignDiscrtionaryTicketsToUser($tickets, $user, $ticket_data_table) === false)
                 {
                     $res = false;
@@ -833,6 +839,58 @@ class TicketAPI extends Flipside\Http\Rest\RestAPI
             }
         }
         var_dump($ret);
+    }
+
+    protected function canUserPurchase($user) {
+        $settings = \Tickets\DB\TicketSystemSettings::getInstance();
+        $year = $settings['year'];
+        $ticketDataTable = \Tickets\DB\TicketsDataTable::getInstance();
+        $currentTickets = array('A'=>0,'K'=>0,'T'=>0,'C'=>0);
+        $filter = new \Flipside\Data\Filter("year eq $year and email eq '{$user->mail}' and sold eq 1");
+        $tickets = $ticketDataTable->read($filter);
+        if($tickets != false)
+        {
+            foreach($tickets as $ticket)
+            {
+                $currentTickets[$ticket['type']]++;
+            }
+        }
+        $filter = new \Flipside\Data\Filter("purchaserEmail eq '{$user->mail}'");
+        $pendingPurchaseDataTable = \Flipside\DataSetFactory::getDataTableByNames('tickets', 'tblPendingPurchases');
+        $pendingPurchases = $pendingPurchaseDataTable->read($filter);
+        $ticketIds = array();
+        if($pendingPurchases != false)
+        {
+            foreach($pendingPurchases as $purchase)
+            {
+                $ticketIds = array_merge($ticketIds, json_decode($purchase['ticketIds']));
+            }
+        }
+        $ticketIdsString = "'".implode("','", $ticketIds)."'";
+        $tickets = $ticketDataTable->raw_query("SELECT type FROM tblTickets WHERE year=$year AND hash IN ($ticketIdsString);");
+        if($tickets != false)
+        {
+            foreach($tickets as $ticket)
+            {
+                $currentTickets[$ticket['type']]++;
+            }
+        }
+        foreach($currentTickets as $type=>$count)
+        {
+            if($count >= 2)
+            {
+                $currentTickets[$type] = 0;
+            } else {
+                $currentTickets[$type] = 2 - $count;
+            }
+        }
+        return $currentTickets;
+    }
+
+    public function canPurchase($request, $response)
+    {
+        $this->validateLoggedIn($request);
+        return $response->withJson($this->canUserPurchase($this->user));
     }
 }
 /* vim: set tabstop=4 shiftwidth=4 expandtab: */

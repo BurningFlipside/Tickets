@@ -8,6 +8,7 @@ $page->addWellKnownJS(JS_CHART);
 $page->addWellKnownCSS(CSS_DATATABLE);
 $page->addJS('https://cdn.jsdelivr.net/gh/linways/table-to-excel@v1.0.4/dist/tableToExcel.js');
 $page->addJS('js/excel.js');
+$page->addJS('js/libs/google.js');
 
 $page->content['pageHeader'] = 'Ticket Graphs';
 $page->content['panels'] = array();

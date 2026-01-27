@@ -106,6 +106,7 @@ class TicketAdminPage extends \Flipside\Http\FlipAdminPage
         $this->content['header']['sidebar']['Tickets'] = array('icon' => 'fa-ticket-alt', 'menu' => $ticket_menu);
         $this->content['header']['sidebar']['Data Entry'] = array('icon' => 'fa-pencil-alt', 'url' => 'data.php');
         $this->content['header']['sidebar']['Sales'] = array('icon' => 'fa-dollar-sign', 'url' => 'pos.php');
+        $this->content['header']['sidebar']['Google Operations'] = array('icon' => 'fa-google', 'iconClass' => 'fab', 'url' => 'google.php');
         $this->content['header']['sidebar']['Credit Card Sales'] = array('icon' => 'fa-credit-card', 'menu' => $cc_menu);
         $this->content['header']['sidebar']['EarlyEntry'] = array('icon' => 'fa-calendar-day', 'url' => 'earlyEntry.php');
         $this->content['header']['sidebar']['Gate'] = array('icon' => 'fa-sign-in-alt', 'url' => 'gate.php');

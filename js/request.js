@@ -404,6 +404,11 @@ function requestSubmitDone(data, err) {
     if(err.jsonResp !== undefined && err.jsonResp.message !== undefined) {
       alert(err.jsonResp.message);
     } else {
+      Sentry.withScope(scope => {
+         scope.setExtra('err', err);
+	 scope.setLevel('info');
+	 Sentry.captureMessage('Unable to submit request!');
+      });
       alert('Unable to submit request!');
       console.log(err);
     }
@@ -509,6 +514,7 @@ function requestDataSubmitted(e) {
           split.shift();
           let dataName = split.shift();
           name = split.join(' ');
+          if(select.value === 'other') continue;
           donation[dataName] = select.value;
         }
       }
@@ -553,39 +559,71 @@ function minorAffirmClicked() {
 function currentRequestDone(request) {
   if(request === null) {
     ticketSystem.getTicketRequestIdForCurrentUser(requestIdDone);
+    return;
+  }
+  let requestForm = document.getElementById('request');
+  requestForm.hidden = true;
+  let warningDiv = document.createElement('div');
+  warningDiv.className = 'alert alert-warning';
+  warningDiv.role = 'alert';
+  let text = 'You have already submitted a ';
+  if(request.paymentMethod === 'traditional') {
+    text += 'traditional money order request for this year for '+request.tickets.length+' tickets. If you wish to change your request click "Change Request" below.';
   } else {
-    let tbody = document.querySelector('#ticket_table tbody');
-    for(var propertyName in request) {
-      switch(propertyName) {
-        case 'tickets':
-          for(let ticket of request.tickets) {
-            addRowToTable(tbody, ticket.first, ticket.last, ticket.type, tableRow++);
+    text += 'credit card request for this year for '+request.tickets.length+' tickets. You will be sent a payment link after ticket opening. If you wish to change your request click "Change Request" below.';
+  }
+  warningDiv.innerHTML = text+"<br/><br/>This will replace your existing request. You cannot have more than one request at a time.<br/><br/>";
+  requestForm.parentNode.insertBefore(warningDiv, requestForm);
+  let changeButton = document.createElement('button');
+  changeButton.type = 'button';
+  changeButton.className = 'btn btn-primary';
+  changeButton.id = 'change_request';
+  changeButton.innerHTML = 'Change Request';
+  changeButton.onclick = function() {
+    warningDiv.parentNode.removeChild(warningDiv);
+    requestForm.hidden = false;
+  };
+  warningDiv.appendChild(changeButton);
+  let tbody = document.querySelector('#ticket_table tbody');
+  for(var propertyName in request) {
+    switch(propertyName) {
+      case 'tickets':
+        for(let ticket of request.tickets) {
+          addRowToTable(tbody, ticket.first, ticket.last, ticket.type, tableRow++);
+        }
+        break;
+      case 'donations':
+        if(request[`${propertyName}`] === null) {
+          continue;
+        }
+        for(let donationName in request.donations) {
+          var id = 'donation_amount_'+donationName.replace(/ /g,'_');
+          var dropdown = $('#'+id);
+          let donation = request.donations[donationName];
+          let amount = donation.amount;
+          dropdown.val(amount);
+          if(dropdown.val() === null || dropdown.val() === undefined) {
+            dropdown.val('other');
+            var box = $('<input/>', {name: id, id: id+'_text', type: 'text', value: amount});
+            box.appendTo(dropdown.parent());
           }
-          break;
-        case 'donations':
-          if(request[`${propertyName}`] === null) {
-            continue;
+          if(donation.disclose !== undefined && donation.disclose === '1') {
+            $('#donation_disclose_'+donationName).prop('checked', true);
           }
-          for(let donationName in request.donations) {
-            var id = 'donation_amount_'+donationName.replace(/ /g,'_');
-            var dropdown = $('#'+id);
-            let donation = request.donations[donationName];
-            let amount = donation.amount;
-            dropdown.val(amount);
-            if(dropdown.val() === null || dropdown.val() === undefined) {
-              dropdown.val('other');
-              var box = $('<input/>', {name: id, id: id+'_text', type: 'text', value: amount});
-              box.appendTo(dropdown.parent());
-            }
-            if(donation.disclose !== undefined && donation.disclose === '1') {
-              $('#donation_disclose_'+donationName).prop('checked', true);
-            }
-          }
-          break;
-        default:
-          $('#'+propertyName).val(request[`${propertyName}`]);
-          break;
-      }
+        }
+        break;
+      case 'paymentMethod':
+        if(request[`${propertyName}`] === 'traditional') {
+          document.getElementById('paymentTraditional').checked = true;
+          showTraditionalPayment();
+        } else if(request[`${propertyName}`] === 'cc') {
+          document.getElementById('paymentCC').checked = true;
+          showCreditPayment();
+        }
+        break;
+      default:
+        $('#'+propertyName).val(request[`${propertyName}`]);
+        break;
     }
   }
 }

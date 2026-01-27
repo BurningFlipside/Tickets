@@ -144,7 +144,6 @@ function gotRequests(requests, year, col) {
       donationSpan.innerHTML = val;
     }
   }
-  console.log(year, donationAmount);
   // eslint-disable-next-line security/detect-object-injection
   table.rows[2].cells[col].innerHTML = received;
   // eslint-disable-next-line security/detect-object-injection

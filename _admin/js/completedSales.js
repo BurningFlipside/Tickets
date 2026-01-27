@@ -199,6 +199,31 @@ function renderOrderId(cell) {
   return link;
 }
 
+function AddDateFilter(parentElem) {
+  let label = document.createElement('label');
+  label.setAttribute('for', 'dateFilter');
+  label.innerText = 'Transaction Date: ';
+  let input = document.createElement('input');
+  input.id = 'dateFilter';
+  input.type = 'date';
+  parentElem.appendChild(label);
+  parentElem.appendChild(input);
+  input.addEventListener('change', () => {
+    let date = new Date(input.value);
+    let tables = Tabulator.findTable('#sales');
+    if(tables === false) {
+      return;
+    }
+    let table = tables[0];
+    table.setFilter((data) => {
+      let soldDate = new Date(data.soldOn);
+      return date.getFullYear() === soldDate.getFullYear() &&
+         date.getMonth() === soldDate.getMonth() &&
+         date.getDate() === soldDate.getDate();
+    });
+  });
+}
+
 function initPage() {
   new Tabulator('#sales', {
     layout: 'fitColumns',
@@ -215,6 +240,8 @@ function initPage() {
     fetch('../api/v1/pools').then((response) => response.json()),
   ];
   Promise.allSettled(promises).then(gotData);
+  AddSearchToTable(document.getElementById('sales'));
+  AddDateFilter(document.getElementById('filters'));
 }
 
 window.addEventListener('load', initPage);

@@ -6,6 +6,7 @@ function makeTablesExportable() {
     let button = document.createElement('button');
     button.setAttribute('type', 'button');
     button.setAttribute('class', 'btn btn-link');
+    button.setAttribute('title', 'Export to Excel');
     button.innerHTML = '<i class="fas fa-file-excel"></i>';
     button.addEventListener('click', doExport.bind(table));
     parent.appendChild(button);

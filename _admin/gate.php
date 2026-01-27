@@ -92,11 +92,11 @@ $page->body .= '
                     <div class="row" style="margin-top: 10px">
                         <label for="used" class="col-sm-2 col-form-label">Used:</label>
                         <div class="col-sm-2">
-                            <input class="form-control" type="checkbox" name="used" id="used"/>
+                            <input class="form-check-input" type="checkbox" name="used" id="used"/>
                         </div>
                         <label for="void" class="col-sm-2 col-form-label">Void:</label>
                         <div class="col-sm-2">
-                            <input class="form-control" type="checkbox" name="void" id="void"/>
+                            <input class="form-check-input" type="checkbox" name="void" id="void"/>
                         </div>
                     </div>
                     <div class="row" style="margin-top: 10px">

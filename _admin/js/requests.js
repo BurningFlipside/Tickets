@@ -96,10 +96,26 @@ function editRequest() {
   window.location = '../request.php?request_id='+document.getElementById('request_id').value;
 }
 
+function doConversion(data) {
+  fetch('../api/v1/requests/'+data.request_id+'/'+data.year+'/Actions/Request.ConvertToCCAndIssue', {});
+}
+
 function getPDF() {
   let requestId = document.getElementById('request_id').value;
   let year = document.getElementById('year').value;
   window.location = '../api/v1/requests/'+requestId+'/'+year+'/pdf';
+}
+
+function sendEmail() {
+  let requestId = document.getElementById('request_id').value;
+  let year = document.getElementById('year').value;
+  fetch('../api/v1/requests/'+requestId+'/'+year+'/Actions/Requests.SendEmail', {method: 'POST'}).then((response) => {
+    if(!response.ok) {
+      alert('Unable to send email!');
+      return;
+    }
+    alert('Email sent!');
+  });
 }
 
 function getCSV() {
@@ -197,6 +213,26 @@ function rowClicked(e, row) {
   } else {
     protected.checked = false;
   }
+  if(data.paymentMethod === 'traditional' && data.private_status === 0) {
+    if(!document.getElementById('convert')) {
+      let modalDiv = document.getElementById('modal');
+      let footer = modalDiv.getElementsByClassName('modal-footer')[0];
+      let button = document.createElement('button');
+      button.id = 'convert';
+      button.className = 'btn btn-outline-success';
+      button.innerHTML = 'Convert to CC Request and Issue Link';
+      footer.appendChild(button);
+      button.addEventListener('click', () => {
+        doConversion(data);
+        modal.hide();
+      });
+    }
+  } else {
+    let convert = document.getElementById('convert');
+    if(convert !== null) {
+      convert.remove();
+    }
+  }
   modal.show();
 }
 
@@ -241,6 +277,7 @@ function initPage() {
       {column: 'request_id', dir: 'asc'}
     ]
   });
+  AddExportToDriveToTabulatorInstance(table, document.getElementById('actions'));
   fetch('../api/v1/globals/years').then((response) => {
     if(!response.ok) {
       return;

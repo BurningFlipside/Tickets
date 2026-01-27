@@ -400,6 +400,7 @@ function getRequestsDone(requests) {
 
 function processOutOfWindow(now, start, end, myWindow) {
   if(now < start) {
+    start.setSeconds(start.getSeconds() + 1);
     let message = 'The request window is not open yet. It starts on '+start.toDateString();
     if(myWindow.test_mode !== true) {
       let links = document.querySelectorAll('[href="request.php"]');
@@ -409,7 +410,7 @@ function processOutOfWindow(now, start, end, myWindow) {
     }
     addNotification(document.getElementById('content'), message);
     outOfWindow = true;
-    return;
+    return true;
   }
   if(now < start || now > end) {
     let message = 'The request window is currently closed. No new ticket requests are accepted at this time.';
@@ -437,7 +438,9 @@ function processOutOfWindow(now, start, end, myWindow) {
     new bootstrap.Collapse('#request', {
       hide: true
     });
+    return true;
   }
+  return false;
 }
 
 function processMailInWindow(now, mailStart, end) {
@@ -463,8 +466,12 @@ function getWindowDone(data) {
   ticketYear = data.year;
   let stopDate =  new Date(data.request_stop_date);
   stopDate.setHours(23, 59, 59);
-  processOutOfWindow(now, new Date(data.request_start_date), stopDate, data);
-  processMailInWindow(now, new Date(data.mail_start_date), stopDate);
+  let startDate =  new Date(data.request_start_date);
+  let offset = startDate.getTimezoneOffset();
+  startDate = new Date(startDate.getTime() + (offset*60*1000));
+  if(!processOutOfWindow(now, startDate, stopDate, data)) {
+    processMailInWindow(now, new Date(data.mail_start_date), stopDate);
+  }
   fetch('api/v1/requests').then(response => {
     if(response.ok) {
       response.json().then(requests => {

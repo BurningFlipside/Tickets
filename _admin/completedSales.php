@@ -6,10 +6,11 @@ $page = new TicketAdminPage('Burning Flipside - Tickets');
 $page->setTemplateName('admin-table-new.html');
 
 $page->addWellKnownJS(JS_BOOTBOX);
+$page->addJS('./js/libs/search.js');
 
 $page->content['pageHeader'] = 'Completed Sales';
 $page->content['table'] = array('id' => 'sales', 'headers'=>array('Seller/Pool', 'Purchaser', 'Ticket Count', 'Amount', 'Square Order ID'));
-$page->content['selectors'] = '<div id="alert"></div>';
+$page->content['selectors'] = '<div id="alert"></div><div id="filters"></div>';
 
 $page->printPage();
 // vim: set tabstop=4 shiftwidth=4 expandtab:

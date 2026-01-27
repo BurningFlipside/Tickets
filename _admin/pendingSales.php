@@ -6,6 +6,7 @@ $page = new TicketAdminPage('Burning Flipside - Tickets');
 $page->setTemplateName('admin-table-new.html');
 
 $page->addWellKnownJS(JS_BOOTBOX);
+$page->addJS('./js/libs/search.js');
 
 $page->content['pageHeader'] = 'Pending Sales';
 $page->content['table'] = array('id' => 'sales', 'headers'=>array('Cancel', 'Seller/Pool', 'Purchaser', 'Ticket Count', 'Square Link'));

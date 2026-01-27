@@ -60,12 +60,19 @@ class CompletedPurchaseAPI extends AdminTicketDataTableAPI
         }
         $entry['tickets'] = $tickets;
         unset($entry['ticketIds']);
+        if($entry['orderIds'] === null)
+        {
+            $entry['orders'] = array();
+            return $entry;
+        }
         $orderIds = json_decode($entry['orderIds']);
         $orders = array();
-        $count = count($orderIds);
-        for($i = 0; $i < $count; $i++)
-        {
-            array_push($orders, $orderIds[$i]);
+        if($orderIds !== null) {
+            $count = count($orderIds);
+            for($i = 0; $i < $count; $i++)
+            {
+                array_push($orders, $orderIds[$i]);
+            }
         }
         $entry['orders'] = $orders;
         unset($entry['orderIds']);

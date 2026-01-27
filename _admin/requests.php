@@ -9,6 +9,7 @@ $page->addWellKnownCSS(CSS_BOOTSTRAP_FH);
 $page->addWellKnownJS(JS_TABULATOR, false);
 $page->addWellKnownCSS(CSS_TABULATOR);
 $page->addAsyncJS('//oss.sheetjs.com/sheetjs/xlsx.full.min.js', 'excelLoaded()');
+$page->addJS('js/libs/google.js');
 
 $page->content['pageHeader'] = 'Ticket Requests';
 $page->content['selectors'] = '
@@ -24,7 +25,7 @@ $page->content['selectors'] = '
         <option value="*">All</option>
     </select>
   </div>
-  <div class="d-grid gap-2 d-md-block">
+  <div class="d-grid gap-2 d-md-block" id="actions">
     <button id="csv" class="btn btn-link btn-sm" onclick="getCSV();" title="Export CSV"><i class="fa fa-file-csv"></i></button>
   </div>
 ';
@@ -160,6 +161,7 @@ $page->body .= '
                       <button type="button" class="btn btn-primary" onclick="saveRequest(this)">Ok</button>
                       <button type="button" class="btn btn-outline-primary" onclick="editRequest(this)">Edit Tickets/Donations</button>
                       <button type="button" class="btn btn-outline-secondary" onclick="getPDF(this)">Get PDF</button>
+                      <button type="button" class="btn btn-outline-secondary" onclick="sendEmail(this)">Resend Email</button>
                       <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                   </div>
               </div>

@@ -9,11 +9,19 @@ function changeYear(yearSelect, table) {
     response.json().then((data) => {
       table.setData(data);
       let globalIssue = false;
+      let reminder = false
       for(let request of data) {
         if(request.pendingInfo.status === 'pending') {
           globalIssue = true;
-          break;
-        }
+          if(reminder) {
+	    break;
+	  }
+        } else if(request.pendingInfo.status === 'issued') {
+	  reminder = true;
+	  if(globalIssue) {
+	    break;
+	  }
+	}
       }
       if(globalIssue) {
         let globalIssueButton = document.createElement('button');
@@ -25,6 +33,145 @@ function changeYear(yearSelect, table) {
           sendGlobalIssueRequest();
         });
       }
+      if(reminder) {
+        let reminderButton = document.createElement('button');
+        reminderButton.classList.add('btn', 'btn-primary');
+        reminderButton.innerHTML = 'Send Reminder Email';
+        let globalIssueDiv = document.getElementById('globalIssuePlaceholder');
+        globalIssueDiv.appendChild(reminderButton);
+        reminderButton.addEventListener('click', () => {
+          getEmailContent();
+        });
+      }
+    });
+  });
+}
+
+function getEmailContent() {
+  let modal = document.createElement("div");
+  modal.classList.add("modal", "fade");
+  modal.setAttribute("tabindex", "-1");
+  modal.setAttribute("role", "dialog");
+  let innerDiv = document.createElement("div");
+  innerDiv.classList.add("modal-dialog","modal-xl");
+  modal.appendChild(innerDiv);
+  let contentDiv = document.createElement("div");
+  contentDiv.classList.add("modal-content");
+  innerDiv.appendChild(contentDiv);
+  let headerDiv = document.createElement("div");
+  headerDiv.classList.add("modal-header");
+  headerDiv.innerHTML = '<h5 class="modal-title">Reminder Email Content</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>';
+  contentDiv.appendChild(headerDiv);
+  let bodyDiv = document.createElement("div");
+  bodyDiv.classList.add("modal-body");
+  let row = document.createElement("div");
+  row.classList.add("row", "mb-3");
+  let subjectLabel = document.createElement("label");
+  subjectLabel.setAttribute("for", "subject");
+  subjectLabel.classList.add("form-label", "col-sm-2");
+  subjectLabel.innerHTML = "Subject:";
+  row.appendChild(subjectLabel);
+  let inputDiv = document.createElement("div");
+  inputDiv.classList.add("col-sm-10");
+  let subjectInput = document.createElement("input");
+  subjectInput.setAttribute("type", "text");
+  subjectInput.setAttribute("id", "subject");
+  subjectInput.classList.add("form-control");
+  subjectInput.setAttribute("placeholder", "Subject");
+  inputDiv.appendChild(subjectInput);
+  row.appendChild(inputDiv);
+  bodyDiv.appendChild(row);
+  row = document.createElement("div");
+  row.classList.add("row", "mb-3");
+  let bodyLabel = document.createElement("label");
+  bodyLabel.setAttribute("for", "body");
+  bodyLabel.classList.add("form-label", "col-sm-2");
+  bodyLabel.innerHTML = "Body:";
+  row.appendChild(bodyLabel);
+  let bodyInput = document.createElement("textarea");
+  bodyInput.setAttribute("id", "body");
+  bodyInput.classList.add("form-control");
+  bodyInput.setAttribute("rows", "10");
+  bodyInput.setAttribute("placeholder", "Body");
+  row.appendChild(bodyInput);
+  bodyDiv.appendChild(row);
+  row = document.createElement("div");
+  row.classList.add("row", "mb-3");
+  row.innerHTML = "You can use the following placeholders in the body of the email:<br/><ol>";
+  row.innerHTML += "<li>${first_name} - The first name of the recipient</li>";
+  row.innerHTML += "<li>${last_name}</strong> - The last name of the recipient</li>";
+  row.innerHTML += "<li>${link}</strong> - The link to the payment page</li></ol>";
+  bodyDiv.appendChild(row);
+  contentDiv.appendChild(bodyDiv);
+  let footerDiv = document.createElement("div");
+  footerDiv.classList.add("modal-footer");
+  let closeButton = document.createElement("button");
+  closeButton.setAttribute("type", "button");
+  closeButton.classList.add("btn", "btn-secondary");
+  closeButton.setAttribute("data-bs-dismiss", "modal");
+  closeButton.innerHTML = "Close";
+  footerDiv.appendChild(closeButton);
+  let sendButton = document.createElement("button");
+  sendButton.setAttribute("type", "button");
+  sendButton.classList.add("btn", "btn-primary");
+  sendButton.innerHTML = "Send";
+  footerDiv.appendChild(sendButton);
+  contentDiv.appendChild(footerDiv);
+  document.body.appendChild(modal);
+  makeWYSIWYG(bodyInput, sendButton);
+  let bsModal = new bootstrap.Modal(modal);
+  bsModal.show();
+}
+
+function makeWYSIWYG(elem, sendButton) {
+  const {
+    ClassicEditor,
+    Essentials,
+    Bold,
+    Italic,
+    Font,
+    Paragraph,
+    SourceEditing,
+    Style,
+    GeneralHtmlSupport,
+    Link,
+  } = CKEDITOR;
+  ClassicEditor.create(elem, {
+    licenseKey: 'GPL',
+    plugins: [Essentials, Bold, Italic, Font, Paragraph, SourceEditing, GeneralHtmlSupport, Style, Link],
+    toolbar: ['undo', 'redo', '|', 'bold', 'italic', '|', 'sourceEditing', '|', 'style', 'fontColor', 'fontSize', 'fontFamily', '|', 'link'],
+    htmlSupport: {
+      allow: [
+        {
+          name: /.*/,
+          attributes: true,
+          classes: true,
+          styles: true
+        }
+      ]
+    }
+  }).then((editor) => {
+    sendButton.addEventListener("click", () => {
+      fetch('../api/v1/requests/creditCardRequests/Actions/Requests.SendCCReminder', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          subject: document.getElementById('subject').value,
+          body: editor.getData()
+        })
+      }).then((response) => {
+        if(!response.ok) {
+          console.error('Error sending reminder email', response);
+          return;
+        }
+        response.json().then((data) => {
+          console.log('Reminder email sent', data);
+        });
+      }).catch((error) => {
+        console.error('Error sending reminder email', error);
+      });
     });
   });
 }
@@ -172,6 +319,12 @@ function linkStatusFormatter(cell) {
   }
 }
 
+function ticketCountFormatter(cell) {
+  let data = cell.getRow().getData();
+  let tickets = data.tickets;
+  return tickets.length;
+}
+
 function initPage() {
   let table = new Tabulator('#requests', {
     index: 'request_id',
@@ -183,6 +336,7 @@ function initPage() {
       {title: 'Total Due', field: 'total_due', formatter: 'money', formatterParams: {symbol: '$'}},
       {title: 'Link Status', field: 'pendingInfo.status', formatter: linkStatusFormatter},
       {title: 'Link', field: 'pendingInfo.squareLink'},
+      {title: 'Ticket Count', field: 'tickets', formatter: ticketCountFormatter},
     ],
     pagination: 'local',
     paginationSize: 10,
@@ -198,7 +352,10 @@ function initPage() {
     } else {
       tabulatorFooter.style.display = 'block';
       footerText.style.float = 'left';
-      footerText.innerText = 'Showing '+data.length+' requests';
+      let ticketCount = data.reduce((acc, row) => {
+        return acc + row.tickets.length;
+      }, 0);
+      footerText.innerText = 'Showing '+data.length+' requests with '+ticketCount+' tickets';
       tabulatorFooter.firstChild.prepend(footerText);
     }
   });
@@ -233,6 +390,9 @@ function initPage() {
     let status = statusFilter.options[statusFilter.selectedIndex].value;
     table.setFilter('pendingInfo.status', '=', status);
   });
+  let style = document.createElement('style');
+  style.textContent = '.ck-editor__editable_inline:not(.ck-comment__input *) {height: 300px; overflow-y: auto;}';
+  document.head.appendChild(style);
 }
 
 function excelLoaded() {

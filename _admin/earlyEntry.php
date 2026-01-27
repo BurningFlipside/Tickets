@@ -5,6 +5,7 @@ require_once('class.TicketAdminPage.php');
 $page = new TicketAdminPage('Burning Flipside - Tickets');
 
 $page->addWellKnownJS(JS_BOOTBOX);
+$page->addJS('./js/libs/google.js');
 
 $page->body .= '
         <div class="row">

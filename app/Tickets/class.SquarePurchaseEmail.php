@@ -21,6 +21,7 @@ class SquarePurchaseEmail extends \Flipside\Email\Email
         $this->last = $last;
         $this->personalMessage = $personalMessage;
         $this->setFromAddress('tickets@burningflipside.com', 'Burning Flipside Tickets');
+        $this->requestID = null;
     }
 
     public function getSubject()

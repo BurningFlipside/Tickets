@@ -61,6 +61,10 @@ unset($purchase['issuedAt']);
 $settings = \Tickets\DB\TicketSystemSettings::getInstance();
 $year = $settings['year'];
 $purchase['year'] = $year;
+if(!isset($purchase['requestID']))
+{
+    $purchase['requestID'] = "";
+}
 $ret = $dataTable2->create($purchase);
 if($ret === false)
 {

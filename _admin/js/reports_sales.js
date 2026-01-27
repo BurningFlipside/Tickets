@@ -146,10 +146,32 @@ function createChartData(data) {
       pos.push(tmpMap[key].pos);
       values.push(tmpMap[key].total);
     }
-  } else if(days < 30) {
-    // Use days for the labels
   } else {
-    // Use months for the labels
+    // Use days for the labels
+    for(let entry of sorted) {
+      let rounded = entry.date.setHours(0, 0, 0, 0);
+      let key = new Intl.DateTimeFormat("en-US", {dateStyle: 'short'}).format(rounded);
+      if(tmpMap[key] === undefined) {
+        tmpMap[key] = {requests: 0, pos: 0, total: 0};
+      }
+      switch(entry.saleType) {
+        case 'POS':
+          tmpMap[key].pos += entry.amount;
+          break;
+        case 'Request':
+          tmpMap[key].requests += entry.amount;
+          break;
+        default:
+          console.error('Unknown sale type: '+entry.saleType);
+      }
+      tmpMap[key].total += entry.amount;
+    }
+    for(let key in tmpMap) {
+      labels.push(key);
+      requests.push(tmpMap[key].requests);
+      pos.push(tmpMap[key].pos);
+      values.push(tmpMap[key].total);
+    }
   }
   return {labels: labels, requests: requests, pos: pos, total: values};
 }

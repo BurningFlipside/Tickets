@@ -6,6 +6,7 @@ $page = new TicketAdminPage('Burning Flipside - Tickets');
 
 $page->addWellKnownJS(JS_DATATABLE);
 $page->addWellKnownCSS(CSS_DATATABLE);
+$page->addJS('js/libs/google.js');
 
 $sgFilterStr='$select=request_id,street,l,st,zip,givenName,sn&$filter=year%20eq%20current%20and%20private_status%20eq%206%20and%20survivalGuide%20eq%201';
 

@@ -15,6 +15,8 @@ $page->addCSS('../node_modules/ckeditor5/dist/browser/ckeditor5.css', false);
             <option value="ticket_transfer_email_source">Transfer Email</option>
             <option value="square_purchase_email_source">Square Purchase Email</option>
             <option value="square_request_purchase_email_source">Square Request Purchase Email</option>
+            <option value="request_email_source">Request Email</option>
+            <option value="request_cc_email_source">Credit Card Request Email</option>
         </select>
     </div>
 </div>
