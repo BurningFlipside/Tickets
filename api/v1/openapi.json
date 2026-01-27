@@ -1,0 +1,687 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Flipside Ticket System",
+    "description": "This is the API interface to the Flipside Ticket System",
+    "contact": {
+      "email": "patrick@burningflipside.org"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://secure.burningflipside.com/tickets/api/v1"
+    }
+  ],
+  "paths": {
+    "/globals/constraints": {
+      "get": {
+        "summary": "Get the ticket system constaints",
+        "description": "GEt constraints of the ticket system such as how many tickets can be on a request",
+        "operationId": "GetConstaints",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Constraints"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not logged in"
+          }
+        }
+      }
+    },
+    "/globals/window": {
+      "get": {
+        "summary": "Get information on the ticket window",
+        "description": "Gets the informations about the ticket window",
+        "operationId": "GetTicketWindow",
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Window"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not logged in"
+          }
+        }
+      }
+    },
+    "/globals/years": {
+      "get": {
+        "summary": "Gets all the years in the ticket system",
+        "description": "Gets a list of all the years the ticket system has been in operation.",
+        "operationId": "GetYears",
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not logged in"
+          }
+        }
+      }
+    },
+    "/globals/posTypes": {
+      "get": {
+        "summary": "Get the supported POS types",
+        "description": "Get the point of sale types supported",
+        "operationId": "GetPOSTypes",
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not an admin"
+          },
+          "403": {
+            "description": "Not logged in"
+          }
+        }
+      }
+    },
+    "/globals/donation_types": {
+      "get": {
+        "summary": "Gets the donation types supported",
+        "description": "Gets the donation types supported",
+        "operationId": "GetDonationTypes",
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DonationType"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not logged in"
+          }
+        }
+      }
+    },
+    "/globals/ticket_types": {
+      "get": {
+        "summary": "Returns all the ticket types",
+        "description": "Returns all the ticket types",
+        "operationId": "GetTicketTypes",
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TicketType"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not logged in"
+          }
+        }
+      }
+    },
+    "/globals/statuses": {
+      "get": {
+        "summary": "Gets the possible ticket request statuses",
+        "description": "Gets the possible ticket request statuses",
+        "operationId": "GetStatuses",
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RequestStatus"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not logged in"
+          }
+        }
+      }
+    },
+    "/pools": {
+      "get": {
+        "summary": "Get Ticket Pools",
+        "description": "Get a list of ticket pools",
+        "operationId": "GetTicketPools",
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TicketPool"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not logged in"
+          }
+        }
+      }
+    },
+    "/requests": {
+      "get": {
+        "summary": "Get requests",
+        "description": "By default this will only get the user's requests. Only admins can specify a filter and get other requests.",
+        "operationId": "GetRequests",
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TicketRequest"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not logged in"
+          }
+        }
+      }
+    },
+    "/tickets": {
+      "get": {
+        "summary": "Get tickets",
+        "description": "By default this will only get the user's tickets. Only admins can specify a filter and get other tickets.",
+        "operationId": "GetTickets",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Ticket"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not logged in"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Ticket": {
+        "type": "object",
+        "properties": {
+          "hash": {
+            "type": "string"
+          },
+          "year": {
+            "type": "integer",
+            "example": 2025
+          },
+          "firstName": {
+            "type": "string",
+            "description": "The first name on the ticket",
+            "example": "Patrick"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "The last name on the ticket",
+            "example": "Boyd"
+          },
+          "email": {
+            "type": "string",
+            "description": "The email associated with the ticket",
+            "example": "example@example.com"
+          },
+          "request_id": {
+            "type": "string",
+            "nullable": true,
+            "description": "The request associated with this ticket if any"
+          },
+          "assigned": {
+            "type": "integer",
+            "description": "Is this ticket assigned to anyone?"
+          },
+          "void": {
+            "type": "integer",
+            "description": "Has this ticket been voided?"
+          },
+          "sold": {
+            "type": "integer",
+            "description": "Has this ticket been sold?"
+          },
+          "used": {
+            "type": "integer",
+            "description": "Has this ticket been used?"
+          },
+          "discretionary": {
+            "type": "integer",
+            "description": "Is this a discretionary ticket?"
+          },
+          "type": {
+            "type": "string",
+            "example": "A",
+            "description": "The type of ticket"
+          },
+          "guardian_first": {
+            "type": "string",
+            "nullable": true,
+            "description": "For a minor's ticket the guardian's first name"
+          },
+          "guardian_last": {
+            "type": "string",
+            "nullable": true,
+            "description": "For a minor's ticket the guardian's last name"
+          },
+          "pool_id": {
+            "type": "integer",
+            "description": "Which ticket pool is this ticket a part of?"
+          },
+          "previous_hash": {
+            "type": "string",
+            "description": "The last hash this ticket had. This changes each time it is sold/transfered."
+          },
+          "physical_ticket_id": {
+            "type": "string",
+            "description": "The physical ticket id this ticket entered with"
+          },
+          "comments": {
+            "type": "string",
+            "description": "Any comments on this ticket"
+          },
+          "used_dt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the gate server thinks this ticket was used"
+          },
+          "rand": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Data used to help randomize the contents to avoid intentional hash collisions"
+          },
+          "test": {
+            "type": "integer",
+            "description": "Is this a test ticket?"
+          },
+          "transferInProgress": {
+            "type": "integer",
+            "description": "Has the user started to transfer this ticket?"
+          },
+          "earlyEntryWindow": {
+            "type": "integer",
+            "description": "Which window is this ticket allowed entry during?"
+          },
+          "soldDT": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "discretionaryOrig": {
+            "type": "string",
+            "nullable": true,
+            "description": "The person who was assigned this discretionary ticket"
+          }
+        }
+      },
+      "TicketRequest": {
+        "type": "object",
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "example": "A100000"
+          },
+          "year": {
+            "type": "integer",
+            "example": 2025
+          },
+          "givenName": {
+            "type": "string",
+            "description": "The requestor's first name",
+            "example": "Patrick"
+          },
+          "sn": {
+            "type": "string",
+            "description": "The requestor's last name (surname)",
+            "example": "Boyd"
+          },
+          "mail": {
+            "type": "string",
+            "description": "The email address associated with the requestor's account",
+            "example": "example@example.com"
+          },
+          "street": {
+            "type": "string",
+            "description": "The requestor's street address",
+            "example": "123 Fake Street"
+          },
+          "l": {
+            "type": "string",
+            "description": "The requestor's city",
+            "example": "Austin"
+          },
+          "st": {
+            "type": "string",
+            "description": "The requestor's state",
+            "example": "TX"
+          },
+          "zip": {
+            "type": "string",
+            "description": "The requestor's postal/zip code",
+            "example": "12345"
+          },
+          "mobile": {
+            "type": "string",
+            "description": "The requestor's phone number",
+            "example": "123-456-7890"
+          },
+          "modifiedBy": {
+            "type": "string",
+            "description": "The last user to modify the request"
+          },
+          "modifiedByIP": {
+            "type": "string",
+            "description": "Where the request was last modified from"
+          },
+          "modifiedOn": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "c": {
+            "type": "string",
+            "description": "The requestor's country",
+            "example": "US"
+          },
+          "tickets": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "last": {
+                  "type": "string",
+                  "description": "The ticket's requested last name",
+                  "example": "Boyd"
+                },
+                "first": {
+                  "type": "string",
+                  "description": "The ticket's requested first name",
+                  "example": "Patrick"
+                },
+                "type": {
+                  "type": "string",
+                  "description": "The type code of the ticket",
+                  "example": "A"
+                }
+              }
+            }
+          },
+          "donations": {
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "string"
+                  },
+                  "disclose": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          },
+          "ticketAmount": {
+            "type": "number",
+            "description": "The subtotal for the tickets on the request"
+          },
+          "donationAmount": {
+            "type": "number",
+            "description": "The subtotal for the donations on the request"
+          },
+          "total_due": {
+            "type": "number",
+            "description": "The total amount due for the request"
+          },
+          "total_received": {
+            "type": "number",
+            "description": "The amount of money received for this requests"
+          },
+          "crit_vol": {
+            "type": "boolean",
+            "description": "Is this request for a critical volunteer?"
+          },
+          "protected": {
+            "type": "boolean",
+            "description": "Was this request id pulled in the lottery last year?"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RequestStatus"
+          },
+          "private_status": {
+            "type": "integer",
+            "description": "The status for the request before it is made public"
+          },
+          "comments": {
+            "type": "string",
+            "description": "Any comments on the request"
+          },
+          "bucket": {
+            "type": "integer",
+            "description": "What bucket was this request assigned to at ticket opening"
+          },
+          "envelopeArt": {
+            "type": "boolean",
+            "description": "Has the requestor allowed us to use their envelope art?"
+          },
+          "test": {
+            "type": "integer",
+            "description": "Was this request put in while the system was in test mode?"
+          },
+          "survivalGuide": {
+            "type": "boolean",
+            "description": "Did the requestor order a survival guide?"
+          },
+          "paymentMethod": {
+            "type": "string",
+            "enum": [
+              "traditional",
+              "cc"
+            ]
+          },
+          "revisions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TicketRequest"
+            }
+          }
+        }
+      },
+      "TicketPool": {
+        "type": "object",
+        "properties": {
+          "pool_id": {
+            "type": "integer",
+            "example": 1
+          },
+          "group_name": {
+            "type": "string",
+            "description": "Which group has access to sell this type of ticket",
+            "example": "AFs"
+          },
+          "pool_name": {
+            "type": "string",
+            "example": "Crit Vols"
+          }
+        }
+      },
+      "RequestStatus": {
+        "type": "object",
+        "properties": {
+          "status_id": {
+            "type": "integer",
+            "format": "int32",
+            "example": 0
+          },
+          "name": {
+            "type": "string",
+            "example": "Pending"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "DonationType": {
+        "type": "object",
+        "properties": {
+          "entityName": {
+            "type": "string"
+          },
+          "thirdParty": {
+            "type": "integer"
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      },
+      "Window": {
+        "type": "object",
+        "properties": {
+          "request_start_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "request_stop_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "mail_start_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "test_mode": {
+            "type": "boolean"
+          },
+          "year": {
+            "type": "integer"
+          },
+          "current": {
+            "type": "string",
+            "format": "date",
+            "description": "The date the server thinks it is"
+          }
+        }
+      },
+      "TicketType": {
+        "type": "object",
+        "properties": {
+          "typeCode": {
+            "type": "string",
+            "example": "A"
+          },
+          "description": {
+            "type": "string",
+            "example": "Adult"
+          },
+          "cost": {
+            "type": "number",
+            "example": 175
+          },
+          "max_per_request": {
+            "type": "integer",
+            "example": 2
+          },
+          "is_minor": {
+            "type": "integer",
+            "example": 0
+          },
+          "squareCost": {
+            "type": "number",
+            "description": "Credit Card cost"
+          },
+          "secondaryCost": {
+            "type": "number",
+            "description": "Cash cost in a secondary sale"
+          }
+        }
+      },
+      "Constraints": {
+        "type": "object",
+        "properties": {
+          "max_tickets_per_request": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ticket_types": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TicketType"
+            }
+          }
+        }
+      }
+    }
+  }
+}
