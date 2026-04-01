@@ -12,6 +12,7 @@ $page->addWellKnownJS(JS_BOOTBOX);
 $page->addJS('../node_modules/ckeditor5/dist/browser/ckeditor5.umd.js', false);
 $page->addCSS('../node_modules/ckeditor5/dist/browser/ckeditor5.css', false);
 $page->addAsyncJS('//oss.sheetjs.com/sheetjs/xlsx.full.min.js', 'excelLoaded()');
+$page->addJS('./js/libs/search.js');
 
 $page->content['pageHeader'] = 'Credit Card Requests';
 $page->content['selectors'] = '

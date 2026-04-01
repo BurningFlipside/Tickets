@@ -393,6 +393,7 @@ function initPage() {
   let style = document.createElement('style');
   style.textContent = '.ck-editor__editable_inline:not(.ck-comment__input *) {height: 300px; overflow-y: auto;}';
   document.head.appendChild(style);
+  AddSearchToTable(document.getElementById('requests'));
 }
 
 function excelLoaded() {

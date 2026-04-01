@@ -53,6 +53,45 @@ function assignTicketsToIndividual(email) {
   });
 }
 
+function unassignTicketsFromIndividual(email) {
+  fetch('/tickets/api/v1/tickets?$filter=discretionaryOrig%20eq%20%27'+email+'%27%20and%20sold%20eq%200%20and%20year%20eq%20current').then((response) => {
+    response.json().then((data) => {
+      if(data.length === 0) {
+        alert('No unsold tickets to remove!');
+        return;
+      }
+      bootbox.prompt({
+        size: 'small',
+        title: 'How many tickets would you like to remove?',
+        inputType: 'number',
+        callback: function(result) {
+          if(result === null || result === '') {
+            return;
+          }
+          let count = parseInt(result);
+          if(isNaN(count)) {
+            alert('Invalid number!');
+            return;
+          }
+          if(count > data.length) {
+            alert('Cannot remove more tickets than exist!');
+            return;
+          }
+          for(let i = 0; i < count; i++) {
+            $.ajax({
+              url: '../api/v1/tickets/'+data[i].hash,
+              method: 'PATCH',
+              data: JSON.stringify({sold: 0, discretionary: 0, discretionaryOrig: ''}),
+              contentType: 'application/json',
+              complete: assignedTickets
+            });
+          }
+        }
+      });
+    });
+  });
+}
+
 function drawTable() {
   let tableElem = document.getElementById('discretionary');
   var table = $('#discretionary tbody');
@@ -61,14 +100,19 @@ function drawTable() {
     var row = $('<tr>');
     var count = Object.keys(disc[`${mail}`]).length;
     let addButton = $('<button>').addClass('btn btn-link').attr('title', 'Assign Additional Tickets').html('<i class="fa fa-plus-square"></i>');
+    let minButton = $('<button>').addClass('btn btn-link').attr('title', 'Remove Unsold Tickets').html('<i class="fa fa-minus-square"></i>');
     let myMail = mail;
     addButton.click(function() {
       assignTicketsToIndividual(myMail);
+    });
+    minButton.click(function() {
+      unassignTicketsFromIndividual(myMail);
     });
     if(disc[`${mail}`].Name !== undefined) {
       count--;
       let ctrlCell = $('<td rowspan="'+count+'"/>');
       ctrlCell.append(addButton);
+      ctrlCell.append(minButton);
       row.append(ctrlCell);
       row.append('<td rowspan="'+count+'">'+disc[`${mail}`].Name+'</td>');
       delete disc[`${mail}`].Name;
@@ -115,6 +159,9 @@ function gotUsers() {
         continue;
       }
       disc[user.mail]['Name'] = user.displayName;
+      if(user.displayName === "") {
+        disc[user.mail]['Name'] = user.givenName + ' ' + user.sn;
+      }
     }
   }
   drawTable();
